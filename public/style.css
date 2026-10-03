@@ -148,19 +148,8 @@ body.dark .cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-f
 body.dark .cyber-btn-small:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-1px); border-color: rgba(255,255,255,0.9) !important; }
 
 /* Input stickers */
-input[type="text"], input[type="password"], input[type="email"], select {
-  background: #fff !important;
-  border: 3px solid #000 !important;
-  color: #000 !important;
-  font-family: inherit;
-  border-radius: 8px !important;
-  padding: 10px !important;
-}
-body.dark input[type="text"], body.dark input[type="password"], body.dark input[type="email"], body.dark select {
-  background: #1c1830 !important;
-  color: #fff !important;
-  border-color: var(--dark-line) !important;
-}
+
+
 
 /* FORMAT DES CARTES ADAPTATIF POUR TOUS LES ÉCRANS (Évite tout débordement) */
 .card-container { width: 90vw; max-width: 380px; aspect-ratio: 2 / 3; position: relative; border-radius: 24px !important; background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border: 1px solid rgba(255,255,255,0.5) !important; border-top: 1px solid rgba(255,255,255,0.9) !important; border-left: 1px solid rgba(255,255,255,0.9) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; transform-style: preserve-3d; cursor: grab; padding: 12px; }
