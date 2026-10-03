@@ -3398,14 +3398,14 @@ function showAlert(title, text, type = 'info') {
       DOM.alertModalTitle.classList.add('text-red-500');
       break;
     case 'warning':
-      DOM.alertModalTitle.classList.add('text-acid-yellow');
+      DOM.alertModalTitle.classList.add('text-amber-600');
       break;
     default:
       DOM.alertModalTitle.classList.add('text-[#5C4033]');
   }
   const okButton = document.createElement('button');
   okButton.textContent = "OK";
-  okButton.className = "px-6 py-2 cyber-btn font-bold";
+  okButton.className = "px-8 py-2 cyber-btn bg-[#5C4033] text-white hover:bg-[#4A3226] font-bold rounded-full shadow-md";
   okButton.onclick = () => closeModal(DOM.alertModal);
   DOM.alertModalButtons.appendChild(okButton);
   openModal(DOM.alertModal);
@@ -3417,7 +3417,7 @@ function showConfirm(title, message, onConfirm) {
   DOM.alertModalButtons.innerHTML = '';
   
   const btnConfirm = document.createElement('button');
-  btnConfirm.className = 'cyber-btn px-4 py-2 text-xs';
+  btnConfirm.className = 'cyber-btn bg-red-600 text-white hover:bg-red-700 font-bold px-6 py-2 text-xs rounded-full shadow-md';
   btnConfirm.textContent = 'CONFIRMER';
   btnConfirm.addEventListener('click', async () => {
     closeModal(DOM.alertModal);
@@ -3425,7 +3425,7 @@ function showConfirm(title, message, onConfirm) {
   });
   
   const btnCancel = document.createElement('button');
-  btnCancel.className = 'cyber-btn-small border-gray-500 text-gray-500 px-4 py-2 text-xs';
+  btnCancel.className = 'cyber-btn bg-black/10 text-[#5C4033] hover:bg-black/20 font-bold px-6 py-2 text-xs rounded-full';
   btnCancel.textContent = 'ANNULER';
   btnCancel.addEventListener('click', () => {
     closeModal(DOM.alertModal);
