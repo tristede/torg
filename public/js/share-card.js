@@ -1,5 +1,5 @@
-// Carte de score partageable : dessine une image 1080x1350 style Y2K puis
-// la partage via l'API Web Share (mobile) ou la télécharge (desktop).
+// Carte de score partageable : dessine une image 1080x1350 style Reglass / Cream
+// puis la partage via l'API Web Share (mobile) ou la télécharge (desktop).
 // Les dépendances sur l'état du jeu sont injectées par app.js (createShareScoreCard)
 // pour garder ce module sans import circulaire.
 
@@ -19,82 +19,131 @@ function drawShareCard(deps) {
   const modeLabel = game.isHardcoreMode ? (t('mode_hardcore') || 'HARDCORE') : (t('mode_normal') || 'NORMAL');
   const result = getResultMessage(pct);
 
-  // Fond midnight violet + grille rose façon dark mode du jeu
-  ctx.fillStyle = '#0a0718';
+  // 1. Fond Crème chaud
+  ctx.fillStyle = '#FDFBF7';
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = 'rgba(255, 0, 127, 0.12)';
+
+  // 2. Grille subtile d'arrière-plan
+  ctx.strokeStyle = 'rgba(92, 64, 51, 0.04)';
   ctx.lineWidth = 2;
   for (let x = 0; x <= W; x += 54) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
   for (let y = 0; y <= H; y += 54) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
-  // Cadre sticker
-  ctx.strokeStyle = '#ff007f';
-  ctx.lineWidth = 14;
-  ctx.strokeRect(30, 30, W - 60, H - 60);
+  // 3. Cadre biseauté double style Reglass
+  const pad = 40;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(92, 64, 51, 0.15)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.roundRect(pad, pad, W - pad * 2, H - pad * 2, 40);
+  ctx.stroke();
 
-  // Logo SWIPP (pavé rose, texte jaune, ombre dure)
-  const logoW = 420, logoH = 110, logoX = (W - logoW) / 2, logoY = 90;
-  ctx.fillStyle = '#000';
-  ctx.fillRect(logoX + 10, logoY + 10, logoW, logoH);
-  ctx.fillStyle = '#ff007f';
-  ctx.fillRect(logoX, logoY, logoW, logoH);
-  ctx.strokeStyle = '#000'; ctx.lineWidth = 8;
-  ctx.strokeRect(logoX, logoY, logoW, logoH);
-  ctx.fillStyle = '#ccff00';
-  ctx.font = '900 72px "Noto Sans JP", Arial, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('SWIPP', W / 2, logoY + logoH / 2 + 4);
+  ctx.strokeStyle = 'rgba(212, 163, 115, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(pad + 12, pad + 12, W - (pad + 12) * 2, H - (pad + 12) * 2, 32);
+  ctx.stroke();
+  ctx.restore();
 
-  // Deck + mode
-  ctx.fillStyle = '#ff77b9';
+  // 4. Logo SWIPP (Pilule raffinée marron foncé & or)
+  const logoW = 380, logoH = 90, logoX = (W - logoW) / 2, logoY = 100;
+  ctx.save();
+  ctx.fillStyle = '#5C4033';
+  ctx.beginPath();
+  ctx.roundRect(logoX, logoY, logoW, logoH, 45);
+  ctx.fill();
+
+  ctx.strokeStyle = '#D4A373';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(logoX, logoY, logoW, logoH, 45);
+  ctx.stroke();
+
+  ctx.fillStyle = '#FDFBF7';
+  ctx.font = '900 48px "Noto Sans JP", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✦ SWIPP ✦', W / 2, logoY + logoH / 2 + 2);
+  ctx.restore();
+
+  // 5. Deck + Mode
+  ctx.fillStyle = '#5C4033';
   ctx.font = '900 52px "Noto Sans JP", Arial, sans-serif';
-  ctx.fillText(`${deckInfo.emoji || '🎮'} ${deckName}`, W / 2, 320);
-  ctx.fillStyle = '#8b84ad';
-  ctx.font = '700 34px "Space Mono", monospace';
-  ctx.fillText(modeLabel.toUpperCase(), W / 2, 385);
+  ctx.textAlign = 'center';
+  ctx.fillText(`${deckInfo.emoji || '🃏'} ${deckName}`, W / 2, 300);
 
-  // Jauge circulaire
-  const cx = W / 2, cy = 660, r = 195;
-  ctx.lineWidth = 42;
-  ctx.strokeStyle = '#241d42';
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = '#ff007f';
+  ctx.fillStyle = 'rgba(92, 64, 51, 0.65)';
+  ctx.font = '700 32px "Space Mono", monospace';
+  ctx.fillText(modeLabel.toUpperCase(), W / 2, 360);
+
+  // 6. Jauge circulaire (Verre & Émeraude douce)
+  const cx = W / 2, cy = 630, r = 185;
+  ctx.save();
+  ctx.lineWidth = 34;
+  ctx.strokeStyle = 'rgba(92, 64, 51, 0.08)';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Cercle de progression doré / olive
+  ctx.strokeStyle = pct >= 50 ? '#4A5D23' : '#D4A373';
   ctx.lineCap = 'round';
-  ctx.shadowColor = '#ff007f'; ctx.shadowBlur = 40;
-  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (pct / 100) * Math.PI * 2); ctx.stroke();
-  ctx.shadowBlur = 0; ctx.lineCap = 'butt';
-  ctx.fillStyle = '#ccff00';
-  ctx.font = '900 150px "Noto Sans JP", Arial, sans-serif';
-  ctx.fillText(`${pct}%`, cx, cy - 10);
-  ctx.fillStyle = '#eceaf6';
-  ctx.font = '700 30px "Space Mono", monospace';
-  ctx.fillText((t('accuracy') || 'PRÉCISION').toUpperCase(), cx, cy + 90);
+  ctx.shadowColor = 'rgba(74, 93, 35, 0.25)';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (pct / 100) * Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 
-  // Rang reçu (pavé résultat)
+  // Pourcentage centré
+  ctx.fillStyle = '#5C4033';
+  ctx.font = '900 135px "Noto Sans JP", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${pct}%`, cx, cy - 5);
+
+  ctx.fillStyle = 'rgba(92, 64, 51, 0.6)';
+  ctx.font = '800 26px "Space Mono", monospace';
+  ctx.fillText((t('accuracy') || 'PRÉCISION').toUpperCase(), cx, cy + 85);
+
+  // 7. Rang reçu (Pilule de prestige)
   const msg = (result?.text || '').toUpperCase();
-  ctx.font = '900 46px "Noto Sans JP", Arial, sans-serif';
-  const msgW = Math.min(W - 160, ctx.measureText(msg).width + 90);
-  const msgX = (W - msgW) / 2, msgY = 950, msgH = 96;
-  ctx.fillStyle = '#000'; ctx.fillRect(msgX + 8, msgY + 8, msgW, msgH);
-  ctx.fillStyle = '#1c1830'; ctx.fillRect(msgX, msgY, msgW, msgH);
-  ctx.strokeStyle = '#ff007f'; ctx.lineWidth = 6; ctx.strokeRect(msgX, msgY, msgW, msgH);
-  ctx.fillStyle = '#ff77b9';
-  ctx.fillText(msg, W / 2, msgY + msgH / 2 + 4, msgW - 60);
+  ctx.font = '900 42px "Noto Sans JP", Arial, sans-serif';
+  const msgW = Math.min(W - 180, ctx.measureText(msg).width + 100);
+  const msgX = (W - msgW) / 2, msgY = 910, msgH = 88;
 
-  // Score brut + footer
-  ctx.fillStyle = '#8b84ad';
-  ctx.font = '700 36px "Space Mono", monospace';
-  ctx.fillText(`${game.score} / ${game.maxCards}`, W / 2, 1110);
-  ctx.fillStyle = '#ccff00';
-  ctx.font = '900 40px "Space Mono", monospace';
-  ctx.fillText('torg-31596.web.app', W / 2, 1230);
+  ctx.save();
+  ctx.fillStyle = 'rgba(92, 64, 51, 0.08)';
+  ctx.beginPath();
+  ctx.roundRect(msgX, msgY, msgW, msgH, 44);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(92, 64, 51, 0.25)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(msgX, msgY, msgW, msgH, 44);
+  ctx.stroke();
+
+  ctx.fillStyle = '#5C4033';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(msg, W / 2, msgY + msgH / 2 + 2, msgW - 50);
+  ctx.restore();
+
+  // 8. Score brut & Lien web
+  ctx.fillStyle = 'rgba(92, 64, 51, 0.7)';
+  ctx.font = '700 34px "Space Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${game.score} / ${game.maxCards} ${t('cards') || 'cartes'}`, W / 2, 1070);
+
+  ctx.fillStyle = '#5C4033';
+  ctx.font = '900 36px "Space Mono", monospace';
+  ctx.fillText('✦ torg-31596.web.app ✦', W / 2, 1190);
 
   return { canvas, pct, deckName };
 }
 
 export function createScoreCardActions(deps) {
   return {
-    // PARTAGER : feuille de partage native (mobile) ou téléchargement (desktop)
     share: async function shareScoreCard() {
       const { canvas, pct, deckName } = drawShareCard(deps);
       const text = t('shareText', { pct, deck: deckName }) || `SWIPP : ${pct}% — ${deckName}`;
@@ -108,19 +157,16 @@ export function createScoreCardActions(deps) {
             await navigator.share({ files: [file], text: `${text} ${url}` });
             return;
           } catch (e) {
-            if (e.name === 'AbortError') return; // l'utilisateur a annulé
+            if (e.name === 'AbortError') return;
           }
         }
       }
-      // Fallback desktop : téléchargement direct
       const a = document.createElement('a');
       a.download = `SWIPP_${pct}pct.png`;
       a.href = canvas.toDataURL('image/png');
       a.click();
     },
 
-    // VOIR : affiche simplement la carte à l'écran (dans la modale image,
-    // où la loupe reste disponible), sans partage ni téléchargement.
     show: function showScoreCard() {
       const { canvas } = drawShareCard(deps);
       if (typeof deps.openImage === 'function') {
@@ -128,8 +174,6 @@ export function createScoreCardActions(deps) {
       }
     },
 
-    // PREVIEW : dessine la carte et l'injecte dans un <img> (affichage inline
-    // sur l'écran de fin, sans modale).
     preview: function previewScoreCard(imgEl) {
       if (!imgEl) return;
       const { canvas } = drawShareCard(deps);

@@ -49,11 +49,11 @@
  </script>
 
  <!-- Styles -->
- <link rel="stylesheet" href="style.css?v=1790998198">
+ <link rel="stylesheet" href="style.css?v=1790998723">
 
  <!-- Traductions (source unique) puis script principal -->
  <script src="translations.js"></script>
- <script src="app.js?v=1790998198" type="module" defer></script>
+ <script src="app.js?v=1790998723" type="module" defer></script>
 
 </head>
 
@@ -124,11 +124,11 @@
  <h2 class="text-2xl font-black mb-6 text-[#5C4033] uppercase tracking-widest border-b border-white/20 pb-2 inline-block text-glow" data-i18n="loginTitle">✦ SE CONNECTER ✦</h2>
  <p class="text-xs text-[#5C4033]/70 text-[#5C4033]/70 mb-6" data-i18n="loginSubtitle">Choisis ton pseudo d'arcade !</p>
 
- <input id="player-name" class="cyber-input w-full mb-6 text-center text-lg text-[#5C4033] text-[#5C4033] " type="text" maxlength="24" placeholder="PSEUDO" data-i18n-placeholder="pseudo">
+ <input id="player-name" class="cyber-input w-full mb-6 text-center text-lg text-[#5C4033] " type="text" maxlength="24" placeholder="PSEUDO" data-i18n-placeholder="pseudo">
 
  <div class="flex gap-4 justify-center flex-col sm:flex-row">
- <button id="btn-start" class="cyber-btn text-neon-pink hover:bg-neon-pink hover:text-white" data-i18n="btnInit">ENTRER DANS L'ARCADE</button>
- <button id="btn-cancel-login" class="cyber-btn border-white text-[#5C4033] hover: hover:text-neon-pink" data-i18n="btnBack">RETOUR</button>
+ <button id="btn-start" class="cyber-btn text-[#5C4033] font-black" data-i18n="btnInit">ENTRER DANS L'ARCADE</button>
+ <button id="btn-cancel-login" class="cyber-btn text-[#5C4033]/80" data-i18n="btnBack">RETOUR</button>
  </div>
  </div>
  </section>
@@ -191,7 +191,7 @@
 
  <!-- Texte de la Carte -->
  <div class="w-full text-center mt-2 flex-shrink-0 max-w-lg mx-auto px-4">
- <p id="card-text" class="text-sm text-neon-pink font-bold tracking-wide /95 /95 py-2 px-4 inline-block rounded-lg shadow-sm "></p>
+ <p id="card-text" class="text-sm text-neon-pink font-bold tracking-wide  py-2 px-4 inline-block rounded-lg shadow-sm "></p>
  </div>
 
  <!-- BOUTONS IN GAME -->
@@ -222,14 +222,14 @@
  </div>
 
  <!-- Overlay Fin de partie -->
- <div id="end-overlay" class="absolute inset-0 flex-col justify-center items-center text-center hidden z-40 /95 /95 p-6 overflow-y-auto backdrop-blur-xl">
- <h2 class="text-4xl font-black text-neon-pink mb-6 animate-pulse" data-i18n="gameover">✦ FIN DE JEU ✦</h2>
+ <div id="end-overlay" class="absolute inset-0 flex-col justify-center items-center text-center hidden z-40  p-6 overflow-y-auto backdrop-blur-xl">
+ <h2 class="text-4xl font-black text-neon-pink mb-6 animate-pulse" data-i18n="gameover" class="text-4xl font-black text-[#5C4033] mb-6 text-glow">✦ FIN DE JEU ✦</h2>
 
  <!-- Deck et Mode -->
  <div class="flex gap-4 justify-center mb-6 text-sm uppercase">
  <div id="end-deck-info" class="flex items-center gap-2">
  <span id="end-deck-emoji" style="font-size: 1.5rem;"></span>
- <span id="end-deck-name" class="text-neon-pink font-bold"></span>
+ <span id="end-deck-name" class="text-[#5C4033] font-bold"></span>
  </div>
  <div id="end-mode-info" class="text-[#5C4033]/70  font-bold">
  <span id="end-mode-label">NORMAL</span>
@@ -263,7 +263,7 @@
 
  <div class="grid grid-cols-2 gap-3 w-full max-w-md mx-auto">
  <button id="btn-share-score" class="cyber-btn col-span-2 text-[#5C4033]" data-i18n="btnShare">PARTAGER</button>
- <button id="btn-choose-deck" class="cyber-btn text-[#5C4033] hover: hover:text-white" data-i18n="btnMenu">MENU</button>
+ <button id="btn-choose-deck" class="cyber-btn text-[#5C4033] hover:text-white" data-i18n="btnMenu">MENU</button>
  <button id="btn-replay" class="cyber-btn text-neon-pink hover:bg-neon-pink hover:text-white" data-i18n="btnRetry">REJOUER</button>
  </div>
 
@@ -283,7 +283,7 @@
  <span class="text-neon-pink">✦</span> SCORES
  </h3>
 
- <input type="text" id="scores-search-input" placeholder="🔍" data-i18n-placeholder="search_scores_placeholder" class="cyber-input text-xs" style="position: absolute; left: 50%; transform: translateX(-50%); width: 150px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+ <input type="text" id="scores-search-input" placeholder="🔍" data-i18n-placeholder="search_scores_placeholder" class="cyber-input text-xs w-36 text-center text-[#5C4033]">
 
  <div class="flex items-center gap-4">
  <button id="btn-score-mode-toggle" class="cyber-btn-small">NORMAL</button>
@@ -291,7 +291,7 @@
  </div>
  </div>
 
- <div id="score-management-tools" class="hidden flex-shrink-0 w-full flex justify-between items-center mb-4 p-3 bg-red-100 ">
+ <div id="score-management-tools" class="hidden flex-shrink-0 w-full flex justify-between items-center mb-4 p-3 cyber-panel border-red-500/30 rounded-2xl">
  <div class="flex items-center gap-3">
  <button id="btn-select-all-scores" class="text-xs text-red-600  hover:text-red-900 underline font-black" data-i18n="btnAll">TOUT</button>
  <button id="btn-deselect-all-scores" class="text-xs text-red-600  hover:text-red-900 underline font-black" data-i18n="btnNone">RIEN</button>
@@ -432,7 +432,7 @@
  <p class="text-xs text-[#5C4033]/70 mt-2 text-center">Ou collez directement une image du presse-papiers</p>
  </div>
 
- <div id="drop-zone" class="drop-zone border-2 border-dashed border-white/50 hover: p-4 text-center cursor-pointer bg-black/10 transition-colors">
+ <div id="drop-zone" class="drop-zone border-2 border-dashed border-white/50  p-4 text-center cursor-pointer bg-black/10 transition-colors">
  <span id="drop-zone-text" class="text-xs text-[#5C4033]/70">Glissez une image ici</span>
  <img id="drop-zone-preview" src="" alt="Preview" class="hidden max-h-32 mx-auto mt-2 ">
  </div>
@@ -456,7 +456,7 @@
  <button type="button" id="save-card-btn" class="cyber-btn flex-1 text-neon-pink hover:bg-neon-pink hover:text-white">ENREGISTRER</button>
  <button type="button" id="btn-skip-card" class="cyber-btn flex-1 hidden" >PASSER ➜ BROUILLON</button>
  <button type="button" id="btn-delete-card" class="cyber-btn flex-1 border-red-500 text-[#5C4033] hover:bg-red-600" >SUPPRIMER</button>
- <button type="button" id="btn-cancel-edit-card" class="cyber-btn flex-1 border-gray-500 text-[#5C4033]/70 hover: hover:text-white" >ANNULER</button>
+ <button type="button" id="btn-cancel-edit-card" class="cyber-btn flex-1 border-gray-500 text-[#5C4033]/70 hover:text-white" >ANNULER</button>
  </div>
  </form>
  </div>
@@ -563,7 +563,7 @@
  <div class="mt-4 flex gap-3 pt-4 border-t border-white/20 flex-shrink-0">
  <button type="button" id="btn-save-deck" class="cyber-btn flex-1 text-neon-pink hover:bg-neon-pink hover:text-white">ENREGISTRER</button>
  <button type="button" id="btn-delete-deck" class="cyber-btn flex-1 border-red-500 text-[#5C4033] hover:bg-red-600" >SUPPRIMER</button>
- <button type="button" id="btn-cancel-deck" class="cyber-btn flex-1 border-gray-500 text-[#5C4033]/70 hover: hover:text-white" >ANNULER</button>
+ <button type="button" id="btn-cancel-deck" class="cyber-btn flex-1 border-gray-500 text-[#5C4033]/70 hover:text-white" >ANNULER</button>
  </div>
  </form>
  </div>
@@ -603,9 +603,9 @@
  <div id="deck-size-modal-content" class="cyber-modal w-full max-w-xs text-center rounded-2xl">
  <h4 class="text-lg font-black mb-6 text-neon-pink uppercase" data-i18n="selectBatch">TAILLE DU PAQUET</h4>
  <div class="flex flex-col gap-3">
- <button id="btn-deck-size-10" class="cyber-btn text-[#5C4033] hover: hover:text-white" data-i18n="deckSize10">10 CARTES</button>
- <button id="btn-deck-size-20" class="cyber-btn text-[#5C4033] hover: hover:text-white" data-i18n="deckSize20">20 CARTES</button>
- <button id="btn-deck-size-30" class="cyber-btn text-[#5C4033] hover: hover:text-white" data-i18n="deckSize30">30 CARTES</button>
+ <button id="btn-deck-size-10" class="cyber-btn text-[#5C4033] hover:text-white" data-i18n="deckSize10">10 CARTES</button>
+ <button id="btn-deck-size-20" class="cyber-btn text-[#5C4033] hover:text-white" data-i18n="deckSize20">20 CARTES</button>
+ <button id="btn-deck-size-30" class="cyber-btn text-[#5C4033] hover:text-white" data-i18n="deckSize30">30 CARTES</button>
  <button id="btn-deck-size-hardcore" class="cyber-btn text-[#5C4033] hover:bg-red-500 hover:text-white font-bold" data-i18n="deckSizeHardcore">MODE HARDCORE</button>
  </div>
  </div>
@@ -617,7 +617,7 @@
  <div id="private-deck-modal-content" class="cyber-modal w-full max-w-xs text-center ">
  <h4 class="text-xl font-black mb-4 text-neon-pink">DECK VERROUILLÉ 🔒</h4>
  <input type="password" id="private-deck-password-input" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" class="cyber-input w-full mb-4 text-center text-2xl tracking-widest text-neon-pink ">
- <button id="btn-unlock-private-deck" class="cyber-btn w-full bg-neon-pink text-[#5C4033] font-bold hover:">DÉVERROUILLER</button>
+ <button id="btn-unlock-private-deck" class="cyber-btn w-full bg-neon-pink text-[#5C4033] font-bold ">DÉVERROUILLER</button>
  <p id="private-deck-error" class="text-xs text-red-500 mt-3 hidden">Code incorrect</p>
  </div>
  </div>

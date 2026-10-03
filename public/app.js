@@ -1416,13 +1416,13 @@ function generateDeckSelectionScreen() {
     el.innerHTML = `
       <div>
         <div class="text-4xl mb-4 text-center">${deckInfo.emoji || ''}</div>
-        <h3 class="text-xl font-black mb-2 text-center text-neon-pink">
+        <h3 class="text-xl font-black mb-2 text-center text-[#5C4033] text-glow">
           ${translatedName}${privateIndicator}
         </h3>
-        <p class="text-xs text-gray-700  text-center mb-3">${translatedSubtitle}</p>
+        <p class="text-xs text-[#5C4033]/70 text-center mb-3">${translatedSubtitle}</p>
       </div>
       <div>
-        <p class="text-xs text-electric-blue text-center font-bold mb-4">${cardCount} ${cardsText}</p>
+        <p class="text-xs text-[#5C4033]/90 text-center font-bold mb-4">${cardCount} ${cardsText}</p>
         <button class="cyber-btn w-full py-2 text-xs">${t('play') || 'JOUER'}</button>
       </div>
     `;
@@ -1454,11 +1454,11 @@ function generatePublicDeckSelectionScreen() {
     deckCard.innerHTML = `
       <div class="flex flex-col gap-2">
         <div class="text-4xl mb-2 text-center">${deckInfo.emoji || '🃏'}</div>
-        <h3 class="text-lg font-black text-center text-neon-pink">${translatedName}</h3>
-        <p class="text-xs text-gray-500  text-center">${translatedSubtitle}</p>
+        <h3 class="text-lg font-black text-center text-[#5C4033] text-glow">${translatedName}</h3>
+        <p class="text-xs text-[#5C4033]/70 text-center">${translatedSubtitle}</p>
       </div>
       <div>
-        <p class="text-xs text-electric-blue text-center font-bold my-3">${cardCount} ${cardsText}</p>
+        <p class="text-xs text-[#5C4033]/90 text-center font-bold my-3">${cardCount} ${cardsText}</p>
         <button class="view-cards-btn mt-3 px-3 py-2 text-xs w-full cyber-btn">
           ${t('viewcards') || 'Voir les cartes'}
         </button>
@@ -1520,13 +1520,13 @@ function generateScoreFilters() {
   const publishedDecks = PERSISTENT_DECK_INFO.filter(deckInfo => (deckInfo.isPublished ?? true) && !deckInfo.isHidden);
   
   const setActiveFilterBtn = (btn) => {
-    DOM.scoreFilterButtons.querySelectorAll('.cyber-filter-btn').forEach(b => b.classList.remove('active'));
+    DOM.scoreFilterButtons.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   };
 
   const allBtn = document.createElement('button');
   allBtn.textContent = (t('Tous') || 'Tous').toUpperCase();
-  allBtn.className = 'cyber-filter-btn active';
+  allBtn.className = 'filter-btn active';
   allBtn.addEventListener('click', () => {
     state.currentFilter = 'all';
     setActiveFilterBtn(allBtn);
@@ -1540,7 +1540,7 @@ function generateScoreFilters() {
     const translatedName = window.t(`deck.${deckId}.name`) || deckInfo.name;
     const btn = document.createElement('button');
     btn.textContent = `${deckInfo.emoji} ${translatedName}`;
-    btn.className = 'cyber-filter-btn';
+    btn.className = 'filter-btn';
     btn.addEventListener('click', () => {
       state.currentFilter = originalIndex;
       setActiveFilterBtn(btn);
@@ -3171,7 +3171,7 @@ async function renderScores() {
       playerInfo.innerHTML = `
         <div class="flex items-center gap-2 mb-1">
           <span class="text-xl">${deckEmoji}</span>
-          <span class="font-bold text-neon-pink">${safePlayerName}</span>
+          <span class="font-bold text-[#5C4033]">${safePlayerName}</span>
         </div>
         <div class="text-xs text-gray-500">${new Date(score.timestamp).toLocaleString('fr-FR')}</div>
       `;
@@ -3179,7 +3179,7 @@ async function renderScores() {
       const scoreInfo = document.createElement('div');
       scoreInfo.className = 'text-right';
       scoreInfo.innerHTML = `
-        <div class="text-2xl font-black text-electric-blue">${score.percentage}%</div>
+        <div class="text-2xl font-black text-[#5C4033] text-glow">${score.percentage}%</div>
         <div class="text-[10px] text-gray-500">${errorCount} ${t('of_error')}</div>
       `;
             
