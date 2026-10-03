@@ -1419,7 +1419,7 @@ function generateDeckSelectionScreen() {
         <h3 class="text-xl font-black mb-2 text-center text-neon-pink">
           ${translatedName}${privateIndicator}
         </h3>
-        <p class="text-xs text-gray-700 dark:text-gray-300 text-center mb-3">${translatedSubtitle}</p>
+        <p class="text-xs text-gray-700  text-center mb-3">${translatedSubtitle}</p>
       </div>
       <div>
         <p class="text-xs text-electric-blue text-center font-bold mb-4">${cardCount} ${cardsText}</p>
@@ -1455,7 +1455,7 @@ function generatePublicDeckSelectionScreen() {
       <div class="flex flex-col gap-2">
         <div class="text-4xl mb-2 text-center">${deckInfo.emoji || '🃏'}</div>
         <h3 class="text-lg font-black text-center text-neon-pink">${translatedName}</h3>
-        <p class="text-xs text-gray-500 dark:text-gray-300 text-center">${translatedSubtitle}</p>
+        <p class="text-xs text-gray-500  text-center">${translatedSubtitle}</p>
       </div>
       <div>
         <p class="text-xs text-electric-blue text-center font-bold my-3">${cardCount} ${cardsText}</p>
@@ -1578,7 +1578,7 @@ function generateSoluceContainers() {
         <h3 class="text-2xl font-black text-neon-pink">
           ${deckInfo.name}${privateIndicator}
         </h3>
-        <p class="text-sm text-gray-700 dark:text-gray-300">${deckInfo.subtitle || ''}</p>
+        <p class="text-sm text-gray-700 ">${deckInfo.subtitle || ''}</p>
         <div class="text-xs text-electric-blue font-bold">${deck.length} ${t('cartes') || 'cartes'}</div>
       </div>
     `;
@@ -1827,12 +1827,12 @@ function getRankLadder() {
   const customMessages = PERSISTENT_DECK_INFO[state.currentDeck]?.resultMessages;
   const hasPct100 = !!customMessages?.pct100;
   const ladder = [
-    { range: '0%', match: (p) => p === 0, text: t(customMessages?.pct0 || 'result_perfect'), color: 'bg-green-500 text-white' },
-    { range: '1-49%', match: (p) => p >= 1 && p < 50, text: t(customMessages?.default || 'result_good'), color: 'bg-blue-500 text-white' },
-    { range: hasPct100 ? '50-99%' : '50-100%', match: (p) => p >= 50 && (hasPct100 ? p < 100 : true), text: t(customMessages?.pct50 || 'result_average'), color: 'bg-yellow-500 text-black' },
+    { range: '0%', match: (p) => p === 0, text: t(customMessages?.pct0 || 'result_perfect'), color: 'bg-green-500 text-[#5C4033]' },
+    { range: '1-49%', match: (p) => p >= 1 && p < 50, text: t(customMessages?.default || 'result_good'), color: 'bg-blue-500 text-[#5C4033]' },
+    { range: hasPct100 ? '50-99%' : '50-100%', match: (p) => p >= 50 && (hasPct100 ? p < 100 : true), text: t(customMessages?.pct50 || 'result_average'), color: 'bg-yellow-500 text-[#5C4033]' },
   ];
   if (hasPct100) {
-    ladder.push({ range: '100%', match: (p) => p === 100, text: t(customMessages.pct100), color: 'bg-green-500 text-white' });
+    ladder.push({ range: '100%', match: (p) => p === 100, text: t(customMessages.pct100), color: 'bg-green-500 text-[#5C4033]' });
   }
   return ladder;
 }
@@ -2947,9 +2947,9 @@ function getResultMessage(errorPercent) {
   const deckIndex = state.currentDeck;
   const customMessages = PERSISTENT_DECK_INFO[deckIndex]?.resultMessages;
   const genericDefault = {
-    0: { text: "result_perfect", color: "bg-green-500 text-white" },
-    50: { text: "result_average", color: "bg-yellow-500 text-black" },
-    default: { text: "result_good", color: "bg-blue-500 text-white" }
+    0: { text: "result_perfect", color: "bg-green-500 text-[#5C4033]" },
+    50: { text: "result_average", color: "bg-yellow-500 text-[#5C4033]" },
+    default: { text: "result_good", color: "bg-blue-500 text-[#5C4033]" }
   };
   
   const fallbackMessages = genericDefault;
@@ -2985,7 +2985,7 @@ function getResultMessage(errorPercent) {
 function getColorClasses(colorName) {
   const colorHex = tailwindColors[colorName] || tailwindColors["gray"];
   const titleColor = `text-${colorName}-600`; 
-  const cardBorder = `border-black`; 
+  const cardBorder = ``; 
   
   let styleTag = document.getElementById('dynamic-color-styles');
   if (!styleTag) {
@@ -3081,7 +3081,7 @@ function displayErrorRecap() {
         <img src="${card.img || 'https://placehold.co/40x50/000000/FFFFFF?text=?'}" alt="Card" style="width: 100%; height: 100%; object-fit: cover;">
         ${card.isCorrect ? '<div class="recap-success-filter"></div>' : '<div class="recap-error-filter"></div>'}
       </div>
-      <div class="recap-vignette-label" style="font-size: 9px; margin-top: 4px; text-align: center; color: var(--neon-pink); font-weight: bold;">
+      <div class="recap-vignette-label" style="font-size: 9px; margin-top: 4px; text-align: center; color: #5C4033; font-weight: bold;">
         ${correctSideText}
       </div>
     `;
@@ -3154,7 +3154,7 @@ async function renderScores() {
     
     filtered.forEach(score => {
       const el = document.createElement('div');
-      el.className = 'relative score-item-container flex flex-col p-3 bg-white rounded-lg hover:bg-gray-100 transition';
+      el.className = 'relative score-item-container flex flex-col p-3 cyber-panel mb-3 hover:bg-black/10 transition';
       el.dataset.scoreId = score.id;
       el.dataset.playerName = score.player || '';
       
@@ -3401,7 +3401,7 @@ function showAlert(title, text, type = 'info') {
       DOM.alertModalTitle.classList.add('text-acid-yellow');
       break;
     default:
-      DOM.alertModalTitle.classList.add('text-black');
+      DOM.alertModalTitle.classList.add('text-[#5C4033]');
   }
   const okButton = document.createElement('button');
   okButton.textContent = "OK";

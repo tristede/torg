@@ -5,13 +5,13 @@
   --electric-blue: #D4A373; /* light brown */  /* Bleu cobalt de référence */
   --acid-yellow: #FDFBF7; /* cream */    /* Jaune fluo de référence */
   --bg-light: #FDFBF7; /* cream */       /* Fond clair de page pastel zine */
-  --panel-bg: rgba(253, 251, 247, 0.5); /* semi-transparent cream */
+  --panel-bg: rgba(0, 0, 0, 0.15); /* semi-transparent cream */
   --grid-color: rgba(0, 71, 255, 0.08); /* Grille cobalt subtile */
   --text-main: #5C4033; /* dark brown */
-  --header-bg: rgba(253, 251, 247, 0.8);
+  --header-bg: rgba(0, 0, 0, 0.1);
   
   --color-left: #0047ff;
-  --color-right: var(--neon-pink);
+  --color-right: #5C4033;
   
   --swipe-color-left: rgba(0, 71, 255, 0.55);
   --swipe-color-right: rgba(255, 0, 127, 0.55);
@@ -105,19 +105,8 @@ body {
 }
 
 /* Y2K STICKER STYLE ELEMENTS (contours épais type image_ed0625.jpg) */
-.cyber-panel { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2);  
-  background: var(--panel-bg);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border: 4px solid #000 !important;
-  box-shadow: 8px 8px 0px var(--electric-blue); 
-  border-radius: 20px !important; 
-  color: var(--text-main) !important;
-}
-body.dark .cyber-panel { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); 
-  border: 4px solid var(--dark-line) !important;
-  box-shadow: 8px 8px 0px var(--neon-pink); 
-}
+.cyber-panel { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border-radius: 24px !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; border-left: 1px solid rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; }
+body.dark .cyber-panel { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; border-color: rgba(255,255,255,0.4) !important; border-top-color: rgba(255,255,255,0.7) !important; border-left-color: rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; }
 
 #app, main {
   width: 100%;
@@ -146,56 +135,17 @@ button:disabled {
   pointer-events: none;
 }
 
-.cyber-btn { border-radius: 30px; font-weight: 800; 
-  background: var(--neon-pink) !important;
-  border: 3px solid #000 !important;
-  color: #fff !important;
-  box-shadow: 4px 4px 0px #000 !important;
-  text-shadow: 1px 1px 0px #000;
-  /* Coins nets (pas d'effet pilule) + vrai espace autour du texte */
-  border-radius: 10px !important;
-  padding: 12px 18px;
-  line-height: 1.15;
-  letter-spacing: 0.5px;
-}
-body.dark .cyber-btn { border-radius: 30px; font-weight: 800; 
-  border-color: var(--dark-line) !important;
-  box-shadow: 4px 4px 0px var(--dark-shadow) !important;
-}
+.cyber-btn { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 12px 24px; border-radius: 30px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; text-shadow: none !important; }
+body.dark .cyber-btn { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 12px 24px; border-radius: 30px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; text-shadow: none !important; }
 
-.cyber-btn:hover {
-  background: var(--acid-yellow) !important;
-  color: #000 !important;
-  box-shadow: 2px 2px 0px #000 !important;
-  transform: translate(2px, 2px);
-}
-body.dark .cyber-btn:hover {
-  box-shadow: 2px 2px 0px var(--dark-shadow) !important;
-}
+.cyber-btn:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-2px); border-color: rgba(255,255,255,0.9) !important; box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important; }
+body.dark .cyber-btn:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-2px); border-color: rgba(255,255,255,0.9) !important; box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important; }
 
-.cyber-btn-small { border-radius: 20px; font-weight: 800; 
-  background: #fff;
-  border: 2px solid #000 !important;
-  color: #000 !important;
-  padding: 4px 12px !important;
-  font-size: 0.75rem;
-  box-shadow: 2px 2px 0px #000 !important;
-}
-body.dark .cyber-btn-small { border-radius: 20px; font-weight: 800; 
-  background: #120e24;
-  color: #fff !important;
-  border-color: var(--dark-line) !important;
-  box-shadow: 2px 2px 0px var(--dark-shadow) !important;
-}
+.cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 20px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
+body.dark .cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 20px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
 
-.cyber-btn-small:hover {
-  background: var(--neon-pink) !important;
-  color: #fff !important;
-  box-shadow: 1px 1px 0px #000 !important;
-}
-body.dark .cyber-btn-small:hover {
-  box-shadow: 1px 1px 0px var(--dark-shadow) !important;
-}
+.cyber-btn-small:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-1px); border-color: rgba(255,255,255,0.9) !important; }
+body.dark .cyber-btn-small:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-1px); border-color: rgba(255,255,255,0.9) !important; }
 
 /* Input stickers */
 input[type="text"], input[type="password"], input[type="email"], select {
@@ -213,36 +163,12 @@ body.dark input[type="text"], body.dark input[type="password"], body.dark input[
 }
 
 /* FORMAT DES CARTES ADAPTATIF POUR TOUS LES ÉCRANS (Évite tout débordement) */
-.card-container { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); background: var(--panel-bg); 
-  transition: transform .2s steps(4), opacity .2s;
-  will-change: transform, opacity;
-  touch-action: none;
-  cursor: grab;
-  user-select: none;
-  background: #fff;
-  border: 4px solid #000;
-  box-shadow: 10px 10px 0px #000, 0 0 20px rgba(0, 71, 255, 0.15);
-  border-radius: 24px !important;
-  
-  /* Taille pilotée par la largeur uniquement : le terme 38vh
-     (= 53vh de haut via le ratio 5/7) garantit que la carte tient
-     en hauteur sans jamais déformer le ratio. */
-  width: min(290px, 75vw, 38vh);
-  aspect-ratio: 5 / 7;
+.card-container { width: 90vw; max-width: 380px; aspect-ratio: 2 / 3; position: relative; border-radius: 24px !important; background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border: 1px solid rgba(255,255,255,0.5) !important; border-top: 1px solid rgba(255,255,255,0.9) !important; border-left: 1px solid rgba(255,255,255,0.9) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; transform-style: preserve-3d; cursor: grab; padding: 12px; }
 
-  margin: auto;
-  position: relative;
-}
-
-body.dark .card-container { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); background: var(--panel-bg); 
-  border-color: var(--dark-line);
-  box-shadow: 10px 10px 0px var(--dark-shadow), 0 0 20px rgba(255, 0, 127, 0.15);
-}
+body.dark .card-container { width: 90vw; max-width: 380px; aspect-ratio: 2 / 3; position: relative; border-radius: 24px !important; background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border: 1px solid rgba(255,255,255,0.5) !important; border-top: 1px solid rgba(255,255,255,0.9) !important; border-left: 1px solid rgba(255,255,255,0.9) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; transform-style: preserve-3d; cursor: grab; padding: 12px; }
 
 @media (min-height: 800px) {
-  .card-container { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); background: var(--panel-bg); 
-    width: min(310px, 75vw, 38vh);
-  }
+  .card-container { width: 90vw; max-width: 380px; aspect-ratio: 2 / 3; position: relative; border-radius: 24px !important; background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border: 1px solid rgba(255,255,255,0.5) !important; border-top: 1px solid rgba(255,255,255,0.9) !important; border-left: 1px solid rgba(255,255,255,0.9) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; transform-style: preserve-3d; cursor: grab; padding: 12px; }
 }
 
 .card-container-inner {
@@ -307,28 +233,11 @@ body.dark .card-container-inner { background: #1c1830; }
 }
 
 /* DECK CARDS SÉLECTION */
-.deck-card { 
-  background: #fff;
-  border: 3px solid #000 !important;
-  box-shadow: 6px 6px 0px #000;
-  border-radius: 16px !important;
-  color: #000;
-}
-body.dark .deck-card {
-  background: #1c1830;
-  border-color: var(--dark-line) !important;
-  box-shadow: 6px 6px 0px var(--dark-shadow);
-  color: #fff;
-}
+.deck-card { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border-radius: 24px !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; border-left: 1px solid rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; color: var(--text-main) !important; transition: all 0.2s ease; cursor: pointer; }
 
-.deck-card:hover { 
-  transform: translate(-4px, -4px); 
-  box-shadow: 10px 10px 0px var(--neon-pink);
-  border-color: #000 !important;
-}
-body.dark .deck-card:hover {
-  border-color: var(--dark-line) !important;
-}
+
+.deck-card:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important; border-color: rgba(255,255,255,0.9) !important; }
+
 
 /* FILTRES CYBER */
 .cyber-filter-btn {
@@ -349,7 +258,7 @@ body.dark .cyber-filter-btn {
 }
 
 .cyber-filter-btn.active {
-  background: var(--neon-pink);
+  background: #5C4033;
   color: #fff;
 }
 
@@ -405,7 +314,7 @@ body.dark .cyber-filter-btn {
   color: #000;
 }
 body.dark .close-btn { color: #fff; }
-.close-btn:hover { color: var(--neon-pink); }
+.close-btn:hover { color: #5C4033; }
 
 /* BOUTONS FLÈCHES ARCADE (In-game) */
 .arrow-btn-container {
@@ -500,7 +409,7 @@ body.dark .score-item-container {
 
 .y2k-star {
   position: fixed;
-  color: var(--neon-pink);
+  color: #5C4033;
   font-size: 1.8rem;
   pointer-events: none;
   opacity: 0.15;
@@ -552,21 +461,8 @@ body.dark .y2k-star {
 /* --- MODALES (contenu sticker Y2K) ---
    Toujours claires, même en mode sombre : leurs contenus utilisent
    des classes text-black / bg-white qui seraient illisibles sinon. */
-.cyber-modal { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); background: var(--panel-bg) !important; 
-  background: #fff;
-  border: 4px solid #000;
-  border-radius: 20px;
-  box-shadow: 8px 8px 0px var(--electric-blue);
-  padding: 1.5rem;
-  position: relative;
-  max-width: 95%;
-  max-height: 92vh;
-  overflow-y: auto;
-  color: #120e24;
-}
-body.dark .cyber-modal { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); background: var(--panel-bg) !important; 
-  box-shadow: 8px 8px 0px var(--neon-pink);
-}
+.cyber-modal { background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(30px) !important; border: 1px solid rgba(255,255,255,0.5) !important; border-top: 1px solid rgba(255,255,255,0.8) !important; border-left: 1px solid rgba(255,255,255,0.8) !important; border-radius: 30px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important; color: var(--text-main) !important; }
+
 body.dark .cyber-modal input[type="text"],
 body.dark .cyber-modal input[type="password"],
 body.dark .cyber-modal input[type="email"],
@@ -579,14 +475,9 @@ body.dark .cyber-modal select {
 /* Dans une modale (toujours claire), les boutons gardent leurs
    contours noirs même en mode sombre */
 body.dark .cyber-modal .cyber-btn,
-body.dark .cyber-modal .cyber-btn-small { border-radius: 20px; font-weight: 800; 
-  border-color: #000 !important;
-  box-shadow: 4px 4px 0px #000 !important;
-}
+body.dark .cyber-modal .cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 20px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
 body.dark .cyber-modal .cyber-btn:hover,
-body.dark .cyber-modal .cyber-btn-small:hover {
-  box-shadow: 2px 2px 0px #000 !important;
-}
+body.dark .cyber-modal .cyber-btn-small:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-1px); border-color: rgba(255,255,255,0.9) !important; }
 
 /* Ordre des modales */
 #deck-cards-modal { z-index: 90; }
@@ -610,7 +501,7 @@ body.dark .cyber-modal .cyber-btn-small:hover {
 .gauge-bg { fill: none; }
 .gauge-progress {
   fill: none;
-  stroke: var(--neon-pink);
+  stroke: #5C4033;
   stroke-linecap: round;
   filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.35));
   transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -650,12 +541,12 @@ body.dark .filter-btn {
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: var(--bg-light); }
 ::-webkit-scrollbar-thumb {
-  background: var(--neon-pink);
+  background: #5C4033;
   border: 2px solid #000;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--electric-blue); }
-.custom-scrollbar { scrollbar-width: thin; scrollbar-color: var(--neon-pink) transparent; }
+.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #5C4033 transparent; }
 #scores-list, #soluce-gallery-container, #stats-output, .custom-scrollbar {
   overscroll-behavior: contain;
 }
@@ -699,7 +590,7 @@ body.dark .filter-btn {
   margin-bottom: 1rem;
 }
 .drop-zone:hover, .drop-zone.drag-over {
-  border-color: var(--neon-pink);
+  border-color: #5C4033;
   background: rgba(255, 0, 127, 0.06);
 }
 .drop-zone-preview {
@@ -735,23 +626,9 @@ body.dark .filter-btn {
 }
 body.dark .soluce-deck-content { border-color: var(--dark-line); }
 
-.soluce-gallery-item {
-  width: 110px;
-  height: 150px;
-  border: 2px solid #000;
-  border-radius: 10px;
-  padding: 5px;
-  transition: all 0.15s;
-  background: #fff;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-body.dark .soluce-gallery-item { background: #1c1830; border-color: var(--dark-line); }
-.soluce-gallery-item:hover {
-  border-color: var(--neon-pink);
-  transform: scale(1.05) rotate(-1deg);
-  z-index: 10;
-}
+.soluce-gallery-item { width: 110px; height: 150px; background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; border-radius: 16px !important; padding: 5px; background: var(--bg-light); cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; }
+
+.soluce-gallery-item:hover { transform: scale(1.05) rotate(-1deg); z-index: 10; border-color: rgba(255,255,255,0.9) !important; background: rgba(0,0,0,0.2) !important; box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important; }
 .soluce-gallery-item.editing-mode {
   border-style: dashed;
   border-color: var(--electric-blue);
@@ -760,7 +637,7 @@ body.dark .soluce-gallery-item { background: #1c1830; border-color: var(--dark-l
   position: absolute;
   top: 5px;
   right: 5px;
-  color: var(--neon-pink);
+  color: #5C4033;
 }
 .add-card-btn {
   display: none;
@@ -774,7 +651,7 @@ body.dark .soluce-gallery-item { background: #1c1830; border-color: var(--dark-l
 }
 body.dark .add-card-btn { border-color: var(--dark-line); }
 .add-card-btn:hover {
-  border-color: var(--neon-pink);
+  border-color: #5C4033;
   background: rgba(255, 0, 127, 0.06);
 }
 
@@ -785,22 +662,8 @@ body.dark .add-card-btn { border-color: var(--dark-line); }
   gap: 12px;
   max-height: 70vh;
 }
-.deck-cards-mode-btn {
-  padding: 3px 10px;
-  border-radius: 999px !important;
-  border: 2px solid #000;
-  background: #fff;
-  color: #000;
-  font-size: 10px;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 1px 1px 0 #000;
-}
-.deck-cards-mode-active {
-  background: var(--neon-pink);
-  color: #fff;
-  border-color: #000;
-}
+.deck-cards-mode-btn { padding: 4px 12px; border-radius: 20px !important; border: 1px solid rgba(255,255,255,0.4); border-top: 1px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.15); color: var(--text-main); font-size: 10px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); backdrop-filter: blur(8px); }
+.deck-cards-mode-active { background: rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.9); box-shadow: inset 0 0 5px rgba(255,255,255,0.2); }
 .card-image-wrapper {
   position: relative;
   width: 100%;
@@ -817,22 +680,11 @@ body.dark .add-card-btn { border-color: var(--dark-line); }
   object-position: center;
   display: block;
 }
-.deck-card-preview {
-  background: #fff;
-  border: 2px solid #000;
-  border-radius: 12px;
-  box-shadow: 3px 3px 0 #000;
-  transition: all 0.15s ease;
-  cursor: pointer;
-}
-body.dark .deck-card-preview {
-  background: #1c1830;
-  border-color: var(--dark-line);
-  box-shadow: 3px 3px 0 var(--dark-shadow);
-}
+.deck-card-preview { background: var(--panel-bg) !important; backdrop-filter: blur(12px) !important; border-radius: 16px !important; border: 1px solid rgba(255,255,255,0.4) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; transition: all 0.2s ease; cursor: pointer; }
+
 .deck-card-preview:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--neon-pink);
+  box-shadow: 5px 5px 0 #5C4033;
 }
 
 /* --- RÉCAP & VIGNETTES DE SCORE --- */
@@ -898,7 +750,7 @@ body.dark .recap-vignette-inner { border-color: var(--dark-line); }
 
 .selectable-score { cursor: pointer; }
 .score-selected {
-  outline: 3px solid var(--neon-pink);
+  outline: 3px solid #5C4033;
   outline-offset: 2px;
   background-color: rgba(255, 0, 127, 0.08) !important;
 }
@@ -939,7 +791,7 @@ body.dark .result-message {
   position: absolute;
   width: 150px;
   height: 150px;
-  border: 4px solid var(--neon-pink);
+  border: 4px solid #5C4033;
   border-radius: 50%;
   pointer-events: none;
   background-repeat: no-repeat;
@@ -961,7 +813,7 @@ body.dark .magnifier-lens {
   box-shadow: 3px 3px 0 #000;
 }
 .magnifier-zoom-btn.active {
-  background: var(--neon-pink);
+  background: #5C4033;
   color: #fff;
 }
 body.dark .magnifier-zoom-btn {
@@ -1000,7 +852,7 @@ body.dark .magnifier-zoom-btn.active {
 .toast-item {
   background: #120e24;
   color: #eceaf6;
-  border: 3px solid var(--neon-pink);
+  border: 3px solid #5C4033;
   box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
   border-radius: 10px;
   padding: 10px 18px;
@@ -1047,12 +899,7 @@ body.dark .magnifier-zoom-btn.active {
 /* --- MODALES EN MODE SOMBRE ---
    Toutes les .cyber-modal (édition carte, deck, taille, mdp, alertes…)
    restaient blanches en dark : surfaces et textes basculent ici. */
-body.dark .cyber-modal { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); background: var(--panel-bg) !important; 
-  background: #16112e !important;
-  color: #eceaf6;
-  border-color: var(--dark-line) !important;
-  box-shadow: 8px 8px 0px var(--neon-pink);
-}
+
 body.dark .cyber-modal .text-black { color: #eceaf6 !important; }
 body.dark .cyber-modal .text-gray-800,
 body.dark .cyber-modal .text-gray-700,
@@ -1074,7 +921,7 @@ body.dark .admin-bar-sep { background: var(--dark-line); }
 
 /* Toggle ÉDITION : le fond indique l'état (rose = actif) */
 .admin-edit-toggle.edit-on {
-  background: var(--neon-pink) !important;
+  background: #5C4033 !important;
   color: #fff !important;
   border-color: #000 !important;
 }
@@ -1082,7 +929,7 @@ body.dark .admin-edit-toggle.edit-on { border-color: var(--dark-line) !important
 
 /* Bouton de page (SCORES/STATS) : reste rose tant que sa page est ouverte */
 .cyber-btn-small.admin-active {
-  background: var(--neon-pink) !important;
+  background: #5C4033 !important;
   color: #fff !important;
 }
 
@@ -1107,41 +954,16 @@ body.dark .deck-visibility-badge {
 }
 
 /* --- ÉCHELLE DES RANGS (fin de partie) --- */
-.rank-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 14px;
-  border: 3px solid #cbd5e1;
-  border-radius: 10px !important;
-  background: #f1f5f9;
-  color: #94a3b8;
-  font-weight: 900;
-  text-transform: uppercase;
-  font-size: 0.78rem;
-  text-align: left;
-  opacity: 0.6;
-}
+.rank-row { display: flex; align-items: center; gap: 10px; padding: 6px 12px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.3) !important; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(8px) !important; transition: all 0.3s; opacity: 0.6; color: var(--text-main); }
 .rank-row .rank-range {
   font-family: 'Space Mono', monospace;
   font-size: 0.68rem;
   min-width: 64px;
   flex-shrink: 0;
 }
-.rank-row.active {
-  opacity: 1;
-  border-color: #000;
-  box-shadow: 4px 4px 0 #000;
-}
-body.dark .rank-row {
-  background: #171230;
-  border-color: #2e2850;
-  color: #6f6a8f;
-}
-body.dark .rank-row.active {
-  border-color: var(--dark-line);
-  box-shadow: 4px 4px 0 var(--dark-shadow);
-}
+.rank-row.active { opacity: 1; border-color: rgba(255,255,255,0.9) !important; background: rgba(0,0,0,0.25) !important; box-shadow: inset 0 0 10px rgba(255,255,255,0.2), 0 0 15px rgba(0,0,0,0.1) !important; transform: scale(1.02); }
+body.dark .rank-row { display: flex; align-items: center; gap: 10px; padding: 6px 12px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.3) !important; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(8px) !important; transition: all 0.3s; opacity: 0.6; color: var(--text-main); }
+body.dark .rank-row.active { opacity: 1; border-color: rgba(255,255,255,0.9) !important; background: rgba(0,0,0,0.25) !important; box-shadow: inset 0 0 10px rgba(255,255,255,0.2), 0 0 15px rgba(0,0,0,0.1) !important; transform: scale(1.02); }
 
 /* Carte de score intégrée à l'écran de fin */
 .score-card-preview-img {
@@ -1170,7 +992,7 @@ body.dark .score-card-preview-img {
   border-radius: 0 !important;
   box-shadow: none !important;
 }
-.footer-link:hover { color: var(--neon-pink); border-bottom-color: var(--neon-pink); }
+.footer-link:hover { color: #5C4033; border-bottom-color: #5C4033; }
 body.dark .footer-link { color: #8b84ad; }
 body.dark .footer-link:hover { color: var(--pink-readable); border-bottom-color: var(--pink-readable); }
 .footer-link-danger:hover { color: #ef4444; border-bottom-color: #ef4444; }
@@ -1204,3 +1026,53 @@ body.dark .footer-sep { color: #3a3360; }
 }
 body { background-color: var(--bg-light) !important; color: var(--text-main) !important; }
 body.dark { background-color: var(--bg-light) !important; }
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.magnifier-lens {
+  position: absolute;
+  border: 3px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 50%;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 2px rgba(255, 255, 255, 0.3) !important;
+  z-index: 10;
+}
+.magnifier-zoom-btn {
+  background: rgba(0,0,0,0.1) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  border-top: 1px solid rgba(255,255,255,0.7) !important;
+  color: var(--text-main) !important;
+  padding: 8px 16px;
+  border-radius: 20px !important;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+}
+.magnifier-zoom-btn.active {
+  background: rgba(255,255,255,0.4) !important;
+  border-color: #fff !important;
+  color: #000 !important;
+}
+
+/* Remove Y2K arrow buttons and reglass them */
+.arrow-btn {
+  background: rgba(0,0,0,0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  border-top: 1px solid rgba(255,255,255,0.7) !important;
+  color: var(--text-main) !important;
+  border-radius: 50% !important;
+  width: 64px !important;
+  height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+.arrow-btn:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-2px) !important; border-color: rgba(255,255,255,0.9) !important; }
