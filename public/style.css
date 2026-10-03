@@ -105,8 +105,8 @@ body {
 }
 
 /* Y2K STICKER STYLE ELEMENTS (contours épais type image_ed0625.jpg) */
-.cyber-panel { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border-radius: 24px !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; border-left: 1px solid rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; }
-body.dark .cyber-panel { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; border-color: rgba(255,255,255,0.4) !important; border-top-color: rgba(255,255,255,0.7) !important; border-left-color: rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; }
+.cyber-panel { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border-radius: 24px !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; border-left: 1px solid rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1), inset 0 2px 10px rgba(255,255,255,0.3) !important; }
+body.dark .cyber-panel { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; border-color: rgba(255,255,255,0.4) !important; border-top-color: rgba(255,255,255,0.7) !important; border-left-color: rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1), inset 0 2px 10px rgba(255,255,255,0.3) !important; }
 
 #app, main {
   width: 100%;
@@ -123,7 +123,7 @@ button {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-radius: 12px !important;
+  border-radius: 99px !important;
   transition: all 0.1s ease;
 }
 
@@ -135,14 +135,14 @@ button:disabled {
   pointer-events: none;
 }
 
-.cyber-btn { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 12px 24px; border-radius: 30px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; text-shadow: none !important; }
-body.dark .cyber-btn { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 12px 24px; border-radius: 30px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; text-shadow: none !important; }
+.cyber-btn { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 12px 24px; border-radius: 99px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; text-shadow: none !important; }
+body.dark .cyber-btn { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 12px 24px; border-radius: 99px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; text-shadow: none !important; }
 
 .cyber-btn:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-2px); border-color: rgba(255,255,255,0.9) !important; box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important; }
 body.dark .cyber-btn:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-2px); border-color: rgba(255,255,255,0.9) !important; box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important; }
 
-.cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 20px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
-body.dark .cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 20px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
+.cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 99px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
+body.dark .cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 99px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
 
 .cyber-btn-small:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-1px); border-color: rgba(255,255,255,0.9) !important; }
 body.dark .cyber-btn-small:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-1px); border-color: rgba(255,255,255,0.9) !important; }
@@ -177,7 +177,7 @@ body.dark .card-container { width: 90vw; max-width: 380px; aspect-ratio: 2 / 3; 
   height: 100%;
   overflow: hidden;
   background: #fff;
-  border-radius: 20px !important;
+  border-radius: 99px !important;
 }
 body.dark .card-container-inner { background: #1c1830; }
 
@@ -233,7 +233,7 @@ body.dark .card-container-inner { background: #1c1830; }
 }
 
 /* DECK CARDS SÉLECTION */
-.deck-card { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border-radius: 24px !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; border-left: 1px solid rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; color: var(--text-main) !important; transition: all 0.2s ease; cursor: pointer; }
+.deck-card { background: var(--panel-bg) !important; backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; border-radius: 24px !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; border-left: 1px solid rgba(255,255,255,0.7) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1), inset 0 2px 10px rgba(255,255,255,0.3) !important; color: var(--text-main) !important; transition: all 0.2s ease; cursor: pointer; }
 
 
 .deck-card:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important; border-color: rgba(255,255,255,0.9) !important; }
@@ -280,7 +280,7 @@ body.dark .cyber-filter-btn {
   opacity: 0;
   pointer-events: none;
   box-shadow: 4px 4px 0px #000;
-  border-radius: 12px !important;
+  border-radius: 99px !important;
   transition: opacity .1s;
 }
 #indicator-left { left: 1.25rem; }
@@ -343,7 +343,7 @@ body.dark .arrow-btn:active { box-shadow: 1px 1px 0px var(--dark-shadow) !import
 .arrow-btn-zoom {
   width: 46px;
   height: 42px;
-  border-radius: 12px !important;
+  border-radius: 99px !important;
   background: #fff;
   border: 2px solid #000 !important;
   display: flex;
@@ -461,7 +461,7 @@ body.dark .y2k-star {
 /* --- MODALES (contenu sticker Y2K) ---
    Toujours claires, même en mode sombre : leurs contenus utilisent
    des classes text-black / bg-white qui seraient illisibles sinon. */
-.cyber-modal { background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(30px) !important; border: 1px solid rgba(255,255,255,0.5) !important; border-top: 1px solid rgba(255,255,255,0.8) !important; border-left: 1px solid rgba(255,255,255,0.8) !important; border-radius: 30px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important; color: var(--text-main) !important; }
+.cyber-modal { background: rgba(0,0,0,0.1) !important; backdrop-filter: blur(30px) !important; border: 1px solid rgba(255,255,255,0.5) !important; border-top: 1px solid rgba(255,255,255,0.8) !important; border-left: 1px solid rgba(255,255,255,0.8) !important; border-radius: 99px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important; color: var(--text-main) !important; }
 
 body.dark .cyber-modal input[type="text"],
 body.dark .cyber-modal input[type="password"],
@@ -475,7 +475,7 @@ body.dark .cyber-modal select {
 /* Dans une modale (toujours claire), les boutons gardent leurs
    contours noirs même en mode sombre */
 body.dark .cyber-modal .cyber-btn,
-body.dark .cyber-modal .cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 20px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
+body.dark .cyber-modal .cyber-btn-small { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 6px 12px; border-radius: 99px !important; font-weight: 800; color: var(--text-main) !important; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; }
 body.dark .cyber-modal .cyber-btn:hover,
 body.dark .cyber-modal .cyber-btn-small:hover { background: rgba(0,0,0,0.25) !important; transform: translateY(-1px); border-color: rgba(255,255,255,0.9) !important; }
 
@@ -515,27 +515,9 @@ body.dark .cyber-modal .cyber-btn-small:hover { background: rgba(0,0,0,0.25) !im
 }
 
 /* --- FILTRES TAGS (sélection de deck) --- */
-.filter-btn {
-  border: 2px solid #000;
-  padding: 0.4rem 1rem;
-  border-radius: 99px !important;
-  background: #fff;
-  color: #000;
-  font-weight: 800;
-  font-size: 0.8rem;
-  box-shadow: 2px 2px 0px #000;
-  cursor: pointer;
-}
-body.dark .filter-btn {
-  border-color: var(--dark-line);
-  background: #120e24;
-  color: #fff;
-  box-shadow: 2px 2px 0px var(--dark-shadow);
-}
-.filter-btn:hover, .filter-btn.active {
-  background: var(--acid-yellow);
-  color: #000;
-}
+.filter-btn { border: 1px solid rgba(255,255,255,0.4) !important; border-top: 1px solid rgba(255,255,255,0.7) !important; padding: 0.4rem 1rem; border-radius: 99px !important; background: rgba(0,0,0,0.1) !important; color: var(--text-main) !important; font-weight: 700; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important; backdrop-filter: blur(8px) !important; }
+
+.filter-btn:hover, .filter-btn.active { background: rgba(0,0,0,0.25) !important; color: var(--text-main) !important; border-color: rgba(255,255,255,0.9) !important; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; }
 
 /* --- SCROLLBARS Y2K --- */
 ::-webkit-scrollbar { width: 10px; }
@@ -662,7 +644,7 @@ body.dark .add-card-btn { border-color: var(--dark-line); }
   gap: 12px;
   max-height: 70vh;
 }
-.deck-cards-mode-btn { padding: 4px 12px; border-radius: 20px !important; border: 1px solid rgba(255,255,255,0.4); border-top: 1px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.15); color: var(--text-main); font-size: 10px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); backdrop-filter: blur(8px); }
+.deck-cards-mode-btn { padding: 4px 12px; border-radius: 99px !important; border: 1px solid rgba(255,255,255,0.4); border-top: 1px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.15); color: var(--text-main); font-size: 10px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); backdrop-filter: blur(8px); }
 .deck-cards-mode-active { background: rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.9); box-shadow: inset 0 0 5px rgba(255,255,255,0.2); }
 .card-image-wrapper {
   position: relative;
@@ -1048,7 +1030,7 @@ body.dark { background-color: var(--bg-light) !important; }
   border-top: 1px solid rgba(255,255,255,0.7) !important;
   color: var(--text-main) !important;
   padding: 8px 16px;
-  border-radius: 20px !important;
+  border-radius: 99px !important;
   font-weight: 700;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
 }
