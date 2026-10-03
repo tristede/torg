@@ -1,14 +1,44 @@
-/* STYLES SWIPP - MINIMALIST GLASSMORPHISM */
+/* STYLES SWIPP - JAPANESE Y2K MULTI-THEME Arcades */
+
 :root {
-  --color-left: rgba(255, 255, 255, 0.4);
-  --color-right: rgba(255, 255, 255, 0.4);
+  --neon-pink: #4A5D23; /* earth green */      /* Fuchsia de référence */
+  --electric-blue: #D4A373; /* light brown */  /* Bleu cobalt de référence */
+  --acid-yellow: #FDFBF7; /* cream */    /* Jaune fluo de référence */
+  --bg-light: #FDFBF7; /* cream */       /* Fond clair de page pastel zine */
+  --panel-bg: rgba(253, 251, 247, 0.5); /* semi-transparent cream */
+  --grid-color: rgba(0, 71, 255, 0.08); /* Grille cobalt subtile */
+  --text-main: #5C4033; /* dark brown */
+  --header-bg: rgba(253, 251, 247, 0.8);
   
-  --swipe-color-left: rgba(255, 255, 255, 0.3);
-  --swipe-color-right: rgba(255, 255, 255, 0.3);
+  --color-left: #0047ff;
+  --color-right: var(--neon-pink);
+  
+  --swipe-color-left: rgba(0, 71, 255, 0.55);
+  --swipe-color-right: rgba(255, 0, 127, 0.55);
   --swipe-intensity-left: 0;
   --swipe-intensity-right: 0;
 }
 
+/* Surcharge Dark Mode (Thème Sombre Y2K) */
+body.dark {
+  --bg-light: #FDFBF7; /* Force cream background even in dark mode for glass */       /* Fond midnight violet sombre */
+  --panel-bg: rgba(20, 15, 10, 0.5); /* Dark Glass */
+  --grid-color: rgba(255, 0, 127, 0.10); /* Grille fuchsia rétro */
+  --text-main: #FDFBF7; /* Cream text on dark glass */
+  --header-bg: rgba(20, 15, 10, 0.8);
+  /* Lignes & ombres douces : plus de blanc pur "négatif photo" */
+  --dark-line: rgba(255, 255, 255, 0.1);      /* Bordures lavande grisée */
+  --dark-shadow: rgba(0, 0, 0, 0.3);    /* Ombres dures atténuées */
+  --pink-readable: #ff77b9;  /* Rose lisible sur fond sombre */
+}
+
+/* Le rose néon pur est illisible sur fond sombre : on l'éclaircit partout */
+body.dark .text-neon-pink { color: var(--pink-readable); }
+body.dark .border-neon-pink { border-color: var(--pink-readable); }
+/* Même traitement pour le bleu cobalt (trop foncé sur fond sombre) */
+body.dark .text-electric-blue { color: #7da2ff; }
+
+/* RESET & BASE */
 * {
   margin: 0;
   padding: 0;
@@ -17,272 +47,1160 @@
 
 html, body {
   width: 100vw;
-  height: 100dvh;
+  /* 100dvh (avec fallback 100vh) : sur iOS (Safari/Arc), 100vh inclut la zone
+     masquée par la barre du navigateur → les boutons in-game en bas de page
+     étaient invisibles. dvh suit la hauteur réellement visible. */
   height: 100vh;
+  height: 100dvh;
+  background-color: var(--bg-light);
+  font-family: 'Noto Sans JP', 'Space Mono', sans-serif;
+  color: var(--text-main);
   overflow: hidden;
-  touch-action: none;
-  font-family: "Outfit", "Inter", sans-serif;
+  /* 600 (chargée via Google Fonts) : la 500 n'était pas chargée, iOS retombait
+     sur la 400 et tout paraissait trop light */
+  font-weight: 600;
+  transition: background-color 0.25s, color 0.25s;
 }
 
-.glass-panel {
-  background: rgba(20, 15, 10, 0.35);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+body {
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: none;
 }
 
-.glass-modal {
-  background: rgba(20, 15, 10, 0.45);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-  color: #FDFBF7;
+/* BACKGROUND: Halftone Grid & Stars */
+.grid-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: 
+    linear-gradient(var(--grid-color) 2px, transparent 2px),
+    linear-gradient(90deg, var(--grid-color) 2px, transparent 2px);
+  background-size: 36px 36px;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.glass-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #FDFBF7;
-  padding: 12px 16px;
-  border-radius: 12px;
-  outline: none;
-  transition: all 0.3s ease;
-}
-.glass-input:focus {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+.grid-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--grid-color) 12%, transparent 13%);
+  background-size: 18px 18px;
+  opacity: 0.6;
 }
 
-.glass-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #FDFBF7;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+  background-size: 100% 3px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Y2K STICKER STYLE ELEMENTS (contours épais type image_ed0625.jpg) */
+.cyber-panel { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2);  
+  background: var(--panel-bg);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 4px solid #000 !important;
+  box-shadow: 8px 8px 0px var(--electric-blue); 
+  border-radius: 20px !important; 
+  color: var(--text-main) !important;
+}
+body.dark .cyber-panel { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); 
+  border: 4px solid var(--dark-line) !important;
+  box-shadow: 8px 8px 0px var(--neon-pink); 
+}
+
+#app, main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10;
+}
+
+/* BOUTONS GLOBAUX style Pop Sticker */
+button {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.glass-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  border-radius: 12px !important;
+  transition: all 0.1s ease;
 }
 
-.glass-btn-small {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #FDFBF7;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.glass-btn-small:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.glass-badge {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #FDFBF7;
-  padding: 4px 12px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Base modal logic */
-.base-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  z-index: 100;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  padding: 16px;
-}
-.base-modal.active {
-  display: flex;
-}
-.close-btn {
-  position: absolute;
-  top: 16px;
-  right: 24px;
-  font-size: 2rem;
-  color: rgba(255,255,255,0.6);
-  cursor: pointer;
-  z-index: 110;
-  transition: color 0.3s ease;
-}
-.close-btn:hover { color: #fff; }
-
-/* Screens */
-.screen {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  visibility: visible;
-  opacity: 1;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-.hidden-screen {
-  opacity: 0;
-  visibility: hidden;
+/* Boutons désactivés : visuellement inertes (pointer-events none
+   neutralise aussi les styles :hover) */
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
   pointer-events: none;
 }
 
-/* Card Dragging Area */
-.card-container {
-  width: 90vw;
-  max-width: 380px;
-  aspect-ratio: 2/3;
-  position: relative;
-  border-radius: 24px;
-  background: rgba(25, 20, 15, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  transform-style: preserve-3d;
+.cyber-btn { border-radius: 30px; font-weight: 800; 
+  background: var(--neon-pink) !important;
+  border: 3px solid #000 !important;
+  color: #fff !important;
+  box-shadow: 4px 4px 0px #000 !important;
+  text-shadow: 1px 1px 0px #000;
+  /* Coins nets (pas d'effet pilule) + vrai espace autour du texte */
+  border-radius: 10px !important;
+  padding: 12px 18px;
+  line-height: 1.15;
+  letter-spacing: 0.5px;
+}
+body.dark .cyber-btn { border-radius: 30px; font-weight: 800; 
+  border-color: var(--dark-line) !important;
+  box-shadow: 4px 4px 0px var(--dark-shadow) !important;
+}
+
+.cyber-btn:hover {
+  background: var(--acid-yellow) !important;
+  color: #000 !important;
+  box-shadow: 2px 2px 0px #000 !important;
+  transform: translate(2px, 2px);
+}
+body.dark .cyber-btn:hover {
+  box-shadow: 2px 2px 0px var(--dark-shadow) !important;
+}
+
+.cyber-btn-small { border-radius: 20px; font-weight: 800; 
+  background: #fff;
+  border: 2px solid #000 !important;
+  color: #000 !important;
+  padding: 4px 12px !important;
+  font-size: 0.75rem;
+  box-shadow: 2px 2px 0px #000 !important;
+}
+body.dark .cyber-btn-small { border-radius: 20px; font-weight: 800; 
+  background: #120e24;
+  color: #fff !important;
+  border-color: var(--dark-line) !important;
+  box-shadow: 2px 2px 0px var(--dark-shadow) !important;
+}
+
+.cyber-btn-small:hover {
+  background: var(--neon-pink) !important;
+  color: #fff !important;
+  box-shadow: 1px 1px 0px #000 !important;
+}
+body.dark .cyber-btn-small:hover {
+  box-shadow: 1px 1px 0px var(--dark-shadow) !important;
+}
+
+/* Input stickers */
+input[type="text"], input[type="password"], input[type="email"], select {
+  background: #fff !important;
+  border: 3px solid #000 !important;
+  color: #000 !important;
+  font-family: inherit;
+  border-radius: 8px !important;
+  padding: 10px !important;
+}
+body.dark input[type="text"], body.dark input[type="password"], body.dark input[type="email"], body.dark select {
+  background: #1c1830 !important;
+  color: #fff !important;
+  border-color: var(--dark-line) !important;
+}
+
+/* FORMAT DES CARTES ADAPTATIF POUR TOUS LES ÉCRANS (Évite tout débordement) */
+.card-container { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); background: var(--panel-bg); 
+  transition: transform .2s steps(4), opacity .2s;
+  will-change: transform, opacity;
+  touch-action: none;
   cursor: grab;
-  overflow: visible !important;
+  user-select: none;
+  background: #fff;
+  border: 4px solid #000;
+  box-shadow: 10px 10px 0px #000, 0 0 20px rgba(0, 71, 255, 0.15);
+  border-radius: 24px !important;
+  
+  /* Taille pilotée par la largeur uniquement : le terme 38vh
+     (= 53vh de haut via le ratio 5/7) garantit que la carte tient
+     en hauteur sans jamais déformer le ratio. */
+  width: min(290px, 75vw, 38vh);
+  aspect-ratio: 5 / 7;
+
+  margin: auto;
+  position: relative;
 }
-.card-container:active {
-  cursor: grabbing;
+
+body.dark .card-container { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); background: var(--panel-bg); 
+  border-color: var(--dark-line);
+  box-shadow: 10px 10px 0px var(--dark-shadow), 0 0 20px rgba(255, 0, 127, 0.15);
 }
+
+@media (min-height: 800px) {
+  .card-container { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); background: var(--panel-bg); 
+    width: min(310px, 75vw, 38vh);
+  }
+}
+
 .card-container-inner {
+  position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 24px;
   overflow: hidden;
-  position: relative;
+  background: #fff;
+  border-radius: 20px !important;
 }
-.card-img-optimized {
+body.dark .card-container-inner { background: #1c1830; }
+
+/* Cadre à ratio fixe 5/7 (vraie carte à jouer) : l'image remplit 100% du cadre
+   via object-fit:cover (recadrage centré, jamais de bandes vides). */
+.card-container-inner img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 24px;
-  filter: brightness(0.9) contrast(1.1);
+  object-position: center;
+  display: block;
 }
 
-/* Swipe Gradients */
-.swipe-gradient {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10;
+/* Fling propre : la carte est projetée hors écran avec une rotation (cohérente
+   avec l'inclinaison du drag), pas de skew diagonal. */
+.slide-out-left { animation: cardFlingLeft 0.35s cubic-bezier(0.35, 0.15, 0.3, 1) forwards; }
+.slide-out-right { animation: cardFlingRight 0.35s cubic-bezier(0.35, 0.15, 0.3, 1) forwards; }
+
+@keyframes cardFlingLeft {
+  to { transform: translate(-150vw, 26px) rotate(-24deg); opacity: 0; }
+}
+@keyframes cardFlingRight {
+  to { transform: translate(150vw, 26px) rotate(24deg); opacity: 0; }
+}
+
+/* SCREENS */
+.screen {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  padding: 1.25rem;
   opacity: 0;
-  transition: opacity 0.1s linear;
-}
-.swipe-gradient-left {
-  background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
-}
-.swipe-gradient-right {
-  background: linear-gradient(to left, rgba(255,255,255,0.2), transparent);
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
 }
 
-/* Indicators */
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+  position: relative;
+  animation: flickerIn 0.2s forwards; 
+}
+
+.hidden-screen { display: none !important; }
+
+@keyframes flickerIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* DECK CARDS SÉLECTION */
+.deck-card { 
+  background: #fff;
+  border: 3px solid #000 !important;
+  box-shadow: 6px 6px 0px #000;
+  border-radius: 16px !important;
+  color: #000;
+}
+body.dark .deck-card {
+  background: #1c1830;
+  border-color: var(--dark-line) !important;
+  box-shadow: 6px 6px 0px var(--dark-shadow);
+  color: #fff;
+}
+
+.deck-card:hover { 
+  transform: translate(-4px, -4px); 
+  box-shadow: 10px 10px 0px var(--neon-pink);
+  border-color: #000 !important;
+}
+body.dark .deck-card:hover {
+  border-color: var(--dark-line) !important;
+}
+
+/* FILTRES CYBER */
+.cyber-filter-btn {
+  border: 2px solid #000;
+  padding: 0.5rem 1rem;
+  border-radius: 99px;
+  background: #fff;
+  color: #000;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: 2px 2px 0px #000;
+}
+body.dark .cyber-filter-btn {
+  border-color: var(--dark-line);
+  background: #120e24;
+  color: #fff;
+  box-shadow: 2px 2px 0px var(--dark-shadow);
+}
+
+.cyber-filter-btn.active {
+  background: var(--neon-pink);
+  color: #fff;
+}
+
+/* INDICATEURS IN-GAME (stickers par-dessus la carte, façon Tinder).
+   Positionnés DANS le card-holder (overflow visible : la carte ne doit
+   pas être coupée pendant le drag). Pas de !important sur
+   background/color : le JS applique les couleurs du deck en inline. */
 .swipe-indicator {
   position: absolute;
-  top: 40px;
-  font-size: 2rem;
+  top: 20%;
+  transform: translateY(-50%);
+  font-size: 18px;
   font-weight: 900;
-  color: white;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  padding: 8px 16px;
+  border: 3px solid #000;
+  background: var(--acid-yellow);
+  color: #000;
+  z-index: 50;
   opacity: 0;
   pointer-events: none;
-  z-index: 20;
-  padding: 8px 16px;
-  border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  background: rgba(0,0,0,0.2);
-  backdrop-filter: blur(10px);
+  box-shadow: 4px 4px 0px #000;
+  border-radius: 12px !important;
+  transition: opacity .1s;
 }
-#indicator-left { right: 20px; transform: rotate(10deg); color: #FDFBF7; }
-#indicator-right { left: 20px; transform: rotate(-10deg); color: #FDFBF7; }
+#indicator-left { left: 1.25rem; }
+#indicator-right { right: 1.25rem; }
 
-/* Arrows UI */
-.arrow-btn-container { z-index: 15; }
+/* MODALES Y2K */
+.base-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Pas de backdrop-filter ici : bug WebKit (iOS/Arc) — un calque fixed avec
+     backdrop-filter dans un ancêtre overflow:hidden peut ne jamais être peint,
+     rendant la modale invisible. Fond plus opaque à la place. */
+  background: rgba(18, 14, 36, 0.72);
+  display: none;
+  z-index: 80;
+  align-items: center;
+  justify-content: center;
+}
+.base-modal.active { display: flex; }
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 2.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000;
+}
+body.dark .close-btn { color: #fff; }
+.close-btn:hover { color: var(--neon-pink); }
+
+/* BOUTONS FLÈCHES ARCADE (In-game) */
+.arrow-btn-container {
+  width: 100%;
+  max-width: 300px;
+}
 .arrow-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 50px;
+  border-radius: 14px !important;
+  background: #fff;
+  border: 3px solid #000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  box-shadow: 3px 3px 0px #000 !important;
 }
-.arrow-btn:active {
-  transform: scale(0.9);
-  background: rgba(255, 255, 255, 0.2);
+.arrow-btn:active { transform: translateY(2px); box-shadow: 1px 1px 0px #000 !important; }
+body.dark .arrow-btn {
+  border-color: var(--dark-line) !important;
+  box-shadow: 3px 3px 0px var(--dark-shadow) !important;
 }
+body.dark .arrow-btn:active { box-shadow: 1px 1px 0px var(--dark-shadow) !important; }
+
 .arrow-btn-zoom {
-  background: transparent;
-  color: rgba(255,255,255,0.7);
-  padding: 8px;
-  cursor: pointer;
+  width: 46px;
+  height: 42px;
+  border-radius: 12px !important;
+  background: #fff;
+  border: 2px solid #000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 3px 3px 0px #000 !important;
 }
-.arrow-btn-zoom:hover { color: #fff; }
-
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
+body.dark .arrow-btn-zoom {
+  background: #1c1830;
+  border-color: var(--dark-line) !important;
+  box-shadow: 3px 3px 0px var(--dark-shadow) !important;
 }
 
-/* Stats / Gauges */
-.circular-gauge { width: 160px; height: 160px; }
-.gauge-bg { stroke: rgba(255, 255, 255, 0.1); fill: none; }
+/* GRADIENTS DE SWIPE DYNAMIQUES */
+/* NB : pas de `inset: 0` ici — il forcerait left:0 sur les deux,
+   et le dégradé droit s'afficherait à gauche (left gagne sur right
+   quand la largeur est contrainte). */
+.swipe-gradient {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 32vw;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 100ms linear;
+  z-index: 1;
+}
+body.dark .swipe-gradient {
+  mix-blend-mode: screen; /* Meilleur effet lumineux sur fond sombre */
+}
+
+.swipe-gradient-left {
+  left: 0;
+  background: linear-gradient(to right, var(--swipe-color-left), rgba(0,0,0,0));
+}
+.swipe-gradient-right {
+  right: 0;
+  background: linear-gradient(to left, var(--swipe-color-right), rgba(0,0,0,0));
+}
+
+#scores-list {
+  background: #fff;
+  border: 3px solid #000;
+  padding: 1rem;
+  border-radius: 12px;
+}
+body.dark #scores-list {
+  background: #1c1830;
+  border-color: var(--dark-line);
+}
+
+.score-item-container {
+  background: #fcfcff !important;
+  border: 2px solid #000 !important;
+  color: #000 !important;
+}
+body.dark .score-item-container {
+  background: #120e24 !important;
+  border-color: var(--dark-line) !important;
+  color: #fff !important;
+}
+
+.y2k-star {
+  position: fixed;
+  color: var(--neon-pink);
+  font-size: 1.8rem;
+  pointer-events: none;
+  opacity: 0.15;
+  animation: spinStar 10s linear infinite;
+  z-index: 1;
+}
+body.dark .y2k-star {
+  opacity: 0.3;
+}
+@keyframes spinStar {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   COMPOSANTS REPRIS DE L'ANCIEN THÈME, RESTYLÉS Y2K
+   (anciennement dans style_mobile_fix.css, jamais chargé)
+   ============================================================ */
+
+/* --- UTILITAIRES --- */
+.h-90vh { height: 90vh; }
+.text-2xs { font-size: 0.65rem; }
+.perspective-1000 { perspective: 1000px; }
+.hidden-soluce { display: none !important; }
+.blink { animation: blinker 1s linear infinite; }
+@keyframes blinker { 50% { opacity: 0; } }
+
+.bg-scanline {
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+  background-size: 100% 3px;
+}
+
+.overlay-gradient {
+  position: fixed;
+  inset: 0;
+  background: none;
+  pointer-events: none;
+}
+
+.logo-container { transition: transform 0.15s ease; }
+.logo-container:hover { transform: translate(-50%, -50%) scale(1.05) rotate(-1deg); }
+
+/* --- ÉCRAN DE JEU : tout doit tenir dans le viewport (boutons jamais coupés) --- */
+#game-screen {
+  padding: 0.25rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+}
+#card-holder { min-height: 0; }
+
+/* --- MODALES (contenu sticker Y2K) ---
+   Toujours claires, même en mode sombre : leurs contenus utilisent
+   des classes text-black / bg-white qui seraient illisibles sinon. */
+.cyber-modal { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); background: var(--panel-bg) !important; 
+  background: #fff;
+  border: 4px solid #000;
+  border-radius: 20px;
+  box-shadow: 8px 8px 0px var(--electric-blue);
+  padding: 1.5rem;
+  position: relative;
+  max-width: 95%;
+  max-height: 92vh;
+  overflow-y: auto;
+  color: #120e24;
+}
+body.dark .cyber-modal { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); background: var(--panel-bg) !important; 
+  box-shadow: 8px 8px 0px var(--neon-pink);
+}
+body.dark .cyber-modal input[type="text"],
+body.dark .cyber-modal input[type="password"],
+body.dark .cyber-modal input[type="email"],
+body.dark .cyber-modal input[type="url"],
+body.dark .cyber-modal select {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #000 !important;
+}
+/* Dans une modale (toujours claire), les boutons gardent leurs
+   contours noirs même en mode sombre */
+body.dark .cyber-modal .cyber-btn,
+body.dark .cyber-modal .cyber-btn-small { border-radius: 20px; font-weight: 800; 
+  border-color: #000 !important;
+  box-shadow: 4px 4px 0px #000 !important;
+}
+body.dark .cyber-modal .cyber-btn:hover,
+body.dark .cyber-modal .cyber-btn-small:hover {
+  box-shadow: 2px 2px 0px #000 !important;
+}
+
+/* Ordre des modales */
+#deck-cards-modal { z-index: 90; }
+#image-modal { z-index: 100; }
+#deck-cards-modal-content { max-width: 1200px; max-height: 90vh; }
+
+.image-modal-container { border-radius: 16px; }
+.image-modal-img {
+  border: 4px solid #fff;
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* --- JAUGE CIRCULAIRE (fin de partie) --- */
+.circular-gauge {
+  width: 160px;
+  height: 160px;
+  position: relative;
+}
+.circular-gauge svg { transform: rotate(-90deg); }
+.gauge-bg { fill: none; }
 .gauge-progress {
-  stroke: rgba(255, 255, 255, 0.8);
   fill: none;
+  stroke: var(--neon-pink);
   stroke-linecap: round;
-  transition: stroke-dashoffset 1s ease-out;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.35));
+  transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .gauge-center {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
+  text-align: center;
 }
 
-.blink { animation: blinker 1.5s linear infinite; }
-@keyframes blinker { 50% { opacity: 0.5; } }
-
-/* Hidden placeholders used by script */
-.hidden { display: none !important; }
-
-/* Miscellaneous fixes */
-.deck-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
+/* --- FILTRES TAGS (sélection de deck) --- */
+.filter-btn {
+  border: 2px solid #000;
+  padding: 0.4rem 1rem;
+  border-radius: 99px !important;
+  background: #fff;
+  color: #000;
+  font-weight: 800;
+  font-size: 0.8rem;
+  box-shadow: 2px 2px 0px #000;
+  cursor: pointer;
 }
-.deck-cards-mode-active {
-  background: rgba(255, 255, 255, 0.2);
+body.dark .filter-btn {
+  border-color: var(--dark-line);
+  background: #120e24;
   color: #fff;
+  box-shadow: 2px 2px 0px var(--dark-shadow);
 }
+.filter-btn:hover, .filter-btn.active {
+  background: var(--acid-yellow);
+  color: #000;
+}
+
+/* --- SCROLLBARS Y2K --- */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-light); }
+::-webkit-scrollbar-thumb {
+  background: var(--neon-pink);
+  border: 2px solid #000;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--electric-blue); }
+.custom-scrollbar { scrollbar-width: thin; scrollbar-color: var(--neon-pink) transparent; }
+#scores-list, #soluce-gallery-container, #stats-output, .custom-scrollbar {
+  overscroll-behavior: contain;
+}
+
+/* --- COLOR SWATCHES (modale deck) --- */
+.color-selector-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0;
+}
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 2px solid #000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  box-sizing: border-box;
+}
+.color-swatch:hover {
+  transform: scale(1.15);
+  z-index: 10;
+}
+.color-swatch.selected {
+  border: 3px solid #000;
+  outline: 2px solid var(--acid-yellow);
+  transform: scale(1.2);
+  z-index: 10;
+}
+
+/* --- DRAG & DROP ZONE (upload image) --- */
+.drop-zone {
+  border: 3px dashed #000;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--bg-light);
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--neon-pink);
+  background: rgba(255, 0, 127, 0.06);
+}
+.drop-zone-preview {
+  max-width: 100px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  margin: 1rem auto 0;
+}
+
+/* --- ADMIN : GRILLE & BOUTONS --- */
 .admin-deck-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+.admin-deck-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.soluce-deck-content {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 1rem;
+  background: var(--panel-bg);
+  padding: 1rem;
+  border: 3px solid #000;
+  border-radius: 12px;
+  grid-column: 1 / -1;
+  margin-bottom: 1rem;
+}
+body.dark .soluce-deck-content { border-color: var(--dark-line); }
+
+.soluce-gallery-item {
+  width: 110px;
+  height: 150px;
+  border: 2px solid #000;
+  border-radius: 10px;
+  padding: 5px;
+  transition: all 0.15s;
+  background: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+body.dark .soluce-gallery-item { background: #1c1830; border-color: var(--dark-line); }
+.soluce-gallery-item:hover {
+  border-color: var(--neon-pink);
+  transform: scale(1.05) rotate(-1deg);
+  z-index: 10;
+}
+.soluce-gallery-item.editing-mode {
+  border-style: dashed;
+  border-color: var(--electric-blue);
+}
+.soluce-link-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: var(--neon-pink);
+}
+.add-card-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed #000;
+  border-radius: 10px;
+  width: 110px;
+  height: 150px;
+  background: transparent;
+}
+body.dark .add-card-btn { border-color: var(--dark-line); }
+.add-card-btn:hover {
+  border-color: var(--neon-pink);
+  background: rgba(255, 0, 127, 0.06);
 }
 
-.glass-input, .glass-badge { font-weight: 800; }
-.card-container-inner { font-weight: 800; }
+/* --- MODALE LISTE DES CARTES --- */
+.deck-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 70vh;
+}
+.deck-cards-mode-btn {
+  padding: 3px 10px;
+  border-radius: 999px !important;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  font-size: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 1px 1px 0 #000;
+}
+.deck-cards-mode-active {
+  background: var(--neon-pink);
+  color: #fff;
+  border-color: #000;
+}
+.card-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 7 / 5;
+  overflow: hidden;
+  background: var(--bg-light);
+  border-radius: 8px;
+  border: 2px solid #000;
+}
+.card-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.deck-card-preview {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #000;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+body.dark .deck-card-preview {
+  background: #1c1830;
+  border-color: var(--dark-line);
+  box-shadow: 3px 3px 0 var(--dark-shadow);
+}
+.deck-card-preview:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--neon-pink);
+}
+
+/* --- RÉCAP & VIGNETTES DE SCORE --- */
+#end-overlay #recap-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+.score-recap-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: flex-start;
+}
+.score-vignette {
+  width: 48px;
+  height: 60px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+}
+body.dark .score-vignette { border-color: var(--dark-line); }
+#recap-list .score-vignette {
+  width: 72px;
+  height: auto;
+  overflow: visible;
+  border: none;
+  border-radius: 0;
+}
+.recap-vignette-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  border: 3px solid #000;
+  border-radius: 10px;
+  background: #fff;
+}
+body.dark .recap-vignette-inner { border-color: var(--dark-line); }
+.recap-success-filter,
+.recap-error-filter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.recap-success-filter {
+  background: rgba(34, 197, 94, 0.35);
+  box-shadow: inset 0 0 0 3px #22c55e;
+}
+.recap-error-filter {
+  background: rgba(239, 68, 68, 0.4);
+  box-shadow: inset 0 0 0 3px #ef4444;
+}
+.score-vignette.success { border-color: #22c55e; }
+.score-vignette.error { border-color: #ef4444; }
+
+.selectable-score { cursor: pointer; }
+.score-selected {
+  outline: 3px solid var(--neon-pink);
+  outline-offset: 2px;
+  background-color: rgba(255, 0, 127, 0.08) !important;
+}
+
+/* --- CARTE TEXTE SEUL --- */
+.text-only-card {
+  font-family: inherit;
+  font-size: 1.5rem;
+  text-align: center;
+  color: var(--text-main);
+  padding: 1rem;
+}
+
+/* Pilule de texte de carte : masquée quand vide */
+#card-text:empty { display: none; }
+
+/* Message de rang (fin de partie) : le JS remplace ses classes,
+   on garantit le cadre sticker ici */
+.result-message {
+  border: 3px solid #000 !important;
+  box-shadow: 4px 4px 0 #000;
+  text-transform: uppercase;
+}
+body.dark .result-message {
+  border-color: var(--dark-line) !important;
+  box-shadow: 4px 4px 0 var(--dark-shadow);
+}
+
+/* --- LOUPE MULTI-FOCALE (modale zoom) --- */
+.magnifier-area {
+  position: relative;
+  display: inline-block;
+  cursor: crosshair;
+  /* La loupe suit le doigt : on bloque le scroll natif sur l'image */
+  touch-action: none;
+}
+.magnifier-lens {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border: 4px solid var(--neon-pink);
+  border-radius: 50%;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-color: #000;
+  box-shadow: 0 0 0 3px #000, 6px 6px 0 rgba(0, 0, 0, 0.55);
+  z-index: 10;
+}
+body.dark .magnifier-lens {
+  border-color: var(--pink-readable);
+  box-shadow: 0 0 0 3px var(--dark-shadow), 6px 6px 0 rgba(0, 0, 0, 0.55);
+}
+.magnifier-lens.hidden { display: none; }
+.magnifier-zoom-btn {
+  background: #fff;
+  border: 3px solid #000;
+  padding: 6px 18px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+}
+.magnifier-zoom-btn.active {
+  background: var(--neon-pink);
+  color: #fff;
+}
+body.dark .magnifier-zoom-btn {
+  background: #1c1830;
+  color: #eceaf6;
+  border-color: var(--dark-line);
+  box-shadow: 3px 3px 0 var(--dark-shadow);
+}
+body.dark .magnifier-zoom-btn.active {
+  background: var(--pink-readable);
+  color: #120e24;
+}
+
+/* --- CARTES ADMIN : statut BROUILLON (import par lot incomplet) --- */
+.admin-card.is-draft .recap-card-inner {
+  position: relative;
+  border: 3px solid #f59e0b !important;
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.45), 4px 4px 0 rgba(245, 158, 11, 0.35);
+}
+.admin-card.is-draft .recap-card-image-wrapper { filter: saturate(0.5) brightness(0.9); }
+
+/* Toast non-bloquant (progression import, messages courts) */
+#toast-host {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+.toast-item {
+  background: #120e24;
+  color: #eceaf6;
+  border: 3px solid var(--neon-pink);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 900;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: toastIn 0.2s ease-out;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.draft-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 3;
+  background: #f59e0b;
+  color: #000;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  padding: 2px 5px;
+  border: 2px solid #000;
+  border-radius: 5px;
+}
+/* Tuile d'import par lot */
+.recap-card-batch .recap-card-inner-add { border-style: dashed; }
+
+/* --- EASTER EGG : case secrète du deck screen (accès decks 18+) ---
+   Une case de la grille de fond, quasi invisible : légère lueur au survol. */
+#secret-cell {
+  position: absolute;
+  left: 16px;
+  bottom: 60px;
+  width: 46px;
+  height: 46px;
+  z-index: 60;
+  cursor: pointer;
+  border-radius: 6px;
+  background: transparent;
+  transition: background 0.35s ease;
+}
+#secret-cell:hover { background: rgba(255, 0, 127, 0.12); }
+
+/* --- MODALES EN MODE SOMBRE ---
+   Toutes les .cyber-modal (édition carte, deck, taille, mdp, alertes…)
+   restaient blanches en dark : surfaces et textes basculent ici. */
+body.dark .cyber-modal { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); background: var(--panel-bg) !important; 
+  background: #16112e !important;
+  color: #eceaf6;
+  border-color: var(--dark-line) !important;
+  box-shadow: 8px 8px 0px var(--neon-pink);
+}
+body.dark .cyber-modal .text-black { color: #eceaf6 !important; }
+body.dark .cyber-modal .text-gray-800,
+body.dark .cyber-modal .text-gray-700,
+body.dark .cyber-modal .text-gray-600 { color: #a8a3c4 !important; }
+body.dark .cyber-modal .border-black { border-color: var(--dark-line) !important; }
+body.dark .cyber-modal .bg-white { background: #1c1830 !important; }
+body.dark .cyber-modal .bg-gray-50,
+body.dark .cyber-modal .bg-gray-100 { background: #1c1830 !important; }
+
+/* --- BARRE ADMIN --- */
+.admin-bar-sep {
+  width: 2px;
+  height: 22px;
+  background: #d1d5db;
+  margin: 0 6px;
+  border-radius: 2px;
+}
+body.dark .admin-bar-sep { background: var(--dark-line); }
+
+/* Toggle ÉDITION : le fond indique l'état (rose = actif) */
+.admin-edit-toggle.edit-on {
+  background: var(--neon-pink) !important;
+  color: #fff !important;
+  border-color: #000 !important;
+}
+body.dark .admin-edit-toggle.edit-on { border-color: var(--dark-line) !important; }
+
+/* Bouton de page (SCORES/STATS) : reste rose tant que sa page est ouverte */
+.cyber-btn-small.admin-active {
+  background: var(--neon-pink) !important;
+  color: #fff !important;
+}
+
+/* Badge visibilité des decks admin (œil / œil barré) */
+.deck-visibility-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  padding: 4px;
+  color: #16a34a;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid #000;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.deck-visibility-badge.off { color: #ef4444; }
+body.dark .deck-visibility-badge {
+  background: rgba(18, 14, 36, 0.85);
+  border-color: var(--dark-line);
+}
+
+/* --- ÉCHELLE DES RANGS (fin de partie) --- */
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 3px solid #cbd5e1;
+  border-radius: 10px !important;
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  text-align: left;
+  opacity: 0.6;
+}
+.rank-row .rank-range {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  min-width: 64px;
+  flex-shrink: 0;
+}
+.rank-row.active {
+  opacity: 1;
+  border-color: #000;
+  box-shadow: 4px 4px 0 #000;
+}
+body.dark .rank-row {
+  background: #171230;
+  border-color: #2e2850;
+  color: #6f6a8f;
+}
+body.dark .rank-row.active {
+  border-color: var(--dark-line);
+  box-shadow: 4px 4px 0 var(--dark-shadow);
+}
+
+/* Carte de score intégrée à l'écran de fin */
+.score-card-preview-img {
+  width: 100%;
+  border: 4px solid #000;
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 #000;
+  display: block;
+}
+body.dark .score-card-preview-img {
+  border-color: var(--dark-line);
+  box-shadow: 6px 6px 0 var(--dark-shadow);
+}
+.score-card-preview-img:not([src]) { display: none; }
+
+/* --- FOOTER DISCRET (deck screen) --- */
+.footer-link {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  padding: 4px 2px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.footer-link:hover { color: var(--neon-pink); border-bottom-color: var(--neon-pink); }
+body.dark .footer-link { color: #8b84ad; }
+body.dark .footer-link:hover { color: var(--pink-readable); border-bottom-color: var(--pink-readable); }
+.footer-link-danger:hover { color: #ef4444; border-bottom-color: #ef4444; }
+body.dark .footer-link-danger:hover { color: #f87171; border-bottom-color: #f87171; }
+.footer-sep {
+  color: #c7cdea;
+  font-size: 0.7rem;
+  pointer-events: none;
+  user-select: none;
+}
+body.dark .footer-sep { color: #3a3360; }
+
+/* --- AJUSTEMENTS MOBILE --- */
+@media (max-width: 640px) {
+  header { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .logo-container svg { height: 2rem; }
+  .header-select {
+    padding: 4px 22px 4px 6px !important;
+    font-size: 0.7rem;
+  }
+  #player-display { max-width: 64px; }
+
+  /* Barre de recherche des scores : sous le titre au lieu de le chevaucher */
+  #scores-search-input {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    order: 10;
+    margin-top: 0.5rem;
+  }
+}
+body { background-color: var(--bg-light) !important; color: var(--text-main) !important; }
+body.dark { background-color: var(--bg-light) !important; }
