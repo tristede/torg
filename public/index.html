@@ -19,7 +19,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -75,7 +75,7 @@
   <!-- Decor Stars for Y2K mood -->
             
   <!-- HEADER -->
-  <header class="flex items-center justify-between px-4 py-3 relative flex-shrink-0 z-50 border-b-4 border-glass-border bg-glass-dark backdrop-blur-xl border-b border-glass-border dark:border-[#494069] transition-colors duration-250">
+  <header class="flex items-center justify-between px-4 py-3 relative flex-shrink-0 z-50 border-b-4 border-glass-border bg-glass-dark backdrop-blur-xl border-b border-glass-border  transition-colors duration-250">
     <!-- Admin Button + Theme Toggle -->
     <div class="flex items-center gap-2 flex-shrink-0">
       <button id="btn-header-admin" class="glass-btn-small text-xs px-2 py-1">ADMIN</button>
@@ -89,15 +89,15 @@
     <div id="logo-click" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 logo-container group cursor-pointer z-10">
       <div class="flex flex-col items-center">
         <!-- SVG Logo Bubble Sticker SWIPP -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 65" class="h-10 md:h-14 filter drop-shadow-[0_4px_0_#000] dark:drop-shadow-[0_4px_0_#2a2547]">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 65" class="h-10 md:h-14 filter drop-shadow-[0_4px_0_#000] ">
           <!-- Outer Sticker Outline -->
-          <path d="M 15,10 H 185 A 15,15 0 0 1 200,25 V 40 A 15,15 0 0 1 185,55 H 15 A 15,15 0 0 1 0,40 V 25 A 15,15 0 0 1 15,10 Z" fill="#0047ff" stroke="#000" stroke-width="4" class="dark:stroke-[#494069]" />
+          <path d="M 15,10 H 185 A 15,15 0 0 1 200,25 V 40 A 15,15 0 0 1 185,55 H 15 A 15,15 0 0 1 0,40 V 25 A 15,15 0 0 1 15,10 Z" fill="#0047ff" stroke="#000" stroke-width="4" class="" />
           <path d="M 18,13 H 182 A 12,12 0 0 1 194,25 V 40 A 12,12 0 0 1 182,52 H 18 A 12,12 0 0 1 6,40 V 25 A 12,12 0 0 1 18,13 Z" fill="#ff007f" />
           <!-- Inner Bubble styled text "SWIPP" -->
-          <text x="100" y="42" font-family="'Noto Sans JP', sans-serif" font-weight="900" font-size="28" fill="#fff" stroke="#000" stroke-width="4" text-anchor="middle" letter-spacing="2" class="dark:stroke-[#494069]">SWIPP</text>
+          <text x="100" y="42" font-family="'Noto Sans JP', sans-serif" font-weight="900" font-size="28" fill="#fff" stroke="#000" stroke-width="4" text-anchor="middle" letter-spacing="2" class="">SWIPP</text>
           <text x="100" y="42" font-family="'Noto Sans JP', sans-serif" font-weight="900" font-size="28" fill="#ccff00" text-anchor="middle" letter-spacing="2">SWIPP</text>
           <!-- Japanese subtitle sticker label -->
-          <rect x="135" y="4" width="60" height="15" rx="4" fill="#ccff00" stroke="#000" stroke-width="2" class="dark:stroke-[#494069]" transform="rotate(5 135 4)" />
+          <rect x="135" y="4" width="60" height="15" rx="4" fill="#ccff00" stroke="#000" stroke-width="2" class="" transform="rotate(5 135 4)" />
           <text x="165" y="15" font-family="'Noto Sans JP', sans-serif" font-weight="900" font-size="9" fill="#000" text-anchor="middle" transform="rotate(5 135 4)">スイップ</text>
         </svg>
       </div>
@@ -106,7 +106,7 @@
     <!-- Langues + Pseudo -->
     <div class="flex-shrink-0 w-auto flex items-center justify-end gap-3">
       <div class="relative group">
-        <select id="lang-selector" class="header-select glass-input text-xs sm:text-sm font-bold cursor-pointer uppercase appearance-none pr-8 pl-2 py-1 dark:bg-[#120e24] text-cream dark:border-[#494069]">
+        <select id="lang-selector" class="header-select glass-input text-xs sm:text-sm font-bold cursor-pointer uppercase appearance-none pr-8 pl-2 py-1  text-cream ">
           <option value="fr">🇫🇷 FR</option>
           <option value="ja" class="font-jp">🇯🇵 JP</option>
           <option value="en">🇬🇧 EN</option>
@@ -130,10 +130,10 @@
     <!-- 1. ÉCRAN D'INTRODUCTION -->
     <section id="intro-screen" class="screen active z-40 justify-center items-center">
       <div class="w-full max-w-md text-center mx-auto glass-panel p-6 sm:p-8">
-        <h2 class="text-2xl font-black mb-6 text-cream uppercase tracking-widest border-b-4 border-glass-border dark:border-[#494069] pb-2 inline-block" data-i18n="loginTitle">✦ SE CONNECTER ✦</h2>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6" data-i18n="loginSubtitle">Choisis ton pseudo d'arcade !</p>
+        <h2 class="text-2xl font-black mb-6 text-cream uppercase tracking-widest border-b-4 border-glass-border  pb-2 inline-block" data-i18n="loginTitle">✦ SE CONNECTER ✦</h2>
+        <p class="text-xs text-gray-500  mb-6" data-i18n="loginSubtitle">Choisis ton pseudo d'arcade !</p>
 
-        <input id="player-name" class="glass-input w-full mb-6 text-center text-lg dark:bg-[#1c1830] text-cream dark:border-[#494069]" type="text" maxlength="24" placeholder="PSEUDO" data-i18n-placeholder="pseudo">
+        <input id="player-name" class="glass-input w-full mb-6 text-center text-lg  text-cream " type="text" maxlength="24" placeholder="PSEUDO" data-i18n-placeholder="pseudo">
 
         <div class="flex gap-4 justify-center flex-col sm:flex-row">
           <button id="btn-start" class="glass-btn border-earth-light text-earth-light hover:bg-earth-light hover:text-cream" data-i18n="btnInit">ENTRER DANS L'ARCADE</button>
@@ -170,11 +170,11 @@
     <section id="game-screen" class="screen hidden-screen z-30 flex-col justify-between items-center py-2">
       <!-- Info Bar / Score -->
       <div class="flex justify-between w-full mb-2 items-center px-2 flex-shrink-0 font-mono text-xs md:text-sm max-w-lg mx-auto">
-        <div class="glass-badge bg-glass-dark backdrop-blur-md text-earth-light border border-glass-border dark:border-[#494069] px-3 py-1 font-black rounded-full">
+        <div class="glass-badge bg-glass-dark backdrop-blur-md text-earth-light border border-glass-border  px-3 py-1 font-black rounded-full">
           <span data-i18n="pts">SCORE</span>
           <span id="score-display">0</span>
         </div>
-        <div class="glass-badge bg-glass-dark backdrop-blur-md text-cream border border-glass-border dark:border-[#494069] px-3 py-1 font-black rounded-full">
+        <div class="glass-badge bg-glass-dark backdrop-blur-md text-cream border border-glass-border  px-3 py-1 font-black rounded-full">
           <span data-i18n="cardLabel">CARTE</span> <span id="index-display">1/10</span>
         </div>
         <button id="btn-quit-game" class="glass-btn-small border-red-500 text-red-500 hover:bg-red-500 hover:text-white" data-i18n="btnAbort">ABANDONNER</button>
@@ -199,7 +199,7 @@
 
       <!-- Texte de la Carte -->
       <div class="w-full text-center mt-2 flex-shrink-0 max-w-lg mx-auto px-4">
-        <p id="card-text" class="text-sm text-earth-light font-bold tracking-wide bg-glass-dark/95 dark:bg-[#120e24]/95 py-2 px-4 inline-block rounded-lg border border-glass-border dark:border-[#494069] shadow-2xl shadow-black/50 dark:shadow-2xl shadow-black/50"></p>
+        <p id="card-text" class="text-sm text-earth-light font-bold tracking-wide bg-glass-dark/95  py-2 px-4 inline-block rounded-lg border border-glass-border  shadow-2xl shadow-black/50  shadow-black/50"></p>
       </div>
 
       <!-- BOUTONS IN GAME -->
@@ -230,7 +230,7 @@
       </div>
 
       <!-- Overlay Fin de partie -->
-      <div id="end-overlay" class="absolute inset-0 flex-col justify-center items-center text-center hidden z-40 bg-glass-dark/95 dark:bg-[#120e24]/95 p-6 overflow-y-auto backdrop-blur-xl">
+      <div id="end-overlay" class="absolute inset-0 flex-col justify-center items-center text-center hidden z-40 bg-glass-dark/95  p-6 overflow-y-auto backdrop-blur-xl">
         <h2 class="text-4xl font-black text-earth-light mb-6 animate-pulse" data-i18n="gameover">✦ FIN DE JEU ✦</h2>
 
         <!-- Deck et Mode -->
@@ -239,28 +239,28 @@
             <span id="end-deck-emoji" style="font-size: 1.5rem;"></span>
             <span id="end-deck-name" class="text-earth-light font-bold"></span>
           </div>
-          <div id="end-mode-info" class="text-gray-500 dark:text-gray-300 font-bold">
+          <div id="end-mode-info" class="text-gray-500  font-bold">
             <span id="end-mode-label">NORMAL</span>
           </div>
         </div>
 
         <div class="circular-gauge mx-auto mb-6 relative">
           <svg viewBox="0 0 200 200" width="160" height="160">
-            <circle class="gauge-bg stroke-gray-200 dark:stroke-neutral-800" cx="100" cy="100" r="80" stroke-width="15"></circle>
+            <circle class="gauge-bg stroke-gray-200 " cx="100" cy="100" r="80" stroke-width="15"></circle>
             <circle id="gauge-circle" class="gauge-progress stroke-neon-pink" cx="100" cy="100" r="80" stroke-width="15" stroke-dasharray="502.65" stroke-dashoffset="502.65"></circle>
           </svg>
           <div class="gauge-center flex flex-col items-center">
             <div class="text-3xl font-black text-cream" id="gauge-percentage">0</div>
-            <div class="text-[9px] text-white font-black uppercase tracking-widest bg-black px-2 mt-1 border border-glass-border dark:border-[#494069]" data-i18n="accuracy">PRÉCISION</div>
+            <div class="text-[9px] text-white font-black uppercase tracking-widest bg-black px-2 mt-1 border border-glass-border " data-i18n="accuracy">PRÉCISION</div>
           </div>
         </div>
 
-        <p class="text-xs text-gray-500 dark:text-gray-300 mb-2 uppercase tracking-widest" data-i18n="classification">RANG REÇU</p>
+        <p class="text-xs text-gray-500  mb-2 uppercase tracking-widest" data-i18n="classification">RANG REÇU</p>
         <!-- Échelle des rangs du deck : tous grisés sauf celui du joueur -->
         <div id="rank-ladder" class="w-full max-w-md mx-auto mb-6 flex flex-col gap-2"></div>
 
-        <div id="error-recap" class="w-full mb-4 p-2 bg-gray-50 dark:bg-neutral-900 border border-glass-border dark:border-[#494069] rounded-lg relative z-10">
-          <p id="recap-title" class="text-xs font-bold text-gray-600 dark:text-gray-300 mb-2 uppercase text-left border-b border-glass-border dark:border-[#494069] pb-1" data-i18n="logErrors">VOS ERREURS</p>
+        <div id="error-recap" class="w-full mb-4 p-2 bg-gray-50  border border-glass-border  rounded-lg relative z-10">
+          <p id="recap-title" class="text-xs font-bold text-gray-600  mb-2 uppercase text-left border-b border-glass-border  pb-1" data-i18n="logErrors">VOS ERREURS</p>
           <div id="recap-list" class="flex-1 overflow-y-auto pr-2 custom-scrollbar"></div>
         </div>
 
@@ -286,7 +286,7 @@
     <!-- 4. ÉCRAN DES SCORES -->
     <section id="scores-screen" class="screen hidden-screen p-6 z-20 flex-col items-start">
       <div class="w-full max-w-3xl mx-auto flex flex-col h-full glass-panel p-6">
-        <div class="flex flex-wrap justify-between items-center mb-6 border-b-4 border-glass-border dark:border-[#494069] pb-4 relative">
+        <div class="flex flex-wrap justify-between items-center mb-6 border-b-4 border-glass-border  pb-4 relative">
           <h3 class="text-xl font-black uppercase tracking-widest text-cream">
             <span class="text-earth-light">✦</span> SCORES
           </h3>
@@ -299,10 +299,10 @@
           </div>
         </div>
 
-        <div id="score-management-tools" class="hidden flex-shrink-0 w-full flex justify-between items-center mb-4 p-3 border border-glass-border dark:border-[#494069] bg-red-100 dark:bg-red-950">
+        <div id="score-management-tools" class="hidden flex-shrink-0 w-full flex justify-between items-center mb-4 p-3 border border-glass-border  bg-red-100 ">
           <div class="flex items-center gap-3">
-            <button id="btn-select-all-scores" class="text-xs text-red-600 dark:text-red-300 hover:text-red-900 underline font-black" data-i18n="btnAll">TOUT</button>
-            <button id="btn-deselect-all-scores" class="text-xs text-red-600 dark:text-red-300 hover:text-red-900 underline font-black" data-i18n="btnNone">RIEN</button>
+            <button id="btn-select-all-scores" class="text-xs text-red-600  hover:text-red-900 underline font-black" data-i18n="btnAll">TOUT</button>
+            <button id="btn-deselect-all-scores" class="text-xs text-red-600  hover:text-red-900 underline font-black" data-i18n="btnNone">RIEN</button>
           </div>
           <button id="btn-delete-selected-scores" class="text-xs bg-red-600 text-white px-3 py-1 font-bold hover:bg-red-500 border border-glass-border" data-i18n="btnDelete">SUPPRIMER</button>
         </div>
@@ -319,13 +319,13 @@
     <section id="soluce-screen" class="screen hidden-screen z-20 flex-col h-full overflow-hidden p-0">
       <div class="w-full max-w-6xl mx-auto flex flex-col h-full">
 
-        <div class="glass-panel p-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-glass-border dark:border-[#494069]">
+        <div class="glass-panel p-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-glass-border ">
           <h3 class="text-xl font-black uppercase text-earth-light">✦ ESPACE ADMIN ✦</h3>
           <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
-            <button id="btn-add-deck" class="glass-btn-small border-glass-border dark:border-[#494069] text-cream">NOUVEAU DECK</button>
+            <button id="btn-add-deck" class="glass-btn-small border-glass-border  text-cream">NOUVEAU DECK</button>
             <button id="btn-force-refresh" class="glass-btn-small border-green-600 text-green-600" title="Rafraîchir">🔄</button>
             <button id="btn-manage-scores" class="glass-btn-small border-yellow-600 text-yellow-600 hidden">SCORES</button>
-            <button id="btn-view-stats" class="glass-btn-small border-glass-border dark:border-[#494069] text-cream hidden" title="Statistiques">📊</button>
+            <button id="btn-view-stats" class="glass-btn-small border-glass-border  text-cream hidden" title="Statistiques">📊</button>
             <button id="btn-export-data" class="glass-btn-small hidden" title="Exporter (JSON)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M12 4v11m0 0l-5-5m5 5l5-5M5 20h14"/></svg>
             </button>
@@ -340,13 +340,13 @@
 
         <!-- Zone Scrollable -->
         <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          <p id="soluce-info-text" class="text-xs text-gray-500 dark:text-gray-300 mb-4 px-2">
+          <p id="soluce-info-text" class="text-xs text-gray-500  mb-4 px-2">
             Mode administrateur activé.
           </p>
           <div id="soluce-gallery-container" class="admin-deck-grid pb-20"></div>
         </div>
 
-        <div class="w-full py-3 shrink-0 z-50 flex justify-center items-center gap-5 bg-transparent text-[10px] text-gray-400 dark:text-gray-500 px-4">
+        <div class="w-full py-3 shrink-0 z-50 flex justify-center items-center gap-5 bg-transparent text-[10px] text-gray-400  px-4">
           <span>Clic = éditer deck/cartes</span>
           <span class="footer-sep">✦</span>
           <span>SHIFT + clic = ouvrir les cartes</span>
@@ -374,7 +374,7 @@
     <!-- 7. ÉCRAN STATISTIQUES -->
     <section id="stats-screen" class="screen hidden-screen p-6 z-20 flex-col items-start">
       <div class="w-full max-w-5xl mx-auto flex flex-col h-full glass-panel p-6">
-        <div class="flex justify-between items-center mb-6 border-b border-glass-border dark:border-[#494069] pb-4">
+        <div class="flex justify-between items-center mb-6 border-b border-glass-border  pb-4">
           <h3 class="text-xl font-bold uppercase text-earth-light">✦ STATS ✦</h3>
           <button id="btn-back-from-stats" class="glass-btn-small" data-i18n="btnBack">RETOUR</button>
         </div>
