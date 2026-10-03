@@ -249,7 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setLanguage(savedLang);
 
   initEventListeners();
-  showScreen(DOM.introScreen);
+  updateHeaderLoginState();
+  showScreen(DOM.deckScreen);
 });
 
 // GESTION DU MODE SOMBRE / CLAIR (Esthétique Y2K)
@@ -345,9 +346,10 @@ function queryDOMElements() {
   DOM.btnHeaderAdmin = document.getElementById('btn-header-admin');
   DOM.logoClick = document.getElementById('logo-click');
   DOM.playerDisplay = document.getElementById('player-display');
+  DOM.btnLoginHeader = document.getElementById('btn-login-header');
   DOM.playerNameInput = document.getElementById('player-name');
   DOM.btnStart = document.getElementById('btn-start');
-  DOM.btnViewScores = document.getElementById('btn-view-scores');
+  DOM.btnViewScores = document.getElementById('btn-view-scores');//Removed
 
   DOM.deckSelectionGrid = document.getElementById('deck-selection-grid');
   DOM.deckTagFilterBar = document.getElementById('deck-tag-filter-bar'); 
@@ -554,10 +556,17 @@ function initEventListeners() {
     });
   }
   DOM.btnStart.addEventListener('click', continueToDecks);
-  DOM.btnViewScores.addEventListener('click', () => showScoresScreen(DOM.introScreen, false)); 
+  if(DOM.btnLoginHeader) DOM.btnLoginHeader.addEventListener('click', () => { window.pendingScoreToSave = null; showScreen(DOM.introScreen); });
+  const btnCancelLogin = document.getElementById('btn-cancel-login');
+  if(btnCancelLogin) btnCancelLogin.addEventListener('click', () => { window.pendingScoreToSave = null; showScreen(DOM.deckScreen); }); 
   
   DOM.btnViewScoresFromDeck.addEventListener('click', () => showScoresScreen(DOM.deckScreen, false));
-  DOM.btnChangePlayer.addEventListener('click', () => showScreen(DOM.introScreen));
+  DOM.btnChangePlayer.addEventListener('click', () => {
+    state.playerName = '';
+    localStorage.removeItem('player_name');
+    updateHeaderLoginState();
+    // Refresh the deck screen to update UI if necessary, or just do nothing
+  });
   DOM.btnQuitGame.addEventListener('click', quitGame);
 
   DOM.btnZoomCard.addEventListener("click", () => {
@@ -1600,6 +1609,30 @@ function generateSoluceContainers() {
   });
 }
 
+function updateHeaderLoginState() {
+  if (state.playerName && state.playerName.trim() !== '') {
+    if(DOM.btnLoginHeader) DOM.btnLoginHeader.classList.add('hidden');
+    if(DOM.playerDisplay) {
+      DOM.playerDisplay.classList.remove('hidden');
+      DOM.playerDisplay.textContent = state.playerName;
+    }
+    if(DOM.btnChangePlayer) DOM.btnChangePlayer.classList.remove('hidden');
+    
+    // Also change the intro screen button text from ENTRER to SAUVEGARDER if a score is pending
+    if (window.pendingScoreToSave && DOM.btnStart) {
+      DOM.btnStart.textContent = t('btnSave', 'ENREGISTRER');
+    }
+  } else {
+    if(DOM.btnLoginHeader) DOM.btnLoginHeader.classList.remove('hidden');
+    if(DOM.playerDisplay) DOM.playerDisplay.classList.add('hidden');
+    if(DOM.btnChangePlayer) DOM.btnChangePlayer.classList.add('hidden');
+    
+    if (DOM.btnStart) {
+      DOM.btnStart.textContent = t('btnInit', "ENTRER DANS L'ARCADE");
+    }
+  }
+}
+
 function continueToDecks() {
   const name = (DOM.playerNameInput.value || '').trim();
   if (!name) {
@@ -1610,8 +1643,16 @@ function continueToDecks() {
   DOM.playerNameInput.classList.remove('border-red-500');
   state.playerName = name;
   localStorage.setItem('player_name', state.playerName);
-  DOM.playerDisplay.textContent = state.playerName;
-  showScreen(DOM.deckScreen);
+  updateHeaderLoginState();
+  
+  // If there's a pending score save, process it
+  if (window.pendingScoreToSave) {
+    saveScoreToDB(window.pendingScoreToSave.deckId, window.pendingScoreToSave.deckMode, window.pendingScoreToSave.score, window.pendingScoreToSave.maxScore);
+    window.pendingScoreToSave = null;
+    showScreen(DOM.gameScreen); // go back to the game over screen
+  } else {
+    showScreen(DOM.deckScreen);
+  }
 }
 
 function selectDeck(deckIndex) {
