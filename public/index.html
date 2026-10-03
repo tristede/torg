@@ -49,11 +49,11 @@
  </script>
 
  <!-- Styles -->
- <link rel="stylesheet" href="style.css?v=1790995205">
+ <link rel="stylesheet" href="style.css?v=1790997216">
 
  <!-- Traductions (source unique) puis script principal -->
  <script src="translations.js"></script>
- <script src="app.js?v=1790995205" type="module" defer></script>
+ <script src="app.js?v=1790997216" type="module" defer></script>
 
 </head>
 
@@ -89,14 +89,14 @@
  <div id="logo-click" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 logo-container group cursor-pointer z-10">
  <div class="flex flex-col items-center">
  <!-- SVG Logo Bubble Sticker SWIPP -->
- <div class="text-2xl font-black text-[#4A5D23] [#FDFBF7] tracking-widest uppercase">SWIPP</div>
+ <div class="text-2xl font-black text-[#4A5D23] text-[#5C4033] tracking-widest uppercase">SWIPP</div>
  </div>
  </div>
 
  <!-- Langues + Pseudo -->
  <div class="flex-shrink-0 w-auto flex items-center justify-end gap-3">
  <div class="relative group">
- <select id="lang-selector" class="header-select cyber-input text-xs sm:text-sm font-bold cursor-pointer uppercase appearance-none pr-8 pl-2 py-1 [#5C4033] ">
+ <select id="lang-selector" class="header-select cyber-input text-xs sm:text-sm font-bold cursor-pointer uppercase appearance-none pr-8 pl-2 py-1 text-[#5C4033] ">
  <option value="fr">🇫🇷 FR</option>
  <option value="ja" class="font-jp">🇯🇵 JP</option>
  <option value="en">🇬🇧 EN</option>
@@ -104,14 +104,14 @@
  <option value="ht">🇭🇹 HT</option>
  </select>
  <!-- Custom arrow -->
- <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-700 [#5C4033] group-hover:text-neon-pink transition-colors">
+ <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-700 text-[#5C4033] group-hover:text-neon-pink transition-colors">
  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
  </div>
  </div>
 
  <!-- Login button or Player pseudo -->
  <button id="btn-login-header" class="cyber-btn-small text-xs sm:text-sm" data-i18n="loginTitle">SE CONNECTER</button>
- <span id="player-display" class="truncate font-black max-w-[110px] text-xs sm:text-sm text-neon-pink [#5C4033] hidden">PSEUDO</span>
+ <span id="player-display" class="truncate font-black max-w-[110px] text-xs sm:text-sm text-neon-pink text-[#5C4033] hidden">PSEUDO</span>
  </div>
  </header>
 
@@ -122,9 +122,9 @@
  <section id="intro-screen" class="screen active z-40 justify-center items-center">
  <div class="w-full max-w-md text-center mx-auto p-6 sm:p-8">
  <h2 class="text-2xl font-black mb-6 text-[#5C4033] uppercase tracking-widest border-b border-white/20 pb-2 inline-block text-glow" data-i18n="loginTitle">✦ SE CONNECTER ✦</h2>
- <p class="text-xs text-[#5C4033]/70 [#5C4033]/70 mb-6" data-i18n="loginSubtitle">Choisis ton pseudo d'arcade !</p>
+ <p class="text-xs text-[#5C4033]/70 text-[#5C4033]/70 mb-6" data-i18n="loginSubtitle">Choisis ton pseudo d'arcade !</p>
 
- <input id="player-name" class="cyber-input w-full mb-6 text-center text-lg [#1c1830] [#5C4033] " type="text" maxlength="24" placeholder="PSEUDO" data-i18n-placeholder="pseudo">
+ <input id="player-name" class="cyber-input w-full mb-6 text-center text-lg text-[#5C4033] text-[#5C4033] " type="text" maxlength="24" placeholder="PSEUDO" data-i18n-placeholder="pseudo">
 
  <div class="flex gap-4 justify-center flex-col sm:flex-row">
  <button id="btn-start" class="cyber-btn text-neon-pink hover:bg-neon-pink hover:text-white" data-i18n="btnInit">ENTRER DANS L'ARCADE</button>
@@ -206,7 +206,7 @@
  </div>
 
  <button id="btn-zoom-card" class="arrow-btn-zoom">
- <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5 zoom-icon [#5C4033]">
+ <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5 zoom-icon text-[#5C4033]">
  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
  </svg>
  </button>
@@ -338,7 +338,7 @@
  <div id="soluce-gallery-container" class="admin-deck-grid pb-20"></div>
  </div>
 
- <div class="w-full py-3 shrink-0 z-50 flex justify-center items-center gap-5 bg-transparent text-[10px] text-[#5C4033]/70 [#5C4033]/70 px-4">
+ <div class="w-full py-3 shrink-0 z-50 flex justify-center items-center gap-5 bg-transparent text-[10px] text-[#5C4033]/70 text-[#5C4033]/70 px-4">
  <span>Clic = éditer deck/cartes</span>
  <span class="footer-sep">✦</span>
  <span>SHIFT + clic = ouvrir les cartes</span>
