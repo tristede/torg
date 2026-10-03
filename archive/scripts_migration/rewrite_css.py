@@ -1,0 +1,289 @@
+css_content = """/* STYLES SWIPP - MINIMALIST GLASSMORPHISM */
+:root {
+  --color-left: rgba(255, 255, 255, 0.4);
+  --color-right: rgba(255, 255, 255, 0.4);
+  
+  --swipe-color-left: rgba(255, 255, 255, 0.3);
+  --swipe-color-right: rgba(255, 255, 255, 0.3);
+  --swipe-intensity-left: 0;
+  --swipe-intensity-right: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100dvh;
+  height: 100vh;
+  overflow: hidden;
+  touch-action: none;
+  font-family: "Outfit", "Inter", sans-serif;
+}
+
+.glass-panel {
+  background: rgba(20, 15, 10, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.glass-modal {
+  background: rgba(20, 15, 10, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+  color: #FDFBF7;
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FDFBF7;
+  padding: 12px 16px;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FDFBF7;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.glass-btn-small {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #FDFBF7;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.glass-btn-small:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.glass-badge {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #FDFBF7;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Base modal logic */
+.base-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  padding: 16px;
+}
+.base-modal.active {
+  display: flex;
+}
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-size: 2rem;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  z-index: 110;
+  transition: color 0.3s ease;
+}
+.close-btn:hover { color: #fff; }
+
+/* Screens */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.hidden-screen {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Card Dragging Area */
+.card-container {
+  width: 90vw;
+  max-width: 380px;
+  aspect-ratio: 2/3;
+  position: relative;
+  border-radius: 24px;
+  background: rgba(25, 20, 15, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transform-style: preserve-3d;
+  cursor: grab;
+  overflow: visible !important;
+}
+.card-container:active {
+  cursor: grabbing;
+}
+.card-container-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+}
+.card-img-optimized {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 24px;
+  filter: brightness(0.9) contrast(1.1);
+}
+
+/* Swipe Gradients */
+.swipe-gradient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.1s linear;
+}
+.swipe-gradient-left {
+  background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
+}
+.swipe-gradient-right {
+  background: linear-gradient(to left, rgba(255,255,255,0.2), transparent);
+}
+
+/* Indicators */
+.swipe-indicator {
+  position: absolute;
+  top: 40px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+}
+#indicator-left { right: 20px; transform: rotate(10deg); color: #FDFBF7; }
+#indicator-right { left: 20px; transform: rotate(-10deg); color: #FDFBF7; }
+
+/* Arrows UI */
+.arrow-btn-container { z-index: 15; }
+.arrow-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.arrow-btn:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.2);
+}
+.arrow-btn-zoom {
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  padding: 8px;
+  cursor: pointer;
+}
+.arrow-btn-zoom:hover { color: #fff; }
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+/* Stats / Gauges */
+.circular-gauge { width: 160px; height: 160px; }
+.gauge-bg { stroke: rgba(255, 255, 255, 0.1); fill: none; }
+.gauge-progress {
+  stroke: rgba(255, 255, 255, 0.8);
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-out;
+}
+.gauge-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.blink { animation: blinker 1.5s linear infinite; }
+@keyframes blinker { 50% { opacity: 0.5; } }
+
+/* Hidden placeholders used by script */
+.hidden { display: none !important; }
+
+/* Miscellaneous fixes */
+.deck-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+.deck-cards-mode-active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.admin-deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+"""
+
+with open('public/style.css', 'w') as f:
+    f.write(css_content)
