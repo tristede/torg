@@ -1,0 +1,3133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jeu de Tri de Cartes – Version Firebase</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 
+    Anciens liens (maintenant intégrés) :
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script> 
+  -->
+
+  <style>
+    /* STYLES CSS COMPLETS (style.css) */
+
+    /* FIX: Supprimer le cadre blanc et faire du plein écran */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      /* MODIFICATION: Ajout d'une couleur de fond fixe pour empêcher le "flash blanc" au scroll */
+      background-color: #0b1220;
+      /* MODIFICATION: Suppression de overflow: hidden; C'EST CE QUI BLOQUAIT LE SCROLL */
+      /* overflow: hidden; */ 
+      background: linear-gradient(180deg, #0b1220 0%, #071018 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: white;
+      /* MODIFICATION: Suppression du halo global, on l'appliquera spécifiquement */
+      /* text-shadow: 0 0 8px rgba(220, 220, 255, 0.1); */
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      /* MODIFICATION: Suppression du centrage pour le mode plein écran */
+      /* align-items: center; */
+      /* justify-content: center; */
+      width: 100vw;
+      height: 100vh;
+      /* MODIFICATION: Bloque le "rebond" blanc sur mobile */
+      overscroll-behavior: none;
+    }
+
+    /* NOUVEAU: Styles pour le halo du curseur (inspiré de votre exemple) */
+    .cursor-glow {
+      position: fixed;
+      width: 400px; /* Plus grand pour un effet plus diffus */
+      height: 400px;
+      border-radius: 50%;
+      /* Couleurs violet/rose du thème */
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0) 70%);
+      pointer-events: none;
+      /* Juste en dessous des modales (z-index: 9999) */
+      z-index: 9998; 
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      /* S'assure qu'il est bien au-dessus du fond mais sous le contenu */
+      left: 0;
+      top: 0;
+    }
+    /* FIN NOUVEAU */
+
+    #app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      /* MODIFICATION: Suppression de align-items: center; pour le mode plein écran */
+      /* align-items: center; */
+      /* MODIFICATION: Suppression de justify-content: center; pour permettre à l'en-tête de rester en haut */
+      /* justify-content: center; */
+    }
+
+    .bg-game { 
+      background: linear-gradient(180deg, #0b1220 0%, #071018 100%);
+      width: 100%;
+      height: 100%;
+    }
+
+    .glass { 
+      background: rgba(255,255,255,0.03); 
+      backdrop-filter: blur(6px); 
+      border: 1px solid rgba(255,255,255,0.04); 
+    }
+
+    .card-container {
+      transition: transform .35s cubic-bezier(.22,.9,.27,1), opacity .35s, box-shadow .35s ease; /* Ajout de box-shadow à la transition */
+      will-change: transform, opacity;
+      touch-action: none;
+      cursor: grab;
+      /* MODIFICATION: Empêche le surlignage bleu (sélection) */
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10+ */
+      user-select: none; /* Standard */
+      /* MODIFICATION: Halo/ombre plus intense */
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 255, 255, 0.1);
+    }
+
+    .card-container:hover {
+      /* MODIFICATION: Effet de glow au survol plus intense */
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 255, 255, 0.2);
+    }
+
+    .slide-out-left { 
+      transform: translateX(-150vw) rotate(-22deg) !important; 
+      opacity: 0; 
+    }
+
+    .slide-out-right { 
+      transform: translateX(150vw) rotate(-22deg) !important; 
+      opacity: 0; 
+    }
+
+    .screen {
+      display: flex;
+      /* MODIFICATION: align-items et justify-content sont gérés par Tailwind dans le HTML */
+      /* align-items: center; */
+      /* justify-content: center; */
+      width: 100%;
+      /* MODIFICATION: Suppression de overflow-y: auto; Le défilement sera géré par les enfants */
+      flex: 1;
+      /* overflow-y: auto; */
+      min-height: 0; /* Correction pour le scrolling flexbox */
+      padding: 1.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .screen.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hidden-screen {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    /* Animation d'entrée pour les éléments de page */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .screen.active > * {
+      animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    }
+
+    .screen.active > *:nth-child(2) { animation-delay: 0.05s; }
+    .screen.active > *:nth-child(3) { animation-delay: 0.1s; }
+    .screen.active > *:nth-child(4) { animation-delay: 0.15s; }
+
+    /* MODIFICATION: Règle pour bloquer l'overscroll sur les galeries */
+    #scores-list,
+    #soluce-gallery-container,
+    #public-soluce-gallery-container {
+      overscroll-behavior: contain;
+    }
+
+    .circular-gauge { 
+      width: 200px; 
+      height: 200px; 
+      position: relative; 
+    }
+
+    .circular-gauge svg { 
+      transform: rotate(-90deg); 
+    }
+
+    .gauge-bg { 
+      fill: none; 
+      stroke: rgba(255,255,255,0.1); 
+      stroke-width: 20; 
+    }
+
+    .gauge-progress { 
+      fill: none; 
+      stroke: url(#gaugeGradient); 
+      stroke-width: 20; 
+      stroke-linecap: round; 
+      transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+
+    .gauge-center { 
+      position: absolute; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%); 
+      text-align: center; 
+      /* MODIFICATION: Glow plus intense pour le pourcentage */
+      text-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+    }
+
+    /* MODIFICATION: Restauration de l'animation sur .deck-card */
+    .deck-card { 
+      transition: all 0.3s ease; 
+      cursor: pointer; 
+    }
+
+    .deck-card:hover { 
+      transform: translateY(-8px); 
+      /* MODIFICATION: Ombre subtile, suppression du glow blanc que vous n'aimiez pas */
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+    }
+
+    /* NOUVEAU: Glow pour les titres de deck colorés */
+    .text-purple-400 {
+      text-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+    }
+    .text-cyan-400 {
+      text-shadow: 0 0 15px rgba(34, 211, 238, 0.6);
+    }
+    .text-pink-400 {
+      text-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+    }
+    /* FIN NOUVEAU */
+
+    .filter-btn { 
+      transition: all 0.2s ease; 
+    }
+
+    .filter-btn.active { 
+      background: rgba(99, 102, 241, 0.5); 
+      border-color: rgb(99, 102, 241); 
+    }
+
+    .pop { 
+      animation: popInUp .36s cubic-bezier(.2,.9,.3,1) both; 
+    }
+
+    @keyframes popInUp { 
+      from { 
+        transform: translateY(18px) scale(.99); 
+        opacity: 0; 
+      } 
+      to { 
+        transform: translateY(0) scale(1); 
+        opacity: 1; 
+      } 
+    }
+
+    input[type="text"].player-input { 
+      background: #f3f4f6; 
+      color: #0f172a; 
+    }
+
+    .msg { 
+      transition: opacity .25s ease; 
+    }
+
+    .result-message { 
+      animation: fadeInScale 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) 0.3s both; 
+    }
+
+    @keyframes fadeInScale { 
+      from { 
+        opacity: 0; 
+        transform: scale(0.8); 
+      } 
+      to { 
+        opacity: 1; 
+        transform: scale(1); 
+      } 
+    }
+
+    /* Overlay gradients - Plus fluides */
+    .overlay-gradient {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s cubic-bezier(0.4, 0, 0.2, 1);
+      /* MODIFICATION: Ajout d'un z-index pour le placer entre le fond et le contenu */
+      z-index: 5;
+    }
+
+    #overlay-left { 
+      left: 0; 
+      background: linear-gradient(90deg, rgba(168,85,247, 0.15) 0%, rgba(168,85,247, 0) 100%); 
+    }
+
+    #overlay-right { 
+      right: 0; 
+      background: linear-gradient(-90deg, rgba(236,72,153, 0.15) 0%, rgba(236,72,153, 0) 100%); 
+    }
+
+    .swipe-indicator {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity .2s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #indicator-left { 
+      left: -1rem; 
+      color: #c084fc; 
+      background: rgba(168,85,247, 0.3); 
+    }
+
+    #indicator-right { 
+      right: -1rem; 
+      color: #f472b6; 
+      background: rgba(236,72,153, 0.3); 
+    }
+
+    .error-card-recap { 
+      transition: transform 0.3s ease; 
+      cursor: pointer; 
+    }
+
+    .error-card-recap:hover { 
+      transform: translateY(-3px); 
+    }
+
+    /* AMÉLIORATION: Modales avec animations élaborées */
+    .base-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+      opacity: 0;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .base-modal.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    #password-modal-content, #edit-modal-content, #deck-modal-content, #alert-modal-content {
+      max-width: 90%;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 1.5rem;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+      max-height: 90%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.9) translateY(20px);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .base-modal.active #password-modal-content,
+    .base-modal.active #edit-modal-content,
+    .base-modal.active #deck-modal-content,
+    .base-modal.active #alert-modal-content {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    /* AMÉLIORATION: Zoom d'image optimisé et uniforme */
+    #modal-content {
+      max-width: 95vw;
+      max-height: 95vh;
+      padding: 0;
+      background: transparent;
+      border-radius: 1rem;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .base-modal.active #modal-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    #modal-image {
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 1rem;
+      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8),
+                  0 0 100px rgba(168, 85, 247, 0.3);
+      animation: imageZoomIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes imageZoomIn {
+      from {
+        transform: scale(0.85);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 2rem;
+      cursor: pointer;
+      color: white;
+      text-shadow: 0 0 10px black;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .close-btn:hover {
+      color: #ec4899;
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    /* MODIFICATION: Style pour les champs de la modale admin */
+    #admin-email-input,
+    #admin-password-input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Suppression de l'ancien style #password-input */
+    /*
+    #password-input {
+      letter-spacing: 0.5rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    */
+
+    /* Boutons flèches */
+    .arrow-btn-container {
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .arrow-btn {
+      width: 70px;
+      height: 48px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      border: 2px solid;
+      /* MODIFICATION: Halo/ombre plus intense */
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.7);
+    }
+
+    .arrow-btn:hover {
+      transform: scale(1.05);
+      /* MODIFICATION: Augmentation du halo au survol */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 40px rgba(168, 85, 247, 1);
+    }
+
+    .arrow-btn:active {
+      transform: scale(0.95);
+    }
+
+    #btn-arrow-left {
+      background-color: rgba(168, 85, 247, 0.2);
+      border-color: #a855f7;
+      color: #a855f7;
+    }
+
+    #btn-arrow-right {
+      background-color: rgba(236, 72, 153, 0.2);
+      border-color: #ec4899;
+      color: #ec4899;
+      /* MODIFICATION: Halo/ombre plus intense */
+      box-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
+    }
+
+    /* MODIFICATION: Règle spécifique pour le hover du bouton droit */
+    #btn-arrow-right:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 40px rgba(236, 72, 153, 1);
+    }
+
+    .arrow-svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+      stroke-width: 2;
+    }
+
+    .arrow-btn-zoom {
+      width: 48px;
+      height: 48px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      transition: background-color 0.2s, transform 0.2s;
+      cursor: pointer;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.4);
+      background-color: rgba(255, 255, 255, 0.05);
+      /* MODIFICATION: Halo/ombre plus intense */
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    }
+
+    .arrow-btn-zoom:hover {
+      transform: scale(1.05);
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.7);
+      /* MODIFICATION: Augmentation du halo au survol */
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    #btn-view-soluce-deck {
+      transition: transform 0.2s ease;
+    }
+
+    #btn-view-soluce-deck:hover {
+      transform: scale(1.05);
+    }
+
+    /* Galerie Soluce */
+    .soluce-gallery-item {
+      width: 120px;
+      height: 160px;
+      transition: transform 0.3s ease;
+      object-fit: cover;
+      position: relative;
+      padding: 0.5rem;
+      cursor: default;
+    }
+
+    .soluce-gallery-item-image-container {
+      position: relative;
+      cursor: default;
+    }
+
+    .soluce-gallery-item.editing-mode {
+      cursor: pointer !important;
+      outline: 2px dashed #34d399;
+    }
+
+    .soluce-gallery-item.editing-mode:hover {
+      transform: scale(1.02);
+    }
+
+    .soluce-gallery-item {
+      cursor: pointer;
+    }
+
+    .edit-overlay-consult { 
+      display: none !important; 
+    }
+
+    .soluce-deck-title {
+      width: 100%;
+      text-align: center;
+      padding: 0.5rem 0;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .edit-deck-btn {
+      font-size: 1rem;
+      cursor: pointer;
+      display: none;
+      transition: transform 0.2s;
+    }
+
+    .edit-deck-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .soluce-deck-content.hidden-soluce {
+      display: none;
+    }
+
+    .soluce-deck-content {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    #edit-card-modal input, 
+    #edit-card-modal select, 
+    #deck-modal-content input, 
+    #deck-modal-content select {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      margin-bottom: 0.75rem;
+    }
+
+    #edit-card-modal label, 
+    #deck-modal-content label {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 0.25rem;
+      text-align: left;
+    }
+
+    .soluce-link-indicator {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      color: #f472b6;
+      font-size: 1.25rem;
+      pointer-events: none;
+    }
+
+    .result-vignette {
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      padding: 0.5rem;
+      text-align: center;
+      max-width: 100px;
+      min-width: 80px;
+      margin: 0.25rem;
+    }
+
+    .result-vignette.success {
+      border: 2px solid #10B981;
+    }
+
+    .result-vignette.error {
+      border: 2px solid #EF4444;
+    }
+
+    .result-vignette img {
+      width: 100%;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-vignette .result-status {
+      font-size: 0.7rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .result-vignette.success .result-status {
+      color: #10B981;
+    }
+
+    .result-vignette.error .result-status {
+      color: #EF4444;
+    }
+
+    .add-card-btn {
+      width: 120px;
+      height: 160px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0.5rem;
+    }
+
+    .add-card-btn:hover {
+      border-color: #34d399;
+      background: rgba(52, 211, 153, 0.1);
+    }
+
+    .add-card-btn svg {
+      width: 40px;
+      height: 40px;
+      stroke: rgba(255, 255, 255, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .add-card-btn:hover svg {
+      stroke: #34d399;
+      transform: scale(1.1);
+    }
+
+    .color-swatch {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .color-swatch.selected {
+      border-color: #ffffff;
+      transform: scale(1.1);
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.1);
+    }
+
+    #alert-modal-text {
+      white-space: pre-wrap;
+    }
+
+    /* NOUVEAU: Zone de drop pour images */
+    .drop-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+      margin-bottom: 0.75rem;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #34d399;
+    }
+    .drop-zone-preview {
+      max-width: 100px;
+      max-height: 100px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+    }
+    .drop-zone-preview.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-game text-white font-sans">
+
+  <!-- NOUVEAU: Halo pour le curseur -->
+  <div id="cursor-glow" class="cursor-glow"></div>
+  
+  <div id="app" class="relative w-full h-full flex flex-col">
+    
+    <!-- MODIFICATION: Déplacement des overlays ici pour qu'ils couvrent l'en-tête -->
+    <div id="overlay-left" class="overlay-gradient"></div>
+    <div id="overlay-right" class="overlay-gradient"></div>
+
+    <!-- MODIFICATION: z-index pour rester au-dessus des overlays -->
+    <header class="flex items-center justify-between mb-6 px-6 pt-6 relative flex-shrink-0 z-10">
+      <div class="flex-shrink-0 w-24 text-left">
+        <button id="btn-header-admin" class="px-4 py-2 bg-pink-600/60 border border-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600/80 transition-colors">Admin</button>
+      </div>
+      <h1 class="text-2xl font-extrabold flex-1 text-center truncate px-4">TORG_BETA v1</h1>
+      <div class="text-sm text-gray-300 flex-shrink-0 w-24 text-right">
+        Joueur: <span id="player-display" class="truncate">N/A</span>
+      </div>
+    </header>
+
+    <!-- MODIFICATION: z-index pour rester au-dessus des overlays -->
+    <main class="relative z-10 w-full flex-1 flex flex-col">
+
+      <!-- Écran d'introduction -->
+      <!-- CORRECTION CRITIQUE: 'hidden-screen' est supprimé. C'est l'écran par défaut. -->
+      <section id="intro-screen" class="screen glass p-8 z-40 justify-center items-center">
+        <div class="w-full max-w-md text-center mx-auto">
+          <h2 class="text-3xl font-bold mb-2">Bienvenue</h2>
+          <p class="text-sm text-gray-300 mb-4">Entre ton pseudo pour commencer à jouer.</p>
+          <input id="player-name" class="player-input w-full p-3 rounded-lg placeholder-gray-500 border border-gray-300 mb-4" type="text" maxlength="24" placeholder="Ton pseudo" />
+          <div class="flex gap-3 justify-center">
+            <button id="btn-start" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold">Continuer</button>
+            <button id="btn-view-scores" class="px-4 py-2 bg-white/6 hover:bg-white/8 rounded-lg">Scores</button>
+          </div>
+          <p class="text-xs text-gray-400 mt-4">Astuce : swipe vers la gauche/droite ou utilise les flèches ← →</p>
+        </div>
+      </section>
+
+      <!-- Écran de sélection de deck -->
+      <section id="deck-screen" class="screen hidden-screen glass p-8 z-35 items-start justify-center">
+        <div class="w-full max-w-4xl mx-auto flex flex-col">
+          <h2 class="text-3xl font-bold mb-2 text-center flex-shrink-0">Choisis ton Deck</h2>
+          <p class="text-sm text-gray-300 mb-8 text-center flex-shrink-0">Sélectionne un deck pour commencer la partie</p>
+          
+          <div id="deck-selection-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Les cartes de deck seront générées ici par JS -->
+          </div>
+
+          <div class="mt-6 text-center flex justify-center gap-3 flex-shrink-0">
+            <button id="btn-view-scores-from-deck" class="px-4 py-2 bg-white/6 hover:bg-white/8 rounded-lg text-sm">Scores</button>
+            <button id="btn-view-public-soluce" class="px-4 py-2 bg-indigo-600/60 border border-indigo-500 rounded-lg text-sm">Galerie Soluce</button> 
+            <button id="btn-change-player" class="px-4 py-2 bg-white/6 hover:bg-white/8 rounded-lg text-sm">Changer Pseudo</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Écran de jeu -->
+      <section id="game-screen" class="screen hidden-screen p-6 z-30 flex-col justify-center items-center">
+        
+        <div class="flex justify-between w-full mb-4 items-center px-6 flex-shrink-0">
+          <div class="flex items-center gap-4">
+              <div class="text-lg">Score: <span id="score-display">0</span></div>
+              <div class="text-lg">Carte: <span id="index-display">1/10</span></div>
+          </div>
+          <button id="btn-quit-game" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-sm rounded-lg">Quitter</button>
+        </div>
+
+        <div id="card-holder" class="relative w-full max-w-lg mx-auto h-[420px] flex items-center justify-center px-6">
+          
+          <div id="indicator-left" class="swipe-indicator">TRANS</div>
+          <div id="indicator-right" class="swipe-indicator">GIRL</div>
+
+          <!-- LA CARTE DE JEU - 'onclick' SUPPRIMÉ -->
+          <div id="card" class="card-container relative w-full h-full bg-gradient-to-b from-gray-800/85 to-gray-900/70 rounded-2xl shadow-2xl p-6 flex flex-col justify-between items-center border border-white/6">
+            <img id="card-image" src="" alt="Carte" class="w-full h-auto max-h-[72%] object-contain rounded-lg shadow-inner mt-4" onerror="this.onerror=null;this.src='https://placehold.co/400x550/2563EB/FFFFFF?text=Carte';" />
+            
+            <p id="card-text" class="text-lg text-center font-medium text-gray-100 mt-4 mb-2"></p>
+          </div>
+        </div>
+        
+        <div id="end-overlay" class="absolute inset-0 flex-col justify-center items-center text-center hidden z-40 bg-[#0b1220] p-6 overflow-y-auto">
+          <h2 class="text-4xl font-extrabold text-teal-300 mb-6 pop">Fin de Partie</h2>
+          
+          <div class="circular-gauge mx-auto mb-6">
+            <svg viewBox="0 0 200 200" width="200" height="200">
+              <defs>
+                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#06b6d4" />
+                  <stop offset="50%" stop-color="#7c3aed" />
+                  <stop offset="100%" stop-color="#ec4899" />
+                </linearGradient>
+              </defs>
+              <circle class="gauge-bg" cx="100" cy="100" r="80" />
+              <circle id="gauge-circle" class="gauge-progress" cx="100" cy="100" r="80" 
+                      stroke-dasharray="502.65" stroke-dashoffset="502.65" />
+            </svg>
+            <div class="gauge-center">
+              <div class="text-5xl font-black text-white" id="gauge-percentage">0%</div>
+              <div class="text-xs text-gray-400 mt-1">d'erreurs</div>
+            </div>
+          </div>
+
+          <p class="text-lg text-gray-300 mb-2">Vous êtes :</p>
+          <div id="result-message" class="result-message text-2xl font-bold mb-4 px-4 py-3 rounded-lg"></div>
+
+          <div id="error-recap" class="w-full mb-6 max-w-md mx-auto">
+              <p id="recap-title" class="text-xl font-bold text-gray-100 mb-4">Résultat de la partie</p>
+              <div id="recap-list" class="flex flex-wrap justify-center gap-2">
+                  <!-- Les vignettes de résultats seront insérées ici -->
+              </div>
+          </div>
+
+          <div class="flex gap-3 justify-center flex-wrap">
+            <button id="btn-choose-deck" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold">Choisir un autre Deck</button>
+            <button id="btn-replay" class="px-4 py-2 bg-white/6 rounded-lg">Rejouer ce Deck</button>
+            <button id="btn-view-scores-from-game" class="px-4 py-2 bg-white/6 rounded-lg">Voir Scores</button>
+          </div>
+        </div>
+
+        <!-- BOUTONS DE DÉCISION (Flèches SVG) -->
+        <div class="flex justify-center items-center gap-6 arrow-btn-container mx-auto">
+            <button id="btn-arrow-left" class="arrow-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" class="arrow-svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+            </button>
+            
+            <!-- NOUVEAU BOUTON ZOOM -->
+            <button id="btn-zoom-card" class="arrow-btn-zoom">
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="arrow-svg">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 7.5v6m3-3h-6" />
+                </svg>
+            </button>
+            <!-- FIN NOUVEAU BOUTON -->
+
+            <button id="btn-arrow-right" class="arrow-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" class="arrow-svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+            </button>
+        </div>
+
+        <div id="message-box" class="mt-4 p-3 bg-yellow-900 text-yellow-300 rounded-lg text-center hidden msg">Message</div>
+      </section>
+
+      <!-- Écran des scores -->
+      <section id="scores-screen" class="screen hidden-screen glass p-6 z-20 flex-col items-start">
+        <div class="w-full max-w-2xl mx-auto flex flex-col h-full">
+          <div class="flex justify-between items-center mb-4 flex-shrink-0">
+            <h3 class="text-2xl font-bold">Historique des Scores</h3>
+            <button id="btn-back-from-scores" class="px-3 py-1 bg-indigo-600 rounded">Retour</button>
+          </div>
+
+          <div id="score-filter-buttons" class="flex gap-2 mb-4 flex-wrap flex-shrink-0">
+            <button id="btn-filter-all" class="filter-btn active px-4 py-2 bg-white/6 border border-white/10 rounded-lg text-sm">Tous</button>
+            <!-- Les filtres de deck seront générés dynamiquement -->
+          </div>
+
+          <!-- MODIFICATION: Ajout de overflow-y-auto pour le scroll interne -->
+          <div id="scores-list" class="space-y-2 p-3 bg-white/4 rounded-lg flex-1 overflow-y-auto"></div>
+        </div>
+      </section>
+
+      <!-- ÉCRAN ADMINISTRATEUR -->
+      <section id="soluce-screen" class="screen hidden-screen glass p-6 z-20 flex-col items-start">
+        <div class="w-full max-w-2xl mx-auto flex flex-col h-full">
+          
+          <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 flex-shrink-0">
+            <h3 class="text-2xl font-bold flex-shrink-0">Admin</h3>
+            <div class="flex flex-wrap items-center justify-center sm:flex-1 sm:justify-end gap-3">
+              <button id="btn-toggle-edit" class="px-3 py-1 bg-teal-600 hover:bg-teal-700 rounded">Activer l'édition</button>
+              <button id="btn-add-deck" class="px-4 py-1 bg-green-600 hover:bg-green-700 rounded-lg font-semibold" style="display: none;">Créer Deck</button>
+              <button id="btn-export-data" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm" style="display: none;">Exporter</button>
+              <button id="btn-import-data" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm" style="display: none;">Importer</button>
+              <input type="file" id="import-file-input" class="hidden" accept=".json" />
+              <button id="btn-back-from-soluce-admin" class="px-3 py-1 bg-indigo-600 rounded">Retour au Jeu</button>
+            </div>
+          </div>
+
+          <p id="soluce-info-text" class="text-sm text-gray-300 mb-4 flex-shrink-0">Mode par défaut: Cliquez sur une vignette pour agrandir l'image. Utilisez les boutons ci-dessus pour changer de mode.</p>
+
+          <!-- MODIFICATION: Ajout de overflow-y-auto pour le scroll interne -->
+          <div id="soluce-gallery-container" class="p-3 bg-white/4 rounded-lg flex-1 overflow-y-auto">
+            <!-- Les galeries de deck seront générées ici par JS -->
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- ÉCRAN DE SOLUTION (PUBLIC) -->
+      <section id="public-soluce-screen" class="screen hidden-screen glass p-6 z-20 flex-col items-start">
+        <div class="w-full max-w-2xl mx-auto flex flex-col h-full">
+          <div class="flex justify-between items-center mb-4 flex-shrink-0">
+            <h3 class="text-2xl font-bold">Galerie Solution</h3>
+            <button id="btn-back-from-public-soluce" class="px-3 py-1 bg-indigo-600 rounded">Retour au Jeu</button>
+          </div>
+
+          <p class="text-sm text-gray-300 mb-4 flex-shrink-0">Cliquez sur une carte pour l'agrandir.</p>
+
+          <!-- MODIFICATION: Ajout de overflow-y-auto pour le scroll interne -->
+          <div id="public-soluce-gallery-container" class="p-3 bg-white/4 rounded-lg flex-1 overflow-y-auto">
+            <!-- Contenu généré par generatePublicSoluceContainers() -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODALE MOT DE PASSE (MAINTENANT MODALE DE CONNEXION ADMIN) -->
+  <div id="password-modal" class="base-modal">
+    <span id="btn-close-password-modal" class="close-btn">&times;</span>
+    <div id="password-modal-content" class="w-full max-w-xs text-center">
+      <h4 class="text-xl font-bold mb-4">Accès Administrateur</h4>
+      <p class="text-sm text-gray-400 mb-4">Connectez-vous ou créez votre compte admin.</p>
+      
+      <!-- NOUVEAUX CHAMPS EMAIL/MOT DE PASSE -->
+      <input type="email" id="admin-email-input" placeholder="Email" class="mb-3" />
+      <input type="password" id="admin-password-input" placeholder="Mot de passe" class="mb-4" />
+      
+      <!-- ANCIEN INPUT (SUPPRIMÉ) -->
+      <!-- <input type="password" id="password-input" maxlength="4" class="w-full p-3 mb-4 rounded-lg bg-gray-700 text-white border border-pink-500/50 focus:border-pink-500 focus:ring-0" /> -->
+      
+      <!-- NOUVEAUX BOUTONS -->
+      <div class="flex flex-col gap-3">
+        <button id="btn-admin-login" class="w-full py-2 bg-pink-600 hover:bg-pink-700 rounded-lg font-semibold">Connexion</button>
+        <button id="btn-admin-create-account" class="w-full py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-sm">Créer Compte Admin</button>
+      </div>
+
+      <p id="password-error" class="text-sm text-red-400 mt-3 hidden">Erreur. Veuillez réessayer.</p>
+    </div>
+  </div>
+
+  <!-- MODALE D'ÉDITION/AJOUT DE CARTE -->
+  <div id="edit-card-modal" class="base-modal">
+    <span id="btn-close-edit-modal" class="close-btn">&times;</span>
+    <div id="edit-modal-content" class="w-full max-w-lg text-center flex flex-col">
+        <h4 id="edit-modal-title" class="text-2xl font-bold mb-4 flex-shrink-0">Ajouter une nouvelle carte</h4>
+        
+        <form id="card-form" class="flex flex-col flex-grow min-h-0" onsubmit="return false;">
+            <div class="flex-grow overflow-y-auto pr-2">
+                <input type="hidden" id="edit-card-deck-index">
+                <input type="hidden" id="edit-card-id">
+                
+                <label for="edit-deck-select">Sélectionner le Deck :</label>
+                <select id="edit-deck-select">
+                    <!-- Les options de deck seront générées dynamiquement -->
+                </select>
+
+                <!-- Zone de Drop pour l'image (sera insérée ici par JS) -->
+                
+                <label for="edit-card-text">Question / Texte (Ex: PC (GAUCHE) ou Console (DROITE) ?):</label>
+                <input type="text" id="edit-card-text" required placeholder="Question / Texte" />
+
+                <label for="edit-card-img">URL de l'Image (ou glissez/déposez) :</label>
+                <input type="url" id="edit-card-img" required placeholder="URL de l'Image" />
+                
+                <label for="edit-card-soluce-link">Lien Soluce (URL, Optionnel) :</label>
+                <input type="url" id="edit-card-soluce-link" placeholder="Lien vers la solution ou la source" />
+
+                <label for="edit-card-correct">Réponse Correcte :</label>
+                <select id="edit-card-correct" required>
+                    <option value="left">GAUCHE</option>
+                    <option value="right">DROITE</option>
+                </select>
+            </div>
+            
+            <div class="mt-4 flex gap-3 pt-4 border-t border-white/10 flex-shrink-0">
+                <button type="button" id="save-card-btn" class="flex-grow py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold">Sauvegarder</button>
+                <button type="button" id="btn-delete-card" class="flex-grow py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold">Supprimer la carte</button>
+                <button type="button" id="btn-cancel-edit-card" class="flex-grow py-2 bg-gray-500 hover:bg-gray-600 rounded-lg">Annuler</button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+  <!-- MODALE D'AJOUT/MODIFICATION DE DECK -->
+  <div id="deck-modal" class="base-modal">
+    <span id="btn-close-deck-modal" class="close-btn">&times;</span>
+    <div id="deck-modal-content" class="w-full max-w-lg text-center flex flex-col">
+        <h4 id="deck-modal-title" class="text-2xl font-bold mb-4 flex-shrink-0">Créer un nouveau Deck</h4>
+        <form id="deck-form" class="flex flex-col flex-grow min-h-0" onsubmit="return false;">
+            
+            <div class="flex-grow overflow-y-auto pr-2">
+                <input type="hidden" id="edit-deck-id">
+            
+                <label for="deck-name">Nom du Deck :</label>
+                <input type="text" id="deck-name" required placeholder="Ex: Deck Célébrités" />
+
+                <label for="deck-emoji">Emoji (Ex: 🔥) :</label>
+                <input type="text" id="deck-emoji" required placeholder="🔥" maxlength="2" />
+                
+                <label for="deck-indicator-left">Indicateur Gauche (Texte) :</label>
+                <input type="text" id="deck-indicator-left" required placeholder="Ex: TRANS" maxlength="10" />
+                
+                <label for="deck-indicator-right">Indicateur Droit (Texte) :</label>
+                <input type="text" id="deck-indicator-right" required placeholder="Ex: GIRL" maxlength="10" />
+
+                <label>Couleur du Deck :</label>
+                <div id="deck-color-selector" class="flex justify-center gap-3 mb-4">
+                    <div class="color-swatch bg-purple-500" data-color-name="purple"></div>
+                    <div class="color-swatch bg-cyan-500" data-color-name="cyan"></div>
+                    <div class="color-swatch bg-pink-500" data-color-name="pink"></div>
+                    <div class="color-swatch bg-green-500" data-color-name="green"></div>
+                    <div class="color-swatch bg-yellow-500" data-color-name="yellow"></div>
+                    <div class="color-swatch bg-gray-500" data-color-name="gray"></div>
+                    <div class="color-swatch bg-red-500" data-color-name="red"></div>
+                    <div class="color-swatch bg-blue-500" data-color-name="blue"></div>
+                    <div class="color-swatch bg-indigo-500" data-color-name="indigo"></div>
+                    <div class="color-swatch bg-emerald-500" data-color-name="emerald"></div>
+                    <div class="color-swatch bg-orange-500" data-color-name="orange"></div>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex gap-3 pt-4 border-t border-white/10 flex-shrink-0">
+                <button type="button" id="btn-save-deck" class="flex-grow py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold">Sauvegarder</button>
+                <button type="button" id="btn-cancel-deck" class="flex-grow py-2 bg-gray-500 hover:bg-gray-600 rounded-lg">Annuler</button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+
+  <!-- MODALE PLEIN ÉCRAN POUR L'IMAGE -->
+  <div id="image-modal" class="base-modal">
+    <span id="btn-close-image-modal" class="close-btn">&times;</span>
+    <div id="modal-content">
+      <img id="modal-image" src="" alt="Image en grand" />
+    </div>
+  </div>
+
+  <!-- MODALE DE CONFIRMATION/ALERTE -->
+  <div id="alert-modal" class="base-modal">
+    <span id="btn-close-alert-modal" class="close-btn">&times;</span>
+    <div id="alert-modal-content" class="w-full max-w-md text-center">
+      <h4 id="alert-modal-title" class="text-2xl font-bold mb-4 text-white">Titre de l'alerte</h4>
+      <p id="alert-modal-text" class="text-gray-300 mb-6">Message de l'alerte...</p>
+      <div id="alert-modal-buttons" class="flex gap-3 justify-end">
+        <!-- Boutons générés par JS -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SCRIPTS JAVASCRIPT (app.js) -->
+  <script type="module">
+    // --- IMPORTS FIREBASE ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    // MODIFICATION: Ajout des fonctions d'authentification par email
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, setLogLevel, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, documentId } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- VARIABLES GLOBALES FIREBASE ---
+    let app, auth, db;
+    let userId;
+    let isAuthReady = false;
+    let appId; // Déclaré ici
+
+    // Votre configuration collée depuis Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYYaN5phFZBsVa0gPCrSEZhgFseyD_cxk",
+      authDomain: "torg-31596.firebaseapp.com",
+      projectId: "torg-31596",
+      storageBucket: "torg-31596.firebasestorage.app",
+      messagingSenderId: "151929535221",
+      appId: "1:151929535221:web:0f2557fedb8a4ca034e3bc",
+      measurementId: "G-NH22BV7RT0"
+    };
+    
+    appId = firebaseConfig.appId; // Assigne l'appId
+
+    // Références aux collections Firestore
+    let deckInfoCollection, decksCollection, scoresCollection;
+
+
+    // --- CONSTANTES DE L'APPLICATION ---
+    const MAX_CARDS = 10;
+    // MODIFICATION: Le mot de passe local est supprimé
+    // const SOLUCE_PASSWORD = "1111"; 
+    
+    // SUPPRIMÉ: const DECKS_KEY = 'torg_game_decks';
+    // SUPPRIMÉ: const DECK_INFO_KEY = 'torg_game_deck_info';
+
+    const SWIPE_THRESHOLD = 80;
+    const MAX_ROT = 15;
+    const MAX_DISP = 150;
+
+    // --- DONNÉES PAR DÉFAUT (Pour la migration initiale) ---
+    const DEFAULT_DECK_INFO = [
+      { name: "Deck Classic", emoji: "🧜🏻", color: "purple", titleColor: "text-purple-400", cardBorder: "border-purple-400/30", indicatorLeft: "TRANS", indicatorRight: "GIRL" },
+      { name: "Deck Hardcore", emoji: "🧚🏻", color: "cyan", titleColor: "text-cyan-400", cardBorder: "border-cyan-400/30", indicatorLeft: "PC", indicatorRight: "CONSOLE" },
+      { name: "Deck Cosplay", emoji: "🧝🏻‍♀️", color: "pink", titleColor: "text-pink-400", cardBorder: "border-pink-400/30", indicatorLeft: "COSPLAY", indicatorRight: "IRL" }
+    ];
+
+    const neutralImg = "https://placehold.co/400x550/FBFCF8/000000?text=?";
+    const neutralCard = (correctSide = "left") => ({
+      id: crypto.randomUUID(),
+      text: "",
+      correct: correctSide,
+      img: neutralImg,
+      soluceLink: ""
+    });
+
+    const INITIAL_DECKS = [
+      Array(10).fill(null).map((_, i) => neutralCard(i % 2 === 0 ? "left" : "right")),
+      Array(10).fill(null).map((_, i) => neutralCard(i % 2 === 0 ? "left" : "right")),
+      Array(10).fill(null).map((_, i) => neutralCard(i % 2 === 0 ? "left" : "right"))
+    ];
+
+    // --- ÉTAT GLOBAL ---
+    // Ces données seront maintenant chargées depuis Firestore
+    let PERSISTENT_DECKS = []; // Sera un tableau de tableaux de cartes
+    let PERSISTENT_DECK_INFO = []; // Sera un tableau d'objets d'info
+
+    const state = {
+      playerName: '',
+      currentDeck: 0,
+      currentFilter: 'all',
+      game: { score: 0, cardIndex: 0, isProcessing: false },
+      currentDeckCards: [],
+      resultsRecap: [],
+      isEditingMode: false,
+      editingCardGlobalId: null,
+      previousScreen: null,
+      drag: { startX: 0, currentX: 0, isDragging: false, isMouseDown: false },
+      animationFrameId: null
+    };
+
+    const DOM = {};
+
+    // --- INITIALISATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+      queryDOMElements();
+      
+      // MODIFIÉ: On initialise Firebase au lieu de charger depuis localStorage
+      initializeFirebase();
+      
+      state.playerName = localStorage.getItem('player_name') || '';
+      if (state.playerName) {
+        DOM.playerNameInput.value = state.playerName;
+        DOM.playerDisplay.textContent = state.playerName;
+      }
+
+      initEventListeners();
+      
+      // SUPPRIMÉ: regenerateAllDynamicContent(); 
+      // Ceci sera appelé APRÈS le chargement des données Firebase
+      
+      showScreen(DOM.introScreen);
+    });
+
+    async function initializeFirebase() {
+      if (!firebaseConfig) {
+        console.error("Firebase config is missing!");
+        showAlert("Erreur de Connexion", "La configuration Firebase est manquante. L'application ne peut pas se connecter à la base de données.", "error");
+        return;
+      }
+      
+      try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        setLogLevel('Debug'); // Active les logs Firebase
+
+        // Définir les chemins des collections
+        deckInfoCollection = collection(db, `artifacts/${appId}/public/data/deck_info`);
+        decksCollection = collection(db, `artifacts/${appId}/public/data/decks`);
+        scoresCollection = collection(db, `artifacts/${appId}/public/data/scores`);
+
+        // Gérer l'authentification
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            userId = user.uid;
+            console.log("User is authenticated:", userId);
+            isAuthReady = true;
+            // L'utilisateur est connecté (soit admin, soit anonyme), on charge les données
+            loadPersistentData(); 
+          } else {
+            // Pas d'utilisateur, on le connecte anonymement (pour les joueurs)
+            console.log("User not signed in, signing in...");
+            try {
+              // MODIFICATION: Force la connexion anonyme pour éviter le conflit de token
+              // await (typeof __initial_auth_token !== 'undefined' ? 
+              //   signInWithCustomToken(auth, __initial_auth_token) : 
+              //   signInAnonymously(auth));
+              await signInAnonymously(auth);
+              // onAuthStateChanged sera déclenché à nouveau avec l'utilisateur
+            } catch (authError) {
+              console.error("Firebase Auth Error:", authError);
+              showAlert("Erreur d'Authentification", `Impossible de se connecter: ${authError.message}`, "error");
+            }
+          }
+        });
+
+      } catch (e) {
+        console.error("Error initializing Firebase:", e);
+        showAlert("Erreur Firebase", `Impossible d'initialiser Firebase: ${e.message}`, "error");
+      }
+    }
+
+    function queryDOMElements() {
+      // (Le contenu de cette fonction est identique à votre fichier, pas besoin de le répéter ici)
+      // ...
+      DOM.introScreen = document.getElementById('intro-screen');
+      DOM.deckScreen = document.getElementById('deck-screen');
+      DOM.gameScreen = document.getElementById('game-screen');
+      DOM.scoresScreen = document.getElementById('scores-screen'); 
+      DOM.soluceScreen = document.getElementById('soluce-screen'); 
+      DOM.publicSoluceScreen = document.getElementById('public-soluce-screen');
+      
+      DOM.btnHeaderAdmin = document.getElementById('btn-header-admin');
+      DOM.playerDisplay = document.getElementById('player-display');
+      DOM.playerNameInput = document.getElementById('player-name');
+      DOM.btnStart = document.getElementById('btn-start');
+      DOM.btnViewScores = document.getElementById('btn-view-scores');
+
+      DOM.deckSelectionGrid = document.getElementById('deck-selection-grid');
+      DOM.btnViewScoresFromDeck = document.getElementById('btn-view-scores-from-deck');
+      DOM.btnViewPublicSoluce = document.getElementById('btn-view-public-soluce');
+      DOM.btnChangePlayer = document.getElementById('btn-change-player');
+      
+      DOM.overlayLeft = document.getElementById('overlay-left');
+      DOM.overlayRight = document.getElementById('overlay-right');
+      DOM.scoreDisplay = document.getElementById('score-display');
+      DOM.indexDisplay = document.getElementById('index-display');
+      DOM.btnQuitGame = document.getElementById('btn-quit-game');
+      DOM.cardHolder = document.getElementById('card-holder');
+      DOM.indicatorLeft = document.getElementById('indicator-left');
+      DOM.indicatorRight = document.getElementById('indicator-right');
+      DOM.cardElement = document.getElementById('card');
+      DOM.cardImage = document.getElementById('card-image');
+      DOM.cardText = document.getElementById('card-text');
+      DOM.arrowBtnContainer = document.querySelector('.arrow-btn-container');
+      DOM.btnArrowLeft = document.getElementById('btn-arrow-left');
+      DOM.btnArrowRight = document.getElementById('btn-arrow-right');
+      DOM.btnZoomCard = document.getElementById('btn-zoom-card');
+      DOM.messageBox = document.getElementById('message-box');
+      
+      DOM.endOverlay = document.getElementById('end-overlay');
+      DOM.gaugeCircle = document.getElementById('gauge-circle');
+      DOM.gaugePercentage = document.getElementById('gauge-percentage');
+      DOM.resultMessage = document.getElementById('result-message');
+      DOM.recapTitle = document.getElementById('recap-title');
+      DOM.recapList = document.getElementById('recap-list');
+      DOM.btnChooseDeck = document.getElementById('btn-choose-deck');
+      DOM.btnReplay = document.getElementById('btn-replay');
+      DOM.btnViewScoresFromGame = document.getElementById('btn-view-scores-from-game');
+      
+      DOM.btnBackFromScores = document.getElementById('btn-back-from-scores');
+      DOM.scoreFilterButtons = document.getElementById('score-filter-buttons');
+      DOM.btnFilterAll = document.getElementById('btn-filter-all');
+      DOM.scoresList = document.getElementById('scores-list');
+
+      DOM.btnToggleEdit = document.getElementById('btn-toggle-edit');
+      DOM.btnAddDeck = document.getElementById('btn-add-deck');
+      DOM.btnExportData = document.getElementById('btn-export-data');
+      DOM.btnImportData = document.getElementById('btn-import-data');
+      DOM.importFileInput = document.getElementById('import-file-input');
+      DOM.btnBackFromSoluceAdmin = document.getElementById('btn-back-from-soluce-admin');
+      DOM.soluceGalleryContainer = document.getElementById('soluce-gallery-container');
+      DOM.soluceInfoText = document.getElementById('soluce-info-text');
+
+      DOM.btnBackFromPublicSoluce = document.getElementById('btn-back-from-public-soluce');
+      DOM.publicSoluceGalleryContainer = document.getElementById('public-soluce-gallery-container');
+
+      DOM.imageModal = document.getElementById('image-modal');
+      DOM.modalImage = document.getElementById('modal-image');
+      DOM.btnCloseImageModal = document.getElementById('btn-close-image-modal');
+
+      DOM.passwordModal = document.getElementById('password-modal');
+      // DOM.passwordInput = document.getElementById('password-input'); // SUPPRIMÉ
+      DOM.passwordError = document.getElementById('password-error');
+      // DOM.btnCheckPassword = document.getElementById('btn-check-password'); // SUPPRIMÉ
+      DOM.btnClosePasswordModal = document.getElementById('btn-close-password-modal');
+      
+      // BUG FIX: Ces lignes sont déplacées dans initEventListeners
+      // DOM.btnAdminLogin = document.getElementById('btn-admin-login');
+      // DOM.btnAdminCreateAccount = document.getElementById('btn-admin-create-account');
+      // DOM.adminEmailInput = document.getElementById('admin-email-input');
+      // DOM.adminPasswordInput = document.getElementById('admin-password-input');
+
+      DOM.editCardModal = document.getElementById('edit-card-modal');
+      DOM.editModalTitle = document.getElementById('edit-modal-title');
+      DOM.cardForm = document.getElementById('card-form');
+      DOM.editCardDeckIndex = document.getElementById('edit-card-deck-index');
+      DOM.editCardId = document.getElementById('edit-card-id');
+      DOM.editDeckSelect = document.getElementById('edit-deck-select');
+      DOM.editCardText = document.getElementById('edit-card-text');
+      DOM.editCardImg = document.getElementById('edit-card-img');
+      DOM.editCardSoluceLink = document.getElementById('edit-card-soluce-link');
+      DOM.editCardCorrect = document.getElementById('edit-card-correct');
+      DOM.saveCardBtn = document.getElementById('save-card-btn');
+      DOM.btnDeleteCard = document.getElementById('btn-delete-card');
+      DOM.btnCancelEditCard = document.getElementById('btn-cancel-edit-card');
+
+      DOM.deckModal = document.getElementById('deck-modal');
+      DOM.deckForm = document.getElementById('deck-form');
+      DOM.deckModalTitle = document.getElementById('deck-modal-title');
+      DOM.editDeckId = document.getElementById('edit-deck-id');
+      DOM.deckNameInput = document.getElementById('deck-name');
+      DOM.deckEmojiInput = document.getElementById('deck-emoji');
+      DOM.deckIndicatorLeftInput = document.getElementById('deck-indicator-left');
+      DOM.deckIndicatorRightInput = document.getElementById('deck-indicator-right');
+      DOM.deckColorSelector = document.getElementById('deck-color-selector');
+      DOM.btnSaveDeck = document.getElementById('btn-save-deck');
+      DOM.btnCancelDeck = document.getElementById('btn-cancel-deck');
+      DOM.btnCloseDeckModal = document.getElementById('btn-close-deck-modal');
+
+      DOM.alertModal = document.getElementById('alert-modal');
+      DOM.alertModalTitle = document.getElementById('alert-modal-title');
+      DOM.alertModalText = document.getElementById('alert-modal-text');
+      DOM.alertModalButtons = document.getElementById('alert-modal-buttons');
+      DOM.btnCloseAlertModal = document.getElementById('btn-close-alert-modal');
+      
+      DOM.cursorGlow = document.getElementById('cursor-glow');
+    }
+
+    function initEventListeners() {
+      // (Le contenu de cette fonction est identique à votre fichier, pas besoin de le répéter ici)
+      // ...
+      DOM.btnHeaderAdmin.addEventListener('click', openPasswordModal);
+      DOM.btnStart.addEventListener('click', continueToDecks);
+      DOM.btnViewScores.addEventListener('click', () => showScoresScreen(DOM.introScreen));
+      
+      DOM.btnViewScoresFromDeck.addEventListener('click', () => showScoresScreen(DOM.deckScreen));
+      DOM.btnViewPublicSoluce.addEventListener('click', showPublicSoluce);
+      DOM.btnChangePlayer.addEventListener('click', () => showScreen(DOM.introScreen));
+
+      DOM.btnQuitGame.addEventListener('click', quitGame);
+      DOM.cardElement.addEventListener('click', () => {
+        if (DOM.cardImage.src && !DOM.cardImage.src.includes('placehold.co')) {
+          openModal(DOM.cardImage.src);
+        }
+      });
+      DOM.btnZoomCard.addEventListener('click', () => {
+        if (DOM.cardImage.src && !DOM.cardImage.src.includes('placehold.co')) {
+          openModal(DOM.cardImage.src);
+        }
+      });
+      
+      DOM.btnArrowLeft.addEventListener('click', () => handleDecision('left'));
+      DOM.btnArrowRight.addEventListener('click', () => handleDecision('right'));
+      
+      DOM.cardElement.addEventListener('touchstart', onDragStart, { passive: true });
+      DOM.cardElement.addEventListener('touchmove', onDragMove, { passive: true });
+      DOM.cardElement.addEventListener('touchend', onDragEnd);
+      DOM.cardElement.addEventListener('mousedown', onDragStart);
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+      
+      document.addEventListener('keydown', onKeyDown);
+
+      DOM.btnChooseDeck.addEventListener('click', () => {
+        DOM.endOverlay.classList.add('hidden');
+        showScreen(DOM.deckScreen);
+      });
+      DOM.btnReplay.addEventListener('click', () => {
+        DOM.endOverlay.classList.add('hidden');
+        startGame();
+      });
+      DOM.btnViewScoresFromGame.addEventListener('click', () => showScoresScreen(DOM.gameScreen));
+
+      DOM.btnBackFromScores.addEventListener('click', () => {
+        showScreen(state.previousScreen || DOM.deckScreen);
+      });
+      DOM.btnFilterAll.addEventListener('click', (e) => filterScores('all', e.target));
+
+      DOM.btnToggleEdit.addEventListener('click', toggleEditingMode);
+      DOM.btnAddDeck.addEventListener('click', () => openDeckModal(null));
+      DOM.btnExportData.addEventListener('click', exportData);
+      DOM.btnImportData.addEventListener('click', () => DOM.importFileInput.click());
+      DOM.importFileInput.addEventListener('change', importData);
+      DOM.btnBackFromSoluceAdmin.addEventListener('click', () => showScreen(DOM.deckScreen));
+
+      DOM.btnBackFromPublicSoluce.addEventListener('click', () => showScreen(DOM.deckScreen));
+      
+      DOM.imageModal.addEventListener('click', (e) => {
+        if (e.target.id === 'image-modal') closeModal(DOM.imageModal);
+      });
+      DOM.btnCloseImageModal.addEventListener('click', () => closeModal(DOM.imageModal));
+
+      DOM.passwordModal.addEventListener('click', (e) => {
+        if (e.target.id === 'password-modal') closeModal(DOM.passwordModal);
+      });
+      DOM.btnClosePasswordModal.addEventListener('click', () => closeModal(DOM.passwordModal));
+      
+      // MODIFICATION: Écouteurs pour les nouveaux boutons de connexion admin
+      // BUG FIX: Ces lignes sont déplacées ici depuis queryDOMElements
+      DOM.btnAdminLogin = document.getElementById('btn-admin-login');
+      DOM.btnAdminCreateAccount = document.getElementById('btn-admin-create-account');
+      DOM.adminEmailInput = document.getElementById('admin-email-input');
+      DOM.adminPasswordInput = document.getElementById('admin-password-input');
+
+      DOM.btnAdminLogin.addEventListener('click', handleAdminLogin);
+      DOM.btnAdminCreateAccount.addEventListener('click', handleAdminCreateAccount);
+      
+      // Suppression de l'ancien écouteur
+      // DOM.btnCheckPassword.addEventListener('click', checkPassword);
+      
+      // BUG FIX: Commentaire de l'ancien écouteur qui provoquait une erreur
+      // DOM.passwordInput.addEventListener('keydown', (e) => {
+      //   if (e.key === 'Enter') checkPassword();
+      // });
+      
+      // Remplacement par le nouvel écouteur
+      DOM.adminPasswordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleAdminLogin();
+      });
+
+      DOM.editCardModal.addEventListener('click', (e) => {
+        if (e.target.id === 'edit-card-modal') closeModal(DOM.editCardModal);
+      });
+      DOM.saveCardBtn.addEventListener('click', saveCard);
+      DOM.btnDeleteCard.addEventListener('click', deleteCard);
+      DOM.btnCancelEditCard.addEventListener('click', () => closeModal(DOM.editCardModal));
+
+      DOM.deckModal.addEventListener('click', (e) => {
+        if (e.target.id === 'deck-modal') closeModal(DOM.deckModal);
+      });
+      DOM.btnCloseDeckModal.addEventListener('click', () => closeModal(DOM.deckModal));
+      DOM.btnSaveDeck.addEventListener('click', saveDeckInfo);
+      DOM.btnCancelDeck.addEventListener('click', () => closeModal(DOM.deckModal));
+      DOM.deckColorSelector.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.addEventListener('click', () => {
+          DOM.deckColorSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+          swatch.classList.add('selected');
+        });
+      });
+
+      DOM.alertModal.addEventListener('click', (e) => {
+        if (e.target.id === 'alert-modal') closeModal(DOM.alertModal);
+      });
+      DOM.btnCloseAlertModal.addEventListener('click', () => closeModal(DOM.alertModal));
+      
+      document.addEventListener('mousemove', (e) => {
+        requestAnimationFrame(() => {
+          if (DOM.cursorGlow) {
+            DOM.cursorGlow.style.left = `${e.clientX}px`;
+            DOM.cursorGlow.style.top = `${e.clientY}px`;
+            DOM.cursorGlow.style.opacity = '1';
+          }
+        });
+      });
+      
+      document.addEventListener('mouseleave', () => {
+        if (DOM.cursorGlow) {
+          DOM.cursorGlow.style.opacity = '0';
+        }
+      });
+    }
+
+    // --- STOCKAGE (Maintenant Firestore) ---
+
+    /**
+     * NOUVEAU: Charge les données depuis Firestore.
+     * S'abonne aux infos des decks. Si elles sont vides, migre les données par défaut.
+     * Une fois les infos chargées, charge les decks de cartes correspondants.
+     */
+    function loadPersistentData() {
+      if (!isAuthReady || !db) {
+        console.log("Attente de l'authentification...");
+        return;
+      }
+
+      // 1. Écouter les changements sur les INFOS des decks
+      const infoQuery = query(deckInfoCollection);
+      onSnapshot(infoQuery, async (snapshot) => {
+        console.log("Snapshot des infos de deck reçu.");
+        if (snapshot.empty) {
+          console.log("Aucune info de deck trouvée. Migration des données par défaut...");
+          await migrateInitialData(); // Cela déclenchera un nouveau snapshot
+          return;
+        }
+        
+        // Convertir les documents en tableau et les trier
+        let infoData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        infoData.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+        PERSISTENT_DECK_INFO = infoData;
+        
+        // 2. Les infos sont chargées et triées, on charge les CARTES
+        loadDecksData();
+
+      }, (error) => {
+        console.error("Erreur de chargement des infos de deck:", error);
+        showAlert("Erreur Données", "Impossible de charger les infos des decks.", "error");
+      });
+    }
+
+    /**
+     * NOUVEAU: Charge les données des cartes pour les decks existants.
+     */
+    function loadDecksData() {
+      // On utilise les IDs des infos de deck pour charger les cartes
+      const deckIds = PERSISTENT_DECK_INFO.map(info => info.id);
+      if (deckIds.length === 0) {
+        PERSISTENT_DECKS = [];
+        console.log("Pas de decks à charger.");
+        regenerateAllDynamicContent(); // Régénère l'UI (qui sera vide)
+        return;
+      }
+
+      // Écouter les changements sur les CARTES des decks
+      const decksQuery = query(decksCollection, where(documentId(), 'in', deckIds));
+      onSnapshot(decksQuery, (snapshot) => {
+        console.log("Snapshot des cartes de deck reçu.");
+        const decksData = {};
+        snapshot.docs.forEach(doc => {
+          decksData[doc.id] = { ...doc.data(), id: doc.id };
+        });
+
+        // Reconstruit le tableau PERSISTENT_DECKS dans le MÊME ORDRE
+        // que PERSISTENT_DECK_INFO, pour que la logique d'index (deck[i]) fonctionne.
+        PERSISTENT_DECKS = PERSISTENT_DECK_INFO.map(info => {
+          return decksData[info.id] ? decksData[info.id].cards : [];
+        });
+        
+        console.log("Données chargées et traitées.", PERSISTENT_DECK_INFO, PERSISTENT_DECKS);
+        
+        // 3. TOUTES les données sont chargées, on régénère l'UI
+        regenerateAllDynamicContent();
+        
+      }, (error) => {
+        console.error("Erreur de chargement des decks:", error);
+        showAlert("Erreur Données", "Impossible de charger les cartes des decks.", "error");
+      });
+    }
+
+    /**
+     * NOUVEAU: Migre les données par défaut vers Firestore.
+     * Appelé une seule fois si la base de données est vide.
+     */
+    async function migrateInitialData() {
+      console.log("Lancement de la migration...");
+      const batch = writeBatch(db);
+
+      DEFAULT_DECK_INFO.forEach((info, index) => {
+        // Crée une référence pour le NOUVEAU document d'info (ID auto)
+        const newDeckInfoRef = doc(deckInfoCollection);
+        
+        const newDeckData = {
+          ...info,
+          orderIndex: index,
+          createdAt: Date.now()
+        };
+        // Ajoute l'opération au batch
+        batch.set(newDeckInfoRef, newDeckData);
+
+        // Crée les cartes correspondantes en utilisant le MÊME ID
+        const newDeckRef = doc(decksCollection, newDeckInfoRef.id);
+        const cards = INITIAL_DECKS[index] ? INITIAL_DECKS[index].map(card => ({
+          ...card, 
+          id: card.id || crypto.randomUUID(),
+          soluceLink: card.soluceLink || ""
+        })) : [];
+        
+        batch.set(newDeckRef, { cards: cards });
+      });
+
+      try {
+        await batch.commit();
+        console.log("Migration réussie.");
+        // Le listener onSnapshot va maintenant détecter ces nouvelles données.
+      } catch (e) {
+        console.error("Échec de la migration:", e);
+        showAlert("Erreur Migration", "Impossible d'initialiser les données de jeu.", "error");
+      }
+    }
+
+    // SUPPRIMÉ: loadDecks() - Remplacé par loadPersistentData
+    // SUPPRIMÉ: loadDeckInfo() - Remplacé par loadPersistentData
+    // SUPPRIMÉ: migrateInitialDecks() - Remplacé par migrateInitialData
+    // SUPPRIMÉ: migrateInitialDeckInfo() - Remplacé par migrateInitialData
+    // SUPPRIMÉ: saveDecks(decks) - Remplacé par saveCard/deleteCard
+    // SUPPRIMÉ: saveDeckInfoToStorage(info) - Remplacé par saveDeckInfo
+
+    // SUPPRIMÉ: getScores() - Remplacé par la logique dans renderScores
+
+    // --- IMPORT/EXPORT (MODIFIÉ) ---
+    function exportData() {
+      console.log("Export données...");
+      try {
+        // Exporte les données actuellement en mémoire
+        const data = { 
+          decks: PERSISTENT_DECKS.map((cards, index) => ({ id: PERSISTENT_DECK_INFO[index].id, cards: cards })), 
+          info: PERSISTENT_DECK_INFO 
+        };
+        // Note: C'est une structure légèrement différente de l'ancienne
+        const dataString = JSON.stringify(data, null, 2);
+        const blob = new Blob([dataString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `torg_beta_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Erreur export:", error);
+        showAlert("Erreur", "Échec de l'exportation.", "error");
+      }
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target.result;
+          const data = JSON.parse(content);
+          
+          // Vérifie la NOUVELLE structure d'export
+          if (data && Array.isArray(data.decks) && Array.isArray(data.info)) {
+            const totalDecks = data.info.length;
+            const totalCards = data.decks.reduce((sum, deck) => sum + (deck.cards ? deck.cards.length : 0), 0);
+            
+            const onConfirmImport = async () => {
+              // L'importation est plus complexe, elle doit écraser les données dans Firestore
+              const batch = writeBatch(db);
+              
+              // 1. Supprimer les anciennes données (plus sûr de le faire manuellement dans la console Firebase)
+              // ... Pour l'instant, on se contente d'ajouter/écraser
+              
+              // 2. Ajouter/écraser les nouvelles données
+              data.info.forEach((infoDoc, index) => {
+                const deckDoc = data.decks[index];
+                if (!deckDoc || infoDoc.id !== deckDoc.id) {
+                   console.warn("Incohérence ID Deck/Info", infoDoc, deckDoc);
+                   return;
+                }
+                
+                const infoRef = doc(deckInfoCollection, infoDoc.id);
+                batch.set(infoRef, infoDoc);
+                
+                const deckRef = doc(decksCollection, deckDoc.id);
+                batch.set(deckRef, { cards: deckDoc.cards });
+              });
+              
+              try {
+                await batch.commit();
+                // Les listeners onSnapshot mettront l'UI à jour
+                showAlert("Import Réussi", "Nouveaux decks chargés.", "success");
+              } catch (commitError) {
+                console.error("Erreur lors du commit d'import:", commitError);
+                showAlert("Erreur d'import", `Échec: ${commitError.message}`, "error");
+              }
+            };
+            
+            showConfirm(
+              "Confirmer l'import",
+              `Import ${totalDecks} deck(s) et ${totalCards} carte(s).\n\nATTENTION: Écrase les données Firestore correspondantes. Continuer ?`,
+              onConfirmImport
+            );
+          } else {
+            throw new Error("Structure JSON invalide (attendue {decks: [...], info: [...]}).");
+          }
+        } catch (error) {
+          console.error("Erreur import:", error);
+          showAlert("Erreur d'import", `Échec: ${error.message}`, "error");
+        } finally {
+          event.target.value = null;
+        }
+      };
+      
+      reader.onerror = (error) => {
+         console.error("Erreur lecture fichier:", error);
+         showAlert("Erreur", "Échec lecture fichier.", "error");
+         event.target.value = null;
+      };
+      
+      reader.readAsText(file);
+    }
+
+    // --- NAVIGATION ---
+    function showScreen(screenEl) {
+      // (Identique à votre code)
+      // ...
+      const mainScreens = [
+        DOM.introScreen, DOM.deckScreen, DOM.gameScreen, 
+        DOM.scoresScreen, DOM.soluceScreen, DOM.publicSoluceScreen
+      ];
+      
+      mainScreens.forEach(s => {
+        s.classList.add('hidden-screen');
+        s.classList.remove('active');
+      });
+
+      closeModal(DOM.imageModal);
+      closeModal(DOM.passwordModal);
+      closeModal(DOM.editCardModal);
+      closeModal(DOM.deckModal);
+      closeModal(DOM.alertModal);
+
+      screenEl.classList.remove('hidden-screen');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          screenEl.classList.add('active');
+        });
+      });
+    }
+
+    function showScoresScreen(prevScreen) {
+      state.previousScreen = prevScreen;
+      renderScores(); // Rendu des scores (maintenant asynchrone)
+      showScreen(DOM.scoresScreen);
+    }
+
+    function showAllSoluce() {
+      // (Identique à votre code)
+      // ...
+      DOM.soluceGalleryContainer.querySelectorAll('.soluce-deck-title').forEach(el => el.style.display = 'flex');
+      DOM.soluceGalleryContainer.querySelectorAll('.soluce-deck-content').forEach(el => {
+        el.classList.remove('hidden-soluce');
+      });
+      
+      updateSoluceDisplayModes();
+      showScreen(DOM.soluceScreen);
+    }
+
+    function showPublicSoluce() {
+      // (Identique à votre code)
+      // ...
+      regeneratePublicSoluce();
+      showScreen(DOM.publicSoluceScreen);
+    }
+
+    // --- GÉNÉRATION UI DYNAMIQUE ---
+    function regenerateAllDynamicContent() {
+      // (Identique à votre code, mais utilise les données globales PERSISTENT_*)
+      // ...
+      generateDeckSelectionScreen();
+      generateSoluceContainers();
+      generatePublicSoluceContainers();
+      generateScoreFilters();
+      
+      DOM.editDeckSelect.innerHTML = '';
+      PERSISTENT_DECK_INFO.forEach((info, index) => {
+        DOM.editDeckSelect.innerHTML += `<option value="${index}">${info.emoji} ${info.name}</option>`;
+      });
+    }
+
+    function regeneratePublicSoluce() {
+      // (Identique à votre code)
+      // ...
+      generatePublicSoluceContainers();
+    }
+
+    function generateDeckSelectionScreen() {
+      // (Identique à votre code)
+      // ...
+      DOM.deckSelectionGrid.innerHTML = '';
+      
+      PERSISTENT_DECK_INFO.forEach((deckInfo, index) => {
+        const cardCount = (PERSISTENT_DECKS[index] || []).length;
+        
+        const el = document.createElement('div');
+        el.className = `deck-card glass rounded-xl p-6`;
+        el.addEventListener('click', () => selectDeck(index));
+        
+        el.innerHTML = `
+          <div class="text-4xl mb-4 text-center">${deckInfo.emoji}</div>
+          <h3 class="text-xl font-bold mb-2 text-center ${deckInfo.titleColor}">${deckInfo.name}</h3>
+          <p class="text-sm text-gray-300 text-center mb-3">Le deck ${deckInfo.name.toLowerCase()}</p>
+          <div class="text-xs text-gray-400 text-center">${cardCount} cartes</div>
+        `;
+        DOM.deckSelectionGrid.appendChild(el);
+      });
+    }
+
+    function generateScoreFilters() {
+      // (Identique à votre code)
+      // ...
+      DOM.scoreFilterButtons.querySelectorAll('.filter-btn:not(#btn-filter-all)').forEach(btn => btn.remove());
+      
+      PERSISTENT_DECK_INFO.forEach((deckInfo, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn px-4 py-2 bg-white/6 border border-white/10 rounded-lg text-sm';
+        btn.textContent = `${deckInfo.emoji} ${deckInfo.name}`;
+        btn.addEventListener('click', (e) => filterScores(index, e.target));
+        DOM.scoreFilterButtons.appendChild(btn);
+      });
+    }
+
+    function generateSoluceContainers() {
+      // (Identique à votre code)
+      // ...
+      DOM.soluceGalleryContainer.innerHTML = '';
+
+      PERSISTENT_DECKS.forEach((deck, deckIndex) => {
+        const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+        if (!deckInfo) {
+          console.warn(`Pas d'info deck ${deckIndex}`);
+          return;
+        }
+        
+        const titleEl = document.createElement('h4');
+        titleEl.className = `soluce-deck-title ${deckInfo.titleColor}`;
+        titleEl.innerHTML = `${deckInfo.emoji} ${deckInfo.name} (${(deck || []).length} cartes)`;
+        
+        const editBtn = document.createElement('span');
+        editBtn.className = 'edit-deck-btn';
+        editBtn.innerHTML = '✏️';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openDeckModal(deckIndex);
+        });
+        titleEl.appendChild(editBtn);
+        DOM.soluceGalleryContainer.appendChild(titleEl);
+
+        const cardsContainer = document.createElement('div');
+        cardsContainer.id = `soluce-deck-${deckIndex}`;
+        cardsContainer.className = 'soluce-deck-content hidden-soluce';
+        DOM.soluceGalleryContainer.appendChild(cardsContainer);
+        
+        (deck || []).forEach(card => {
+          cardsContainer.appendChild(createSoluceCardVignette(card, deckInfo, deckIndex));
+        });
+        
+        cardsContainer.appendChild(createAddCardVignette(deckIndex));
+      });
+      
+      updateSoluceDisplayModes();
+    }
+
+    function generatePublicSoluceContainers() {
+      // (Identique à votre code)
+      // ...
+      DOM.publicSoluceGalleryContainer.innerHTML = '';
+
+      PERSISTENT_DECKS.forEach((deck, deckIndex) => {
+        const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+        if (!deckInfo) return;
+        
+        const titleEl = document.createElement('h4');
+        titleEl.className = `soluce-deck-title ${deckInfo.titleColor}`;
+        titleEl.innerHTML = `${deckInfo.emoji} ${deckInfo.name} (${(deck || []).length} cartes)`;
+        DOM.publicSoluceGalleryContainer.appendChild(titleEl);
+
+        const cardsContainer = document.createElement('div');
+        cardsContainer.className = 'soluce-deck-content';
+        DOM.publicSoluceGalleryContainer.appendChild(cardsContainer);
+        
+        (deck || []).forEach(card => {
+          cardsContainer.appendChild(createSoluceCardVignette(card, deckInfo, deckIndex, true));
+        });
+      });
+    }
+
+    function createSoluceCardVignette(card, deckInfo, deckIndex, isPublic = false) {
+      // (Identique à votre code)
+      // ...
+      const el = document.createElement('div');
+      el.className = 'soluce-gallery-item flex flex-col justify-between p-2 glass rounded-lg border-2 border-white/10';
+      el.setAttribute('data-card-id', card.id);
+      el.setAttribute('data-deck-index', deckIndex);
+      
+      const hasSoluceLink = card.soluceLink && card.soluceLink.trim() !== "";
+      
+      el.addEventListener('click', () => {
+        if (!isPublic && state.isEditingMode) {
+          openEditModal(deckIndex, card.id);
+        } else if (hasSoluceLink) {
+          window.open(card.soluceLink, '_blank');
+        } else {
+          openModal(card.img);
+        }
+      });
+      
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'w-full h-2/3 object-cover rounded-md mb-1 soluce-gallery-item-image-container';
+      imageContainer.style.backgroundImage = `url('${card.img}')`;
+      imageContainer.style.backgroundSize = 'cover';
+      imageContainer.style.backgroundPosition = 'center';
+
+      if (hasSoluceLink) {
+        imageContainer.innerHTML = `<span class="soluce-link-indicator">🔗</span>`;
+      }
+      
+      const correctText = card.correct === 'left' ? 'GAUCHE (Mauve)' : 'DROITE (Rose)';
+      const colorClass = card.correct === 'left' ? 'text-purple-400' : 'text-pink-400';
+      
+      const textDiv = document.createElement('div');
+      textDiv.className = 'text-xs font-semibold text-gray-200 truncate';
+      textDiv.title = card.text;
+      textDiv.textContent = card.text.split(' (')[0] || "Carte sans texte";
+      
+      const correctDiv = document.createElement('div');
+      correctDiv.className = `text-[10px] ${colorClass}`;
+      correctDiv.textContent = `Rép: ${correctText}`;
+      
+      const deckNameDiv = document.createElement('div');
+      deckNameDiv.className = 'text-[9px] text-gray-400 mt-0.5';
+      deckNameDiv.textContent = deckInfo.name;
+      
+      el.appendChild(imageContainer);
+      el.appendChild(textDiv);
+      el.appendChild(correctDiv);
+      el.appendChild(deckNameDiv);
+      
+      return el;
+    }
+
+    function createAddCardVignette(deckIndex) {
+      // (Identique à votre code)
+      // ...
+      const addCardEl = document.createElement('div');
+      addCardEl.className = 'soluce-gallery-item add-card-btn';
+      addCardEl.style.display = 'none';
+      addCardEl.addEventListener('click', () => openEditModal(deckIndex, null));
+      addCardEl.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      `;
+      return addCardEl;
+    }
+
+    // --- LOGIQUE JEU ---
+    function continueToDecks() {
+      // (Identique à votre code, sauvegarde toujours le pseudo en localStorage)
+      // ...
+      const name = (DOM.playerNameInput.value || '').trim();
+      if (!name) {
+        DOM.playerNameInput.focus();
+        DOM.playerNameInput.classList.add('border-red-500');
+        return;
+      }
+      DOM.playerNameInput.classList.remove('border-red-500');
+      state.playerName = name;
+      localStorage.setItem('player_name', state.playerName); // On garde le pseudo en local
+      DOM.playerDisplay.textContent = state.playerName;
+      showScreen(DOM.deckScreen);
+    }
+
+    function selectDeck(deckIndex) {
+      // (Identique à votre code)
+      // ...
+      if (!PERSISTENT_DECKS[deckIndex] || PERSISTENT_DECKS[deckIndex].length < MAX_CARDS) {
+        showAlert(
+          "Deck incomplet",
+          `Ce deck n'a que ${PERSISTENT_DECKS[deckIndex]?.length || 0} cartes. Il en faut ${MAX_CARDS}.`,
+          "warning"
+        );
+        return;
+      }
+      state.currentDeck = deckIndex;
+      startGame();
+    }
+
+    function startGame() {
+      // (Identique à votre code)
+      // ...
+      state.resultsRecap = [];
+      
+      const fullDeck = PERSISTENT_DECKS[state.currentDeck];
+      const shuffledDeck = shuffleArray(fullDeck);
+      
+      state.currentDeckCards = shuffledDeck.slice(0, MAX_CARDS).map(c => ({ id: c.id })); 
+      preloadGameImages(state.currentDeckCards);
+      
+      state.game = { score: 0, cardIndex: 0, isProcessing: false };
+      updateUI();
+      displayCard();
+      showScreen(DOM.gameScreen);
+    }
+
+    function preloadGameImages(cardRefs) {
+      // (Identique à votre code)
+      // ...
+      const fullDeck = PERSISTENT_DECKS[state.currentDeck];
+      
+      cardRefs.forEach(ref => {
+        const card = fullDeck.find(c => c.id === ref.id);
+        if (card && card.img) {
+          const img = new Image();
+          img.src = card.img;
+        }
+      });
+    }
+
+    function endGame() {
+      // (Modifié pour appeler saveScore asynchrone)
+      // ...
+      state.game.isProcessing = true;
+      const pct = Math.round((state.game.score / MAX_CARDS) * 100);
+      
+      // MODIFIÉ: Appel asynchrone
+      saveScore(state.playerName, state.currentDeck, state.game.score, pct); 
+      
+      displayErrorRecap();
+      updateUI();
+      state.game.isProcessing = false;
+      DOM.endOverlay.classList.remove('hidden');
+      
+      const circumference = 2 * Math.PI * 80;
+      const offset = circumference - (pct / 100) * circumference;
+      setTimeout(() => DOM.gaugeCircle.style.strokeDashoffset = offset, 100);
+      
+      DOM.gaugePercentage.textContent = pct + '%';
+      const result = getResultMessage(pct);
+      DOM.resultMessage.textContent = result.text;
+      DOM.resultMessage.className = `result-message text-2xl font-bold mb-4 px-4 py-3 rounded-lg ${result.color}`;
+    }
+
+    function quitGame() {
+      // (Identique à votre code)
+      // ...
+      showScreen(DOM.deckScreen);
+    }
+
+    function handleDecision(decision) {
+      // (Identique à votre code)
+      // ...
+      if (state.game.isProcessing || state.game.cardIndex >= MAX_CARDS) return;
+      state.game.isProcessing = true;
+      
+      const currentCardRef = state.currentDeckCards[state.game.cardIndex];
+      const cur = PERSISTENT_DECKS[state.currentDeck].find(c => c.id === currentCardRef.id);
+      
+      if (!cur) {
+        state.game.cardIndex++;
+        state.game.isProcessing = false;
+        displayCard();
+        return;
+      }
+
+      const isCorrect = decision === cur.correct; 
+      
+      currentCardRef.isCorrect = isCorrect; 
+      currentCardRef.img = cur.img;
+      currentCardRef.text = cur.text;
+      state.resultsRecap.push(currentCardRef);
+      
+      if (!isCorrect) {
+        state.game.score++;
+      }
+      
+      triggerHapticFeedback(isCorrect);
+      
+      if (decision === 'left') {
+        DOM.overlayLeft.style.opacity = '0.6';
+        DOM.overlayLeft.style.transition = 'opacity 0.2s ease-out';
+      } else {
+        DOM.overlayRight.style.opacity = '0.6';
+        DOM.overlayRight.style.transition = 'opacity 0.2s ease-out';
+      }
+      
+      const slideClass = decision === 'left' ? 'slide-out-left' : 'slide-out-right';
+      DOM.cardElement.classList.add(slideClass);
+      
+      setTimeout(() => {
+        DOM.cardElement.classList.remove(slideClass);
+        state.game.cardIndex++;
+        
+        DOM.overlayLeft.style.opacity = '0';
+        DOM.overlayRight.style.opacity = '0';
+        DOM.overlayLeft.style.transition = 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+        DOM.overlayRight.style.transition = 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        if (state.game.cardIndex < MAX_CARDS) {
+          updateUI();
+          displayCard();
+          state.game.isProcessing = false;
+        } else {
+          endGame();
+        }
+      }, 360);
+    }
+
+    function triggerHapticFeedback(isCorrect) {
+      // (Identique à votre code)
+      // ...
+      if ('vibrate' in navigator) {
+        if (isCorrect) {
+          navigator.vibrate(50);
+        } else {
+          navigator.vibrate([100, 50, 100]);
+        }
+      }
+    }
+
+    // --- DRAG/SWIPE AVEC RAF ---
+    function onDragStart(e) {
+      // (Identique à votre code)
+      // ...
+      if (state.game.isProcessing || state.game.cardIndex >= MAX_CARDS || isModalOpen()) return;
+
+      if (e.type === 'mousedown') {
+        state.drag.isMouseDown = true;
+        state.drag.startX = e.clientX;
+        e.preventDefault();
+      } else {
+        state.drag.isDragging = true;
+        state.drag.startX = e.touches[0].clientX;
+      }
+      
+      state.drag.currentX = state.drag.startX;
+      DOM.cardElement.style.transition = 'none'; 
+      DOM.cardElement.style.cursor = 'grabbing';
+    }
+
+    function onDragMove(e) {
+      // (Identique à votre code)
+      // ...
+      if (state.game.isProcessing || isModalOpen() || (!state.drag.isMouseDown && !state.drag.isDragging)) return;
+
+      if (e.type === 'mousemove') {
+        state.drag.currentX = e.clientX;
+      } else {
+        state.drag.currentX = e.touches[0].clientX;
+      }
+      
+      if (state.animationFrameId) {
+        cancelAnimationFrame(state.animationFrameId);
+      }
+      
+      state.animationFrameId = requestAnimationFrame(() => {
+        const dx = state.drag.currentX - state.drag.startX;
+        let rot = (dx / MAX_DISP) * MAX_ROT;
+        rot = Math.max(-MAX_ROT, Math.min(MAX_ROT, rot));
+        
+        DOM.cardElement.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+        updateVisualFeedback(dx);
+      });
+    }
+
+    function onDragEnd(e) {
+      // (Identique à votre code)
+      // ...
+      if (state.game.isProcessing || isModalOpen() || (!state.drag.isMouseDown && !state.drag.isDragging)) return;
+
+      const isMouseUp = e.type === 'mouseup';
+      if (isMouseUp) {
+        state.drag.isMouseDown = false;
+      } else {
+        state.drag.isDragging = false;
+      }
+
+      DOM.cardElement.style.cursor = 'grab';
+      const dx = state.drag.currentX - state.drag.startX;
+      state.drag.startX = 0;
+
+      if (Math.abs(dx) < 10 && !isMouseUp) {
+        DOM.cardElement.style.transition = 'transform .35s cubic-bezier(.22,.9,.27,1), opacity .35s';
+        DOM.cardElement.style.transform = 'none';
+        return;
+      }
+      
+      DOM.cardElement.style.transition = 'transform .35s cubic-bezier(.22,.9,.27,1), opacity .35s'; 
+      updateVisualFeedback(0); 
+      
+      if (Math.abs(dx) < 10 && isMouseUp) {
+         DOM.cardElement.style.transform = 'none';
+         return;
+      }
+      
+      if (dx > SWIPE_THRESHOLD) handleDecision('right');
+      else if (dx < -SWIPE_THRESHOLD) handleDecision('left');
+      else DOM.cardElement.style.transform = 'none';
+    }
+        
+    function onKeyDown(e) {
+      // (Identique à votre code)
+      // ...
+      if (!DOM.gameScreen.classList.contains('hidden-screen')) {
+        if (isModalOpen()) return;
+        if (e.key === 'ArrowLeft') handleDecision('left');
+        if (e.key === 'ArrowRight') handleDecision('right');
+      }
+      
+      if (e.key === 'Escape') {
+        if (DOM.imageModal.classList.contains('active')) closeModal(DOM.imageModal);
+        else if (DOM.passwordModal.classList.contains('active')) closeModal(DOM.passwordModal);
+        else if (DOM.editCardModal.classList.contains('active')) closeModal(DOM.editCardModal);
+        else if (DOM.deckModal.classList.contains('active')) closeModal(DOM.deckModal);
+        else if (DOM.alertModal.classList.contains('active')) closeModal(DOM.alertModal);
+      }
+    }
+
+    // --- ADMIN & ÉDITION ---
+    
+    /**
+     * NOUVEAU: Gère la création d'un compte admin
+     */
+    async function handleAdminCreateAccount() {
+      const email = DOM.adminEmailInput.value;
+      const password = DOM.adminPasswordInput.value;
+      
+      if (!email || password.length < 6) {
+        DOM.passwordError.textContent = "Email invalide ou mot de passe trop court (6+).";
+        DOM.passwordError.classList.remove('hidden');
+        return;
+      }
+      
+      DOM.passwordError.classList.add('hidden');
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        console.log("NOUVEL ID ADMIN (À AJOUTER DANS FIRESTORE) :", user.uid);
+        showAlert(
+          "Compte Admin Créé !",
+          `Votre compte est créé.\n\nIMPORTANT : Copiez le nouvel ID Admin depuis la console (F12) et suivez le 'guide-securite-admin.md' (Étape 2) pour l'ajouter à la collection 'admin_users' dans Firestore.\n\nVotre ID est : ${user.uid}`,
+          "success"
+        );
+        
+        closeModal(DOM.passwordModal);
+        
+      } catch (error) {
+        console.error("Erreur création compte admin:", error);
+        if (error.code === 'auth/email-already-in-use') {
+          DOM.passwordError.textContent = "Cet email est déjà utilisé.";
+        } else {
+          DOM.passwordError.textContent = error.message;
+        }
+        DOM.passwordError.classList.remove('hidden');
+      }
+    }
+
+    /**
+     * NOUVEAU: Gère la connexion d'un admin
+     */
+    async function handleAdminLogin() {
+      const email = DOM.adminEmailInput.value;
+      const password = DOM.adminPasswordInput.value;
+      
+      if (!email || !password) {
+        DOM.passwordError.textContent = "Veuillez entrer un email et un mot de passe.";
+        DOM.passwordError.classList.remove('hidden');
+        return;
+      }
+      
+      DOM.passwordError.classList.add('hidden');
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // L'utilisateur est connecté.
+        // Les règles de sécurité Firestore (isAdmin()) vont maintenant vérifier
+        // si cet utilisateur est dans la collection 'admin_users'.
+        
+        console.log("Admin connecté:", userCredential.user.uid);
+        closeModal(DOM.passwordModal);
+        showAllSoluce(); // Ouvre la galerie admin
+        
+      } catch (error) {
+        console.error("Erreur connexion admin:", error);
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+          DOM.passwordError.textContent = "Email ou mot de passe incorrect.";
+        } else {
+          DOM.passwordError.textContent = "Erreur de connexion.";
+        }
+        DOM.passwordError.classList.remove('hidden');
+      }
+    }
+
+    /**
+     * SUPPRIMÉ: L'ancienne vérification par mot de passe
+     */
+    /*
+    function checkPassword() {
+      // (Identique à votre code)
+      // ...
+      const inputCode = DOM.passwordInput.value;
+      if (inputCode === SOLUCE_PASSWORD) {
+        closeModal(DOM.passwordModal);
+        showAllSoluce();
+      } else {
+        DOM.passwordError.classList.remove('hidden');
+        DOM.passwordInput.value = '';
+        DOM.passwordInput.focus();
+      }
+    }
+    */
+
+    function toggleEditingMode() {
+      // (Identique à votre code)
+      // ...
+      state.isEditingMode = !state.isEditingMode;
+      updateSoluceDisplayModes();
+    }
+
+    function updateSoluceDisplayModes() {
+      // (Identique à votre code)
+      // ...
+      DOM.soluceGalleryContainer.querySelectorAll('.soluce-gallery-item:not(.add-card-btn)').forEach(item => {
+        item.classList.toggle('editing-mode', state.isEditingMode);
+      });
+      
+      DOM.btnToggleEdit.textContent = state.isEditingMode ? "Quitter l'édition" : "Activer l'édition";
+      DOM.btnAddDeck.style.display = state.isEditingMode ? 'block' : 'none';
+      DOM.btnExportData.style.display = state.isEditingMode ? 'block' : 'none';
+      DOM.btnImportData.style.display = state.isEditingMode ? 'block' : 'none';
+      
+      DOM.soluceGalleryContainer.querySelectorAll('.add-card-btn').forEach(btn => {
+        btn.style.display = state.isEditingMode ? 'flex' : 'none';
+      });
+      DOM.soluceGalleryContainer.querySelectorAll('.edit-deck-btn').forEach(btn => {
+        btn.style.display = state.isEditingMode ? 'inline' : 'none';
+      });
+
+      if (state.isEditingMode) {
+        DOM.soluceInfoText.textContent = "Mode ÉDITION : Cliquez sur une carte pour modifier/supprimer, ou 'Ajouter une carte'.";
+      } else {
+        DOM.soluceInfoText.textContent = "Mode CONSULTATION : Cliquez pour agrandir. Si lien Soluce (🔗), le clic ouvre le lien.";
+      }
+    }
+
+    function setupImageDropZone() {
+      // (Identique à votre code)
+      // ...
+      let dropZone = document.getElementById('image-drop-zone');
+      
+      if (!dropZone) {
+        dropZone = document.createElement('div');
+        dropZone.id = 'image-drop-zone';
+        dropZone.className = 'drop-zone';
+        dropZone.innerHTML = `
+          <div class="drop-zone-text">
+            <p class="font-semibold mb-1">📎 Glissez une image ici</p>
+            <p class="text-xs">ou cliquez pour sélectionner</p>
+          </div>
+          <img id="drop-zone-preview" class="drop-zone-preview hidden" />
+        `;
+        
+        const imgInput = DOM.editCardImg;
+        imgInput.parentNode.insertBefore(dropZone, imgInput);
+      }
+      
+      const preview = document.getElementById('drop-zone-preview');
+      
+      dropZone.addEventListener('click', (e) => {
+        if (e.target === preview) return;
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = (e) => handleImageFile(e.target.files[0], preview);
+        fileInput.click();
+      });
+      
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+      
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+      });
+      
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          handleImageFile(file, preview);
+        } else {
+          showAlert("Fichier invalide", "Veuillez glisser une image.", "warning");
+        }
+      });
+    }
+
+    function handleImageFile(file, previewEl) {
+      // (Identique à votre code)
+      // ...
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        DOM.editCardImg.value = dataUrl;
+        previewEl.src = dataUrl;
+        previewEl.classList.remove('hidden');
+      };
+      
+      reader.onerror = () => {
+        showAlert("Erreur", "Impossible de lire l'image.", "error");
+      };
+      
+      reader.readAsDataURL(file);
+    }
+
+    function openEditModal(deckIndex, cardId = null) {
+      // (Identique à votre code)
+      // ...
+      state.editingCardGlobalId = cardId;
+      DOM.passwordModal.classList.remove('active');
+      
+      setupImageDropZone();
+      
+      const preview = document.getElementById('drop-zone-preview');
+
+      if (cardId === null) {
+        DOM.editModalTitle.textContent = 'Ajouter une carte';
+        DOM.editCardId.value = '';
+        DOM.editCardText.value = '';
+        DOM.editCardImg.value = '';
+        DOM.editCardSoluceLink.value = '';
+        DOM.editCardCorrect.value = 'left';
+        DOM.editDeckSelect.value = deckIndex !== null ? deckIndex.toString() : '0';
+        DOM.editDeckSelect.disabled = false;
+        DOM.btnDeleteCard.style.display = 'none';
+        if (preview) preview.classList.add('hidden');
+      } else {
+        const deck = PERSISTENT_DECKS[deckIndex];
+        const card = deck.find(c => c.id === cardId);
+        
+        if (card) {
+          DOM.editModalTitle.textContent = 'Modifier la carte';
+          DOM.editCardId.value = cardId;
+          DOM.editCardDeckIndex.value = deckIndex;
+          DOM.editCardText.value = card.text;
+          DOM.editCardImg.value = card.img;
+          DOM.editCardSoluceLink.value = card.soluceLink || '';
+          DOM.editCardCorrect.value = card.correct;
+          DOM.editDeckSelect.value = deckIndex.toString();
+          DOM.editDeckSelect.disabled = true;
+          DOM.btnDeleteCard.style.display = 'block';
+          
+          if (preview && card.img) {
+            preview.src = card.img;
+            preview.classList.remove('hidden');
+          }
+        }
+      }
+      openModal(DOM.editCardModal);
+    }
+
+    /**
+     * NOUVEAU: Sauvegarde une carte dans Firestore
+     */
+    async function saveCard() {
+      const id = DOM.editCardId.value || crypto.randomUUID();
+      const deckInfoIndex = parseInt(DOM.editDeckSelect.value); // Index du tableau
+      const text = DOM.editCardText.value;
+      const img = DOM.editCardImg.value;
+      const soluceLink = DOM.editCardSoluceLink.value.trim();
+      const correct = DOM.editCardCorrect.value;
+
+      if (!isAuthReady) {
+        showAlert("Erreur", "Non authentifié.", "error");
+        return;
+      }
+
+      const newCard = { id, text, img, correct, soluceLink };
+      
+      // Récupère le VRAI ID de document Firestore
+      const deckInfoDoc = PERSISTENT_DECK_INFO[deckInfoIndex];
+      if (!deckInfoDoc || !deckInfoDoc.id) {
+        showAlert("Erreur", "Deck non trouvé.", "error");
+        return;
+      }
+      const firestoreDeckId = deckInfoDoc.id;
+
+      // Récupère le tableau de cartes actuel
+      let currentCards = PERSISTENT_DECKS[deckInfoIndex] ? [...PERSISTENT_DECKS[deckInfoIndex]] : [];
+      
+      if (state.editingCardGlobalId) {
+        // Édition
+        const cardIndex = currentCards.findIndex(c => c.id === state.editingCardGlobalId);
+        if (cardIndex !== -1) {
+          currentCards[cardIndex] = newCard;
+        } else {
+          currentCards.push(newCard); // Au cas où, ajoute
+        }
+      } else {
+        // Ajout
+        currentCards.push(newCard);
+      }
+
+      // Sauvegarde le tableau complet dans le document
+      try {
+        const deckRef = doc(decksCollection, firestoreDeckId);
+        await setDoc(deckRef, { cards: currentCards }); // Écrase le tableau 'cards'
+        
+        closeModal(DOM.editCardModal);
+        // Pas besoin de régénérer, onSnapshot s'en occupe
+      } catch (e) {
+        console.error("Error saving card:", e);
+        showAlert("Erreur Sauvegarde", `Impossible de sauvegarder la carte: ${e.message}`, "error");
+      }
+    }
+
+    /**
+     * NOUVEAU: Supprime une carte de Firestore
+     */
+    function deleteCard() {
+      const cardId = DOM.editCardId.value;
+      const deckInfoIndex = parseInt(DOM.editCardDeckIndex.value); // Index du tableau
+      
+      if (!cardId || isNaN(deckInfoIndex)) return;
+      
+      const onConfirmDelete = async () => {
+        if (!isAuthReady) {
+          showAlert("Erreur", "Non authentifié.", "error");
+          return;
+        }
+
+        const deckInfoDoc = PERSISTENT_DECK_INFO[deckInfoIndex];
+        if (!deckInfoDoc || !deckInfoDoc.id) {
+          showAlert("Erreur", "Deck non trouvé.", "error");
+          return;
+        }
+        const firestoreDeckId = deckInfoDoc.id;
+
+        let currentCards = PERSISTENT_DECKS[deckInfoIndex] ? [...PERSISTENT_DECKS[deckInfoIndex]] : [];
+        const updatedCards = currentCards.filter(card => card.id !== cardId);
+
+        try {
+          const deckRef = doc(decksCollection, firestoreDeckId);
+          await setDoc(deckRef, { cards: updatedCards }); // Sauvegarde le tableau filtré
+          
+          closeModal(DOM.editCardModal);
+          // onSnapshot s'occupe de la mise à jour de l'UI
+        } catch (e) {
+          console.error("Error deleting card:", e);
+          showAlert("Erreur Suppression", `Impossible de supprimer la carte: ${e.message}`, "error");
+        }
+      };
+
+      showConfirm(
+        "Supprimer la carte",
+        "Êtes-vous sûr ? Action irréversible.",
+        onConfirmDelete
+      );
+    }
+
+    function openDeckModal(deckIndex = null) {
+      // (Identique à votre code)
+      // ...
+      DOM.deckColorSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      DOM.editDeckId.value = ''; // Stocke l'index du tableau
+
+      if (deckIndex === null) {
+        DOM.deckModalTitle.textContent = "Créer un Deck";
+        DOM.deckNameInput.value = '';
+        DOM.deckEmojiInput.value = '';
+        DOM.deckIndicatorLeftInput.value = 'GAUCHE';
+        DOM.deckIndicatorRightInput.value = 'DROITE';
+        DOM.deckColorSelector.querySelector('.color-swatch').classList.add('selected');
+      } else {
+        DOM.deckModalTitle.textContent = "Modifier le Deck";
+        const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+        DOM.editDeckId.value = deckIndex; // Stocke l'index du tableau
+        DOM.deckNameInput.value = deckInfo.name;
+        DOM.deckEmojiInput.value = deckInfo.emoji;
+        DOM.deckIndicatorLeftInput.value = deckInfo.indicatorLeft || 'GAUCHE';
+        DOM.deckIndicatorRightInput.value = deckInfo.indicatorRight || 'DROITE';
+        
+        const swatch = DOM.deckColorSelector.querySelector(`[data-color-name="${deckInfo.color}"]`);
+        if (swatch) {
+          swatch.classList.add('selected');
+        } else {
+          DOM.deckColorSelector.querySelector('.color-swatch').classList.add('selected');
+        }
+      }
+      openModal(DOM.deckModal);
+      DOM.deckNameInput.focus();
+    }
+
+    /**
+     * NOUVEAU: Sauvegarde les infos d'un deck (ou en crée un) dans Firestore
+     */
+    async function saveDeckInfo() {
+      const name = DOM.deckNameInput.value.trim();
+      const emoji = DOM.deckEmojiInput.value.trim();
+      const indicatorLeft = DOM.deckIndicatorLeftInput.value.trim();
+      const indicatorRight = DOM.deckIndicatorRightInput.value.trim();
+      const selectedColorEl = DOM.deckColorSelector.querySelector('.color-swatch.selected');
+      const colorName = selectedColorEl ? selectedColorEl.getAttribute('data-color-name') : 'gray';
+
+      if (!name || !emoji || !indicatorLeft || !indicatorRight) {
+        showAlert("Formulaire incomplet", "Remplissez tous les champs.", "warning");
+        return;
+      }
+      if (!isAuthReady) {
+        showAlert("Erreur", "Non authentifié.", "error");
+        return;
+      }
+
+      const colorClasses = getColorClasses(colorName);
+      
+      const deckIndexToEdit = DOM.editDeckId.value; // Index du tableau
+
+      if (deckIndexToEdit !== "") {
+        // --- ÉDITION d'un deck existant ---
+        const deckInfoDoc = PERSISTENT_DECK_INFO[parseInt(deckIndexToEdit)];
+        if (!deckInfoDoc || !deckInfoDoc.id) {
+          showAlert("Erreur", "Deck non trouvé.", "error");
+          return;
+        }
+        
+        const deckInfoRef = doc(deckInfoCollection, deckInfoDoc.id);
+        const updatedDeckInfo = {
+          ...deckInfoDoc, // Préserve les champs existants (id, orderIndex, createdAt)
+          name: name,
+          emoji: emoji,
+          indicatorLeft: indicatorLeft,
+          indicatorRight: indicatorRight,
+          color: colorName,
+          ...colorClasses
+        };
+
+        try {
+          await setDoc(deckInfoRef, updatedDeckInfo, { merge: true });
+          closeModal(DOM.deckModal);
+          // onSnapshot s'occupe de la MAJ
+        } catch (e) {
+          console.error("Error updating deck info:", e);
+          showAlert("Erreur Sauvegarde", `Impossible de modifier le deck: ${e.message}`, "error");
+        }
+        
+      } else {
+        // --- AJOUT d'un nouveau deck ---
+        const newDeckInfo = {
+          name: name,
+          emoji: emoji,
+          indicatorLeft: indicatorLeft,
+          indicatorRight: indicatorRight,
+          color: colorName,
+          ...colorClasses,
+          orderIndex: PERSISTENT_DECK_INFO.length, // Se met à la fin
+          createdAt: Date.now()
+        };
+
+        try {
+          // 1. Ajoute le document d'info
+          const newDeckInfoRef = await addDoc(deckInfoCollection, newDeckInfo);
+          
+          // 2. Ajoute le document de cartes (vide) avec le MÊME ID
+          const newDeckRef = doc(decksCollection, newDeckInfoRef.id);
+          await setDoc(newDeckRef, { cards: [] });
+
+          closeModal(DOM.deckModal);
+          // onSnapshot s'occupe de la MAJ
+        } catch (e) {
+          console.error("Error adding new deck:", e);
+          showAlert("Erreur Sauvegarde", `Impossible de créer le deck: ${e.message}`, "error");
+        }
+      }
+    }
+
+    // --- UI & UTILITAIRES ---
+    function updateUI() {
+      // (Identique à votre code)
+      // ...
+      DOM.scoreDisplay.textContent = state.game.score;
+      const cardNum = Math.min(state.game.cardIndex + 1, MAX_CARDS);
+      DOM.indexDisplay.textContent = `${cardNum}/${MAX_CARDS}`;
+      
+      const finished = state.game.cardIndex >= MAX_CARDS;
+      
+      DOM.cardHolder.classList.toggle('hidden', finished);
+      DOM.arrowBtnContainer.classList.toggle('hidden', finished);
+      DOM.endOverlay.classList.toggle('hidden', !finished);
+    }
+
+    function displayCard() {
+      // (Identique à votre code)
+      // ...
+      if (state.game.cardIndex < MAX_CARDS) {
+        const cur = PERSISTENT_DECKS[state.currentDeck].find(c => c.id === state.currentDeckCards[state.game.cardIndex].id);
+        
+        if (cur) {
+          DOM.cardImage.src = cur.img;
+          DOM.cardText.textContent = cur.text;
+        } else {
+          DOM.cardImage.src = neutralImg;
+          DOM.cardText.textContent = "Erreur - Carte non trouvée";
+        }
+        
+        DOM.cardElement.style.transform = 'none';
+        DOM.cardElement.style.opacity = '1';
+        DOM.cardElement.classList.remove('slide-out-left', 'slide-out-right');
+        
+        DOM.overlayLeft.style.transition = 'none';
+        DOM.overlayRight.style.transition = 'none';
+        
+        DOM.overlayLeft.style.opacity = '0';
+        DOM.overlayRight.style.opacity = '0';
+        
+        void DOM.overlayLeft.offsetWidth;
+        
+        DOM.overlayLeft.style.transition = 'opacity .2s cubic-bezier(0.4, 0, 0.2, 1)';
+        DOM.overlayRight.style.transition = 'opacity .2s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        const deckInfo = PERSISTENT_DECK_INFO[state.currentDeck];
+        DOM.indicatorLeft.innerHTML = deckInfo.indicatorLeft || 'GAUCHE';
+        DOM.indicatorRight.innerHTML = deckInfo.indicatorRight || 'DROITE';
+        
+        DOM.indicatorLeft.style.opacity = '0';
+        DOM.indicatorRight.style.opacity = '0';
+        DOM.indicatorLeft.style.transform = 'translateY(-50%) translateX(0px)';
+        DOM.indicatorRight.style.transform = 'translateY(-50%) translateX(0px)';
+      } else {
+        endGame();
+      }
+    }
+
+    function updateVisualFeedback(dx) {
+      // (Identique à votre code)
+      // ...
+      const opacityRatio = Math.min(1, Math.abs(dx) / 100); 
+
+      if (dx < 0) {
+        DOM.overlayLeft.style.opacity = (opacityRatio * 0.9).toString();
+        DOM.overlayRight.style.opacity = '0';
+        DOM.indicatorLeft.style.opacity = opacityRatio > 0.1 ? '1' : '0';
+        DOM.indicatorRight.style.opacity = '0';
+        DOM.indicatorLeft.style.transform = `translateY(-50%) translateX(${Math.min(0, 10 + dx / 5)}px)`;
+      } else if (dx > 0) {
+        DOM.overlayRight.style.opacity = (opacityRatio * 0.9).toString();
+        DOM.overlayLeft.style.opacity = '0';
+        DOM.indicatorRight.style.opacity = opacityRatio > 0.1 ? '1' : '0';
+        DOM.indicatorLeft.style.opacity = '0';
+        DOM.indicatorRight.style.transform = `translateY(-50%) translateX(${Math.max(0, dx / 5 - 10)}px)`;
+      } else {
+        DOM.overlayLeft.style.opacity = '0';
+        DOM.overlayRight.style.opacity = '0';
+        DOM.indicatorLeft.style.opacity = '0';
+        DOM.indicatorRight.style.opacity = '0';
+        DOM.indicatorLeft.style.transform = 'translateY(-50%) translateX(0px)';
+        DOM.indicatorRight.style.transform = 'translateY(-50%) translateX(0px)';
+      }
+    }
+
+    function displayErrorRecap() {
+      // (Identique à votre code)
+      // ...
+      DOM.recapList.innerHTML = '';
+      
+      if (state.resultsRecap.length === 0) {
+        DOM.recapTitle.textContent = "Aucune carte jouée.";
+        return;
+      }
+
+      DOM.recapTitle.textContent = "Résultat de la partie";
+
+      state.resultsRecap.forEach((playedCard) => {
+        const card = PERSISTENT_DECKS[state.currentDeck].find(c => c.id === playedCard.id);
+        if (!card) return;
+        
+        const status = playedCard.isCorrect ? 'success' : 'error';
+        const statusText = playedCard.isCorrect ? 'RÉUSSIE' : 'ERREUR';
+        
+        const el = document.createElement('div');
+        el.className = `result-vignette ${status} flex flex-col items-center justify-between`;
+        
+        const hasSoluceLink = card.soluceLink && card.soluceLink.trim() !== "";
+        
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+          if (hasSoluceLink) {
+            window.open(card.soluceLink, '_blank');
+          } else {
+            openModal(card.img);
+          }
+        });
+
+        el.innerHTML = `
+          <img src="${card.img}" alt="${statusText}" onerror="this.onerror=null;this.src='https://placehold.co/100x60/${status === 'success' ? '10B981' : 'EF4444'}/FFFFFF?text=${statusText}';" />
+          <div class="text-[0.6rem] text-gray-300 truncate w-full mt-0.5">${card.text.split(' (')[0] || "Carte"}</div>
+        `;
+        DOM.recapList.appendChild(el);
+      });
+    }
+
+    /**
+     * NOUVEAU: Récupère et affiche les scores depuis Firestore
+     */
+    async function renderScores() {
+      if (!isAuthReady) {
+        DOM.scoresList.innerHTML = '<div class="text-gray-300 text-center py-6">Connexion...</div>';
+        return;
+      }
+
+      DOM.scoresList.innerHTML = '<div class="text-gray-300 text-center py-6">Chargement des scores...</div>';
+      
+      try {
+        let scoresQuery;
+        if (state.currentFilter === 'all') {
+          // Requête pour tous les scores
+          scoresQuery = query(scoresCollection);
+        } else {
+          // Requête pour un deck spécifique
+          // state.currentFilter est l'INDEX du tableau
+          const deckInfo = PERSISTENT_DECK_INFO[state.currentFilter];
+          const deckId = deckInfo ? deckInfo.id : "invalid_deck_id";
+          scoresQuery = query(scoresCollection, where("deckId", "==", deckId));
+        }
+        
+        // On récupère les documents une seule fois
+        const snapshot = await getDocs(scoresQuery);
+        let allScores = snapshot.docs.map(doc => doc.data());
+
+        // Tri en mémoire par timestamp (du plus récent au plus ancien)
+        allScores.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Limite aux 100 derniers
+        const filtered = allScores.slice(0, 100);
+
+        DOM.scoresList.innerHTML = '';
+        if (filtered.length === 0) {
+          DOM.scoresList.innerHTML = '<div class="text-gray-300 text-center py-6">Aucun score.</div>';
+          return;
+        }
+        
+        filtered.forEach(score => {
+          const el = document.createElement('div');
+          el.className = 'flex justify-between items-center p-3 bg-white/5 rounded-lg hover:bg-white/8 transition';
+          
+          const deckEmoji = score.deckEmoji || '❓';
+          // Sécurise le nom du joueur
+          const safePlayerName = (score.player || "Sans nom").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+          
+          el.innerHTML = `
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xl">${deckEmoji}</span>
+                <span class="font-semibold">${safePlayerName}</span>
+              </div>
+              <div class="text-xs text-gray-400">${new Date(score.timestamp).toLocaleString('fr-FR')}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold ${score.percentage === 0 ? 'text-green-400' : score.percentage === 100 ? 'text-pink-400' : 'text-purple-400'}">${score.percentage}%</div>
+              <div class="text-xs text-gray-400">${score.errors} erreur${score.errors > 1 ? 's' : ''}</div>
+            </div>
+          `;
+          DOM.scoresList.appendChild(el);
+        });
+        
+      } catch (e) {
+        console.error("Error rendering scores:", e);
+        DOM.scoresList.innerHTML = '<div class="text-red-400 text-center py-6">Erreur de chargement des scores.</div>';
+      }
+    }
+
+
+    function filterScores(filter, targetElement) {
+      // (Identique à votre code)
+      // ...
+      state.currentFilter = filter; // 'all' ou un index
+      DOM.scoreFilterButtons.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      targetElement.classList.add('active'); 
+      renderScores(); // Recharge les scores avec le nouveau filtre
+    }
+
+    /**
+     * NOUVEAU: Sauvegarde un score dans Firestore
+     */
+    async function saveScore(playerName, deckIndex, errors, percentage) {
+      if (!isAuthReady) {
+        console.error("Impossible de sauvegarder le score, utilisateur non authentifié.");
+        return; // Échec silencieux
+      }
+      
+      const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+      const scoreData = {
+        player: playerName,
+        userId: userId, // Ajoute l'ID de l'utilisateur authentifié
+        deck: deckIndex, // Garde l'index pour le moment (deprecated)
+        deckId: deckInfo ? deckInfo.id : "unknown", // ID Firestore du deck
+        deckName: deckInfo ? deckInfo.name : "Deck Inconnu",
+        deckEmoji: deckInfo ? deckInfo.emoji : "❓",
+        errors: errors,
+        percentage: percentage,
+        timestamp: Date.now()
+      };
+      
+      try {
+        // Ajoute un nouveau document à la collection 'scores'
+        await addDoc(scoresCollection, scoreData);
+        console.log("Score sauvegardé avec succès.");
+      } catch (e) {
+        console.error("Erreur lors de la sauvegarde du score:", e);
+        // On n'alerte pas l'utilisateur pour ne pas le déranger
+      }
+    }
+
+    // --- MODALES ---
+    function openModal(modalEl) {
+      // (Identique à votre code)
+      // ...
+      if (typeof modalEl === 'string') {
+        DOM.modalImage.src = modalEl;
+        DOM.imageModal.classList.add('active');
+      } else {
+        modalEl.classList.add('active');
+      }
+    }
+
+    function closeModal(modalEl) {
+      // (Identique à votre code)
+      // ...
+      modalEl.classList.remove('active');
+    }
+
+    function openPasswordModal() {
+      // (Identique à votre code)
+      // ...
+      DOM.adminEmailInput.value = ''; // MODIFIÉ
+      DOM.adminPasswordInput.value = ''; // MODIFIÉ
+      DOM.passwordError.classList.add('hidden');
+      openModal(DOM.passwordModal);
+      DOM.adminEmailInput.focus(); // MODIFIÉ
+    }
+
+    function isModalOpen() {
+      // (Identique à votre code)
+      // ...
+      return DOM.imageModal.classList.contains('active') || 
+             DOM.passwordModal.classList.contains('active') || 
+             DOM.editCardModal.classList.contains('active') ||
+             DOM.deckModal.classList.contains('active') ||
+             DOM.alertModal.classList.contains('active');
+    }
+
+    // --- ALERTES ---
+    function showAlert(title, text, type = 'info') {
+      // (Identique à votre code)
+      // ...
+      DOM.alertModalTitle.textContent = title;
+      DOM.alertModalText.textContent = text;
+      DOM.alertModalButtons.innerHTML = '';
+
+      DOM.alertModalTitle.className = "text-2xl font-bold mb-4 ";
+      switch (type) {
+        case 'success':
+          DOM.alertModalTitle.classList.add('text-green-400');
+          break;
+        case 'error':
+          DOM.alertModalTitle.classList.add('text-red-400');
+          break;
+        case 'warning':
+          DOM.alertModalTitle.classList.add('text-yellow-400');
+          break;
+        default:
+          DOM.alertModalTitle.classList.add('text-white');
+      }
+
+      const okButton = document.createElement('button');
+      okButton.textContent = "OK";
+      okButton.className = "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold";
+      okButton.onclick = () => closeModal(DOM.alertModal);
+      
+      DOM.alertModalButtons.appendChild(okButton);
+      openModal(DOM.alertModal);
+    }
+
+    function showConfirm(title, text, onConfirm) {
+      // (Identique à votre code)
+      // ...
+      DOM.alertModalTitle.textContent = title;
+      DOM.alertModalText.textContent = text;
+      DOM.alertModalButtons.innerHTML = '';
+      DOM.alertModalTitle.className = "text-2xl font-bold mb-4 text-white";
+
+      const cancelButton = document.createElement('button');
+      cancelButton.textContent = "Annuler";
+      cancelButton.className = "px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold";
+      cancelButton.onclick = () => closeModal(DOM.alertModal);
+      
+      const confirmButton = document.createElement('button');
+      confirmButton.textContent = "Confirmer";
+      confirmButton.className = "px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold";
+      confirmButton.onclick = () => {
+        closeModal(DOM.alertModal);
+        onConfirm(); // Peut être une fonction async
+      };
+      
+      DOM.alertModalButtons.appendChild(cancelButton);
+      DOM.alertModalButtons.appendChild(confirmButton);
+      openModal(DOM.alertModal);
+    }
+
+    // --- UTILITAIRES ---
+    function shuffleArray(array) {
+      // (Identique à votre code)
+      // ...
+      const newArray = [...array]; 
+      for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+      }
+      return newArray;
+    }
+
+    function getResultMessage(errorPercent) {
+      // (Identique à votre code)
+      // ...
+      const deckIndex = state.currentDeck;
+      const deckMessages = [
+        {
+          0: { text: "PERFECT! ZERO ERREUR", color: "bg-green-600" },
+          100: { text: "100% GAY", color: "bg-pink-600" },
+          50: { text: "UN TROU C UN TROU", color: "bg-purple-600" },
+          default: { text: "PETIT CURIEUX", color: "bg-blue-600" }
+        },
+        {
+          0: { text: "Intello du PC!", color: "bg-green-600" },
+          100: { text: "100% Consoleux", color: "bg-red-600" },
+          50: { text: "Gamer du dimanche", color: "bg-yellow-600" },
+          default: { text: "Connaisseur", color: "bg-blue-600" }
+        },
+        {
+          0: { text: "Maître du déguisement", color: "bg-green-600" },
+          100: { text: "A besoin d'une-up", color: "bg-red-600" },
+          50: { text: "Encore en civil", color: "bg-yellow-600" },
+          default: { text: "Passionné de Pop Culture", color: "bg-blue-600" }
+        }
+      ];
+      
+      const messages = deckMessages[deckIndex] || {
+        0: { text: "PARFAIT !", color: "bg-green-600" },
+        50: { text: "Peut mieux faire", color: "bg-yellow-600" },
+        default: { text: "Bien joué !", color: "bg-blue-600" }
+      };
+
+      if (errorPercent === 0) return messages[0];
+      if (errorPercent === 100 && messages[100]) return messages[100];
+      if (errorPercent >= 50 && messages[50]) return messages[50];
+      return messages.default;
+    }
+
+    function getColorClasses(colorName) {
+      // (Identique à votre code)
+      // ...
+      const colorMap = {
+        "purple": { titleColor: "text-purple-400", cardBorder: "border-purple-400/30" },
+        "cyan": { titleColor: "text-cyan-400", cardBorder: "border-cyan-400/30" },
+        "pink": { titleColor: "text-pink-400", cardBorder: "border-pink-400/30" },
+        "green": { titleColor: "text-green-400", cardBorder: "border-green-400/30" },
+        "yellow": { titleColor: "text-yellow-400", cardBorder: "border-yellow-400/30" },
+        "gray": { titleColor: "text-gray-400", cardBorder: "border-gray-400/30" },
+        "red": { titleColor: "text-red-400", cardBorder: "border-red-400/30" },
+        "blue": { titleColor: "text-blue-400", cardBorder: "border-blue-400/30" },
+        "indigo": { titleColor: "text-indigo-400", cardBorder: "border-indigo-400/30" },
+        "emerald": { titleColor: "text-emerald-400", cardBorder: "border-emerald-400/30" },
+        "orange": { titleColor: "text-orange-400", cardBorder: "border-orange-400/30" }
+      };
+      return colorMap[colorName] || colorMap["gray"];
+    }
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+{ "version": "0.0.1", "configurations": [ { "name": "swipy", "runtimeExecutable": "python3", "runtimeArgs": ["-m","http.server","4615","--directory","/Users/adam/Desktop/TORG/public"], "port": 4615 } ] }

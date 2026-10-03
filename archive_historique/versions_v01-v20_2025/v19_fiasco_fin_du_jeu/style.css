@@ -1,0 +1,1110 @@
+/* STYLES SCENEMO / PINK EDITION - VERSION COMPLÈTE AVEC MENU LANGUE */
+
+:root {
+  /* Palette Scenemo Pink */
+  --neon-pink: #ff00ff;
+  --neon-white: #ffffff;
+  --bg-dark: #050505;
+  --panel-bg: rgba(5, 5, 5, 0.95);
+  --grid-color: rgba(255, 255, 255, 0.1); 
+  
+  /* Variables fonctionnelles adaptées */
+  --color-left: var(--neon-white);
+  --color-right: var(--neon-pink);
+}
+
+/* RESET & BASE */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-dark);
+  font-family: 'Space Mono', 'Courier New', monospace; 
+  color: #eee;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: none;
+}
+
+/* BACKGROUND EFFECTS */
+.grid-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* LAYOUT */
+#app, main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10;
+}
+
+/* --- ADAPTATION DES CLASSES DE BASE AU STYLE SCENEMO --- */
+
+.glass, .cyber-panel { 
+  background: var(--panel-bg); 
+  backdrop-filter: blur(2px); 
+  border: 1px solid #333;
+  box-shadow: 8px 8px 0px rgba(255, 0, 255, 0.15); 
+  border-radius: 0 !important; 
+}
+
+.bg-game { 
+  background: transparent; 
+  width: 100%;
+  height: 100%;
+}
+
+/* BOUTONS GLOBAUX */
+button {
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 0 !important; 
+  transition: all 0.1s steps(2);
+}
+
+.bg-indigo-600, .bg-blue-600, .bg-teal-600, .bg-green-600, .bg-pink-600 {
+  background: transparent !important;
+  border: 2px solid currentColor !important;
+  color: var(--neon-pink) !important;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
+}
+.bg-indigo-600:hover, .bg-blue-600:hover {
+  background: var(--neon-pink) !important;
+  color: black !important;
+  box-shadow: 0 0 20px var(--neon-pink);
+}
+
+.bg-red-600 {
+  background: transparent !important;
+  border: 2px solid white !important;
+  color: white !important;
+}
+.bg-red-600:hover {
+  background: white !important;
+  color: black !important;
+}
+
+.bg-white\/6, .bg-white\/10 {
+  background: black !important;
+  border: 1px solid #555 !important;
+}
+.bg-white\/6:hover {
+  border-color: var(--neon-pink) !important;
+  background: #222 !important;
+  color: var(--neon-pink) !important;
+}
+
+input[type="text"], input[type="password"], input[type="email"], select {
+  background: black !important;
+  border: 1px solid #444 !important;
+  color: white !important;
+  font-family: inherit;
+  border-radius: 0 !important;
+  padding: 10px !important;
+}
+input:focus, select:focus {
+  border-color: var(--neon-pink) !important;
+  outline: none;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+}
+
+/* --- I18N : SELECTEUR DE LANGUE (NOUVEAU) --- */
+
+.lang-select-container {
+  position: relative;
+  width: 140px; 
+}
+
+.lang-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  
+  /* Glassmorphism */
+  background-color: rgba(255, 255, 255, 0.07) !important; /* Force l'override */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important; /* Exception au style carré pour le selecteur */
+  
+  color: #fff !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.lang-select:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.lang-select:focus {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: var(--neon-pink) !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 255, 0.3) !important;
+}
+
+/* Flèche personnalisée */
+.lang-select-container::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.7;
+}
+
+/* Options du menu */
+.lang-select option {
+  background-color: #050505;
+  color: white;
+  padding: 10px;
+}
+
+/* --- I18N : POLICES SPÉCIFIQUES --- */
+
+/* Amazigh (Tifinagh) */
+.font-tifinagh {
+  font-family: 'Noto Sans Tifinagh', ui-monospace, monospace;
+}
+
+/* Japonais */
+.font-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* Support RTL pour l'Arabe standard (si utilisé) */
+body[dir="rtl"] {
+  font-family: 'Tajawal', sans-serif !important;
+}
+.font-arabic {
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* --- LOGIQUE FONCTIONNELLE (ADMIN GRID) --- */
+.admin-deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.soluce-deck-wrapper {
+  width: 100%;
+  grid-column: 1 / -1; 
+  margin-bottom: 2rem;
+}
+
+.admin-deck-header {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: black;
+  border: 1px solid #333;
+  padding: 1.5rem;
+}
+
+.admin-deck-header:hover {
+  transform: translate(-4px, -4px); 
+  border-color: var(--neon-pink);
+  box-shadow: 4px 4px 0 var(--neon-pink);
+}
+
+.admin-deck-header.editing-mode-header {
+   border-color: white;
+   border-style: dashed;
+}
+
+.admin-deck-header.is-open {
+  border-color: white;
+  border-bottom: none;
+}
+.admin-deck-header.is-open:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.admin-deck-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  [dir="rtl"] & {
+      right: auto;
+      left: 1rem;
+  }
+  display: none; 
+  flex-direction: column;
+  gap: 0.5rem;
+  background: black;
+  border: 1px solid white;
+  padding: 0.5rem;
+  z-index: 20;
+}
+
+.admin-deck-btn {
+  background: black;
+  border: 1px solid #555;
+  color: #aaa;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.admin-deck-btn:hover {
+  background: var(--neon-pink);
+  color: black;
+  border-color: var(--neon-pink);
+}
+
+.admin-deck-header .deck-card-info {
+  padding-right: 4.5rem; 
+  [dir="rtl"] & {
+      padding-right: 0;
+      padding-left: 4.5rem;
+  }
+}
+
+/* --- JEU & CARTES --- */
+.card-container {
+  transition: transform .2s steps(4), opacity .2s;
+  will-change: transform, opacity;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  background: rgba(0, 0, 0, 0);
+  border: 2px solid white;
+  box-shadow: 30px 30px 0 rgba(255, 0, 255, 0.2), 
+              inset 0 0 8px rgba(0, 0, 0, 0.8);  /* ← Version plus prononcée */
+  border-radius: 0 !important;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 5 / 7;
+  margin: auto;
+  position: relative;
+}
+
+
+
+/* Wrapper ratio pour l'image en jeu */
+.card-container-inner {
+  position: relative;
+  width: 100%;           /* ← Change de auto à 100% */
+  height: 100%;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  background: transparent;
+  margin: auto;
+}
+
+.card-container-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;          /* Zoome pour remplir */
+  object-position: center;    /* Centre bien l'image */
+  display: block;
+}
+
+
+.card-container:hover {
+  border-color: var(--neon-pink);
+}
+
+.slide-out-left { 
+  animation: glitchOutLeft 0.4s forwards;
+}
+
+.slide-out-right { 
+  animation: glitchOutRight 0.4s forwards;
+}
+
+@keyframes glitchOutLeft {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-10px) skewX(20deg); clip-path: inset(0 0 0 0); }
+  100% { transform: translateX(-150vw); opacity: 0; }
+}
+@keyframes glitchOutRight {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(10px) skewX(-20deg); clip-path: inset(0 0 0 0); }
+  100% { transform: translateX(150vw); opacity: 0; }
+}
+
+/* --- SCREENS & TRANSITIONS --- */
+.screen {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  transform: translateY(10px);
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+  position: relative;
+  transform: translateY(0);
+  animation: flickerIn 0.3s forwards; 
+}
+
+.hidden-screen {
+  display: none !important;
+}
+
+@keyframes flickerIn {
+  0% { opacity: 0; }
+  10% { opacity: 0.8; }
+  20% { opacity: 0.1; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* --- OVERFLOW & SCROLL --- */
+#scores-list,
+#soluce-gallery-container,
+#public-soluce-gallery-container,
+#stats-output,
+.custom-scrollbar {
+  overscroll-behavior: contain;
+}
+
+#scores-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;        /* ← Centre les cartes */
+    align-items: flex-start;
+    padding: 1rem;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;               /* ← Scroll vertical si besoin */
+    width: 100%;
+    overscroll-behavior: contain;
+}
+
+.score-recap-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: flex-start;
+}
+
+.score-recap-container .score-vignette {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #444; border: 1px solid #111; }
+::-webkit-scrollbar-thumb:hover { background: var(--neon-pink); }
+
+/* --- JAUGE CIRCULAIRE --- */
+.circular-gauge { 
+  width: 200px; 
+  height: 200px; 
+  position: relative; 
+}
+.circular-gauge svg { transform: rotate(-90deg); }
+.gauge-bg { 
+  stroke: #222; 
+  stroke-width: 15; 
+}
+.gauge-progress { 
+  stroke: var(--neon-pink); 
+  stroke-width: 15; 
+  stroke-linecap: square; 
+  filter: drop-shadow(0 0 5px var(--neon-pink));
+  transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.gauge-center { 
+  position: absolute; 
+  top: 50%; left: 50%; 
+  transform: translate(-50%, -50%); 
+  text-align: center; 
+}
+
+/* --- CARTES DE DECK (SÉLECTION) --- */
+.deck-card { 
+  background: black;
+  border: 1px solid #333;
+  transition: all 0.2s ease; 
+  cursor: pointer; 
+  border-radius: 0 !important;
+}
+.deck-card:hover { 
+  transform: translate(-4px, -4px); 
+  border-color: var(--neon-pink);
+  box-shadow: 4px 4px 0 var(--neon-pink);
+}
+.deck-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.5rem;
+  margin-top: 0.75rem;
+}
+.deck-card-tags span {
+  background: #222;
+  border: 1px solid #444;
+  color: #aaa;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 0;
+}
+
+/* --- FILTRES --- */
+.filter-btn { 
+  background: black;
+  border: 1px solid #444;
+  color: #888;
+  border-radius: 0 !important;
+}
+.filter-btn:hover, .filter-btn.active { 
+  border-color: white;
+  color: white;
+  background: #222;
+}
+
+/* --- MESSAGES & TEXTES --- */
+.glitch-text {
+  position: relative;
+}
+
+.result-message { 
+  border: 2px solid white;
+  background: rgba(255,255,255,0.1);
+  text-transform: uppercase;
+  border-radius: 0 !important;
+}
+
+/* --- INDICATEURS & OVERLAYS --- */
+.overlay-gradient {
+  background: none !important; 
+}
+
+.swipe-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  font-weight: bold;
+  padding: 16px;
+  border: 2px solid;
+  background: black;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity .1s, transform .1s;
+  border-radius: 0 !important;
+}
+#indicator-left { left: -120px; border-color: transparent; color: transparent; }
+#indicator-right { right: -120px; border-color: transparent; color: transparent; }
+
+/* --- MODALES --- */
+.base-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: none;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  background-image: radial-gradient(#222 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.base-modal.active { display: flex; }
+
+#password-modal-content, 
+#edit-modal-content, 
+#deck-modal-content, 
+#alert-modal-content,
+#deck-size-modal-content,
+#private-deck-modal-content {
+  background: black;
+  border: 2px solid white;
+  padding: 2rem;
+  border-radius: 0 !important;
+  box-shadow: 15px 15px 0 rgba(0,0,0,0.8);
+  max-width: 95%;
+  max-height: 95%;
+  overflow-y: auto;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  [dir="rtl"] & {
+      right: auto;
+      left: 15px;
+  }
+  font-size: 2rem;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s;
+}
+.close-btn:hover { color: var(--neon-pink); }
+
+/* --- BOUTONS ARCADE (FLÈCHES) --- */
+.arrow-btn-container {
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.arrow-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50% !important; 
+  background: black;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+.arrow-btn:active { transform: scale(0.95); }
+
+#btn-arrow-left { border-color: white; color: white; }
+#btn-arrow-left:hover { box-shadow: 0 0 20px white; background: rgba(255, 255, 255, 0.1); }
+
+#btn-arrow-right { border-color: var(--neon-pink); color: var(--neon-pink); }
+#btn-arrow-right:hover { box-shadow: 0 0 20px var(--neon-pink); background: rgba(255, 0, 255, 0.1); }
+
+.arrow-btn-zoom {
+  width: 50px;
+  height: 50px;
+  border-radius: 50% !important;
+  border: 1px solid #555;
+  color: #555;
+  background: black;
+}
+.arrow-btn-zoom:hover {
+  border-color: white;
+  color: white;
+}
+
+/* --- GALERIE SOLUCE --- */
+.soluce-deck-content {
+    display: flex;
+    flex-wrap: nowrap;  /* ← Changé de wrap à nowrap */
+    overflow-x: auto;    /* ← Ajouté pour scroller horizontalement */
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1rem;
+    border: 1px solid #333;
+    border-top: none;
+    grid-column: 1 / -1;
+    margin-bottom: 1rem;
+}
+
+.soluce-gallery-item {
+  width: 110px;
+  height: 150px;
+  border: 1px solid #444;
+  padding: 5px;
+  transition: all 0.2s;
+  background: black;
+  cursor: pointer;
+}
+.soluce-gallery-item:hover {
+  border-color: var(--neon-pink);
+  transform: scale(1.05);
+  z-index: 10;
+}
+.soluce-gallery-item.editing-mode {
+  border-style: dashed;
+  border-color: white;
+}
+
+.soluce-link-indicator {
+  position: absolute;
+  top: 5px; right: 5px;
+  color: var(--neon-pink);
+}
+
+/* --- SCORE RECAP VIGNETTES --- */
+.result-vignette {
+  border: 1px solid #444;
+  padding: 4px;
+  background: black;
+  border-radius: 0 !important;
+}
+.result-vignette.success { border-color: var(--neon-pink); }
+.result-vignette.error { border-color: white; }
+
+.score-vignette {
+  width: 40px; height: 40px;
+  border: 1px solid #333;
+  border-radius: 0 !important;
+}
+.score-vignette.success { border-color: var(--neon-pink); }
+.score-vignette.error { border-color: white; }
+
+.vignette-text-only.success { background: var(--neon-pink); color: black; }
+.vignette-text-only.error { background: white; color: black; }
+
+/* --- GESTION SCORE ADMIN --- */
+.delete-score-btn {
+  position: absolute;
+  top: -5px; right: -5px;
+  background: red;
+  color: white;
+  border: 1px solid white;
+  width: 20px; height: 20px;
+  border-radius: 0 !important;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 20;
+}
+
+.score-select-checkbox {
+  position: absolute;
+  top: 5px; left: 5px;
+  width: 20px; height: 20px;
+  accent-color: var(--neon-pink);
+  z-index: 20;
+  cursor: pointer;
+}
+
+.score-item-container {
+  border: 1px solid #333;
+  background: black !important;
+  border-radius: 0 !important;
+  margin-bottom: 0.5rem;
+}
+.score-item-container:hover {
+  border-color: white;
+}
+.score-item-container.bg-pink-900\/50 {
+  background: rgba(255, 0, 255, 0.1) !important;
+  border-color: var(--neon-pink);
+}
+
+/* --- DRAG & DROP ZONE --- */
+.drop-zone {
+  border: 2px dashed #444;
+  padding: 2rem;
+  text-align: center;
+  background: rgba(0,0,0,0.5);
+  cursor: pointer;
+  margin-bottom: 1rem;
+  border-radius: 0 !important;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--neon-pink);
+  background: rgba(255, 0, 255, 0.05);
+}
+.drop-zone-preview {
+  max-width: 100px;
+  border: 1px solid white;
+  margin-top: 1rem;
+}
+
+/* --- UTILITAIRES --- */
+.add-card-btn {
+  display: none; 
+  align-items: center; justify-content: center;
+  border: 2px dashed #555;
+  width: 110px; height: 150px;
+}
+.add-card-btn:hover {
+  border-color: white;
+  background: #111;
+}
+
+.blink { animation: blinker 1s linear infinite; }
+@keyframes blinker { 50% { opacity: 0; } }
+
+.text-only-card {
+  font-family: inherit; /* Pour supporter l'arabe */
+  font-size: 1.5rem;
+  text-align: center;
+  color: white;
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+.text-purple-400, .text-cyan-400, .text-pink-400 { color: var(--neon-pink) !important; }
+.border-purple-400\/30, .border-cyan-400\/30 { border-color: var(--neon-pink) !important; }
+
+.text-green-400 { color: var(--neon-pink) !important; }
+.text-red-400 { color: white !important; }
+
+/* --- COLOR SWATCHES (MODALE DECK) - AJOUTÉ UNE SEULE FOIS --- */
+.color-selector-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; /* Espace entre les carrés */
+  padding: 4px 0;
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px; /* Un peu arrondi */
+  border: 1px solid #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+  border-color: white;
+  z-index: 10;
+}
+
+.color-swatch.selected {
+  border: 2px solid white;
+  transform: scale(1.2);
+  z-index: 10;
+  box-shadow: 0 0 10px currentColor; /* Utilise la couleur du texte définie en JS */
+}
+
+/* ===== RÉSULTATS CARTES (RECAP JEU) ===== */
+
+/* Pendant le jeu: flexbox normal */
+.recap-list, #recap-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem 0;
+    margin: 1.5rem 0 0 0;
+    list-style: none;
+    border-top: 1px solid #333;
+}
+
+/* SEULEMENT à la fin: grid horizontal */
+#end-overlay #recap-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    gap: 1rem !important;
+    border-top: 2px solid #333;
+}
+
+.recap-item, #recap-list li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(255, 0, 255, 0.05);
+    border: 1px solid #333;
+    border-radius: 0;
+    text-align: center;
+    gap: 0.5rem;
+    min-height: 120px;
+    transition: all 0.2s;
+}
+
+.recap-item:hover, #recap-list li:hover { 
+    transform: scale(1.05); 
+}
+
+.cyber-filter-btn {
+  border: 1.5px solid #c084fc;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: transparent;
+  color: #c0c0c0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cyber-filter-btn:hover {
+  background: rgba(192, 132, 252, 0.1);
+  border-color: #ff00ff;
+  color: #ff00ff;
+}
+
+.cyber-filter-btn.active {
+  background: rgba(192, 132, 252, 0.2);
+  border-color: #ff00ff;
+  color: #ff00ff;
+}
+
+/* Modale Liste des cartes du deck */
+#deck-cards-modal-content {
+  max-width: 1200px;
+  max-height: 90vh;
+}
+
+#deck-cards-modal-title {
+  background: linear-gradient(135deg, rgba(255,0,255,0.1) 0%, rgba(0,0,0,0.8) 100%);
+  backdrop-filter: blur(10px);
+}
+
+#deck-cards-modal-body {
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,0,255,0.3) transparent;
+}
+
+#deck-cards-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+#deck-cards-modal-body::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+}
+
+#deck-cards-modal-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ff00ff, #aa00aa);
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+#deck-cards-modal-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ff00ff, #cc00cc);
+}
+
+/* Aperçu des cartes dans la modale */
+.deck-card-preview {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.deck-card-preview:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,0,255,0.4);
+  box-shadow: 
+    0 8px 25px rgba(255,0,255,0.2),
+    0 0 20px rgba(255,0,255,0.1);
+}
+
+.deck-card-preview img {
+  transition: transform 0.3s ease;
+}
+
+.deck-card-preview:hover img {
+  transform: scale(1.05);
+}
+
+.deck-card-preview .text-neon-pink {
+  text-shadow: 0 0 8px rgba(255,0,255,0.8);
+}
+
+/* Bouton "Voir cartes" dans la sélection de decks */
+.view-cards-btn {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: all 0.2s ease;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.view-cards-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,0,255,0.4);
+  box-shadow: 
+    0 4px 12px rgba(255,0,255,0.2),
+    inset 0 0 10px rgba(255,0,255,0.1);
+  transform: translateY(-1px);
+}
+
+.view-cards-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 8px rgba(255,0,255,0.3),
+    inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Custom scrollbar pour la zone des cartes (cohérent avec le reste) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
+  border-radius: 4px;
+  border: 1px solid rgba(255,0,255,0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,0,255,0.6);
+}
+
+/*MODALE*/ 
+#deck-cards-modal-body .recap-card {
+  margin: 0;
+}
+
+/* Grille de la modale des cartes */
+.deck-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr); 
+  gap: 12px;
+  max-height: 70vh;
+}
+
+/* Les cartes recap dans la modale */
+.deck-cards-grid .recap-card {
+  width: 100%;        /* prend la largeur de sa colonne */
+  max-width: 180px;   /* optionnel pour ne pas être trop large */
+  margin: 0 auto;     /* centre la carte dans sa colonne */
+}
+
+.deck-cards-mode-btn {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.8);
+  font-size: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.deck-cards-mode-active {
+  background: #ff00ff;
+  color: #000;
+  border-color: #ff00ff;
+}
+
+/* Ordre des modales */
+.base-modal {
+  z-index: 80; /* niveau par défaut pour toutes les modales */
+}
+
+#deck-cards-modal {
+  z-index: 90; /* liste des cartes */
+}
+
+#image-modal {
+  z-index: 100; /* zoom image au-dessus de tout */
+}
+
+/* Désactiver les ombres violettes sur les cartes de ROOTACCESS */
+#soluce-screen .deck-card {
+  box-shadow: none !important;
+}
+
+#soluce-screen .deck-card:hover {
+  box-shadow: none !important;
+  transform: translate(0, 0); /* si tu veux aussi enlever le petit décalage */
+}
+
+.card-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 7 / 5; /* format poker approx. 63x88 mm */
+  overflow: hidden;
+  background: black;
+}
+
+.card-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* recadre pour remplir le cadre */
+  object-position: center;
+  display: block;
+}
+
+.selectable-score {
+  cursor: pointer;
+}
+
+.score-selected {
+  outline: 2px solid #ff00ff;
+  background-color: rgba(255, 0, 255, 0.08);
+}
+
+/* --- CARTES ERREUR MODERNES (Pour la grille) --- */
+.error-card-modern {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0; /* On garde le style carré "Cyber" */
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.error-card-modern:hover {
+  border-color: var(--neon-pink);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+}
+.error-card-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.error-card-info {
+  padding: 4px;
+  font-size: 0.6rem;
+  text-align: left;
+}

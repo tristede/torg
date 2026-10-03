@@ -1,0 +1,3124 @@
+// --- IMPORTS FIREBASE ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, setLogLevel, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, documentId } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+
+// ============================================
+// OPTIMISATION I18N - SYSTEME DE TRADUCTION V2
+// ============================================
+const i18nCache = { texts: [], placeholders: [] };
+
+function initI18nCache() {
+  i18nCache.texts = Array.from(document.querySelectorAll('[data-i18n]')).map(el => ({
+    el, key: el.getAttribute('data-i18n')
+  }));
+  i18nCache.placeholders = Array.from(document.querySelectorAll('[data-i18n-placeholder]')).map(el => ({
+    el, key: el.getAttribute('data-i18n-placeholder')
+  }));
+}
+
+// âœ… Wrapper vers window.t V2 (translations.js)
+function t(key, vars = {}) {
+  if (!key) return "";
+  return typeof window.t === 'function' ? window.t(key, vars) : key;
+}
+
+function setLanguage(lang) {
+  if (window.i18n) window.i18n.lang = lang;
+  window.currentLang = lang;
+  localStorage.setItem('swipr-lang', lang);
+  console.log(`ðŸŒ Changement de langue vers: ${lang}`);
+
+  // Polices et RTL
+  document.body.classList.remove('font-mono', 'font-arabic', 'font-tifinagh', 'font-jp');
+  switch (lang) {
+    case 'zgh':
+      document.body.classList.add('font-tifinagh');
+      break;
+    case 'ja':
+      document.body.classList.add('font-jp');
+      break;
+    case 'ar':
+      document.body.classList.add('font-arabic');
+      break;
+    default:
+      document.body.classList.add('font-mono');
+      break;
+  }
+
+  // Selecteur langue
+  if (DOM.langSelector && DOM.langSelector.value !== lang) {
+    DOM.langSelector.value = lang;
+  }
+
+  // âœ… HTML data-i18n (UI statique)
+  if (i18nCache.texts.length === 0) initI18nCache();
+  i18nCache.texts.forEach(({ el, key }) => {
+    const txt = t(key.startsWith('ui.') ? key : `ui.${key}`);
+    if (txt) el.textContent = txt;
+  });
+  i18nCache.placeholders.forEach(({ el, key }) => {
+    const txt = t(key.startsWith('ui.') ? key : `ui.${key}`);
+    if (txt) el.placeholder = txt;
+  });
+
+  // âœ… REGEN DYNAMIQUE COMPLET
+ if (DOM.gameScreen && !DOM.gameScreen.classList.contains('hidden-screen')) {
+  updateUI();
+  
+  // âœ… METTRE Ã€ JOUR LES INDICATEURS EN PREMIER
+  const deckInfo = PERSISTENT_DECK_INFO[state.currentDeck];
+  if (deckInfo) {
+    const deckId = deckInfo.translationId || deckInfo.name;
+    const leftText = window.t(`deck.${deckId}.indicatorLeft`) || deckInfo.indicatorLeft;
+    const rightText = window.t(`deck.${deckId}.indicatorRight`) || deckInfo.indicatorRight;
+    
+    DOM.indicatorLeft.textContent = leftText;
+    DOM.indicatorRight.textContent = rightText;
+  }
+  
+  // âœ… PUIS AFFICHER LA CARTE
+  displayCard();
+}
+
+  if (PERSISTENT_DECK_INFO?.length > 0) {
+    regenerateAllDynamicContent();
+  }
+}
+
+// --- VARIABLES GLOBALES FIREBASE ---
+let app, auth, db, storage, functions;
+let userId;
+let isAuthReady = false;
+let appId;
+
+// Configuration Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAYYaN5phFZBsVa0gPCrSEZhgFseyD_cxk",
+  authDomain: "torg-31596.firebaseapp.com",
+  projectId: "torg-31596",
+  storageBucket: "torg-31596.firebasestorage.app",
+  messagingSenderId: "151929535221",
+  appId: "1:151929535221:web:0f2557fedb8a4ca034e3bc",
+  measurementId: "G-NH22BV7RT0"
+};
+
+appId = firebaseConfig.appId;
+
+let deckInfoCollection, decksCollection, scoresCollection;
+
+// Map des couleurs Tailwind
+const tailwindColors = {
+  "slate": "#64748b", "gray": "#6b7280", "zinc": "#71717a", "neutral": "#737373", "stone": "#78716c",
+  "red": "#ef4444", "orange": "#f97316", "amber": "#f59e0b", "yellow": "#eab308", "lime": "#84cc16",
+  "green": "#22c55e", "emerald": "#10b981", "teal": "#14b8a6", "cyan": "#06b6d4", "sky": "#0ea5e9",
+  "blue": "#3b82f6", "indigo": "#6366f1", "violet": "#8b5cf6", "purple": "#a855f7", "fuchsia": "#d946ef",
+  "pink": "#ec4899", "rose": "#f43f5e"
+};
+
+const DEFAULT_COLOR_LEFT = tailwindColors.purple;
+const DEFAULT_COLOR_RIGHT = tailwindColors.pink;
+
+function createColorSwatches(selectorEl, onClick) {
+  selectorEl.innerHTML = '';
+  for (const [name, hex] of Object.entries(tailwindColors)) {
+    const swatch = document.createElement('div');
+    swatch.className = 'color-swatch';
+    swatch.style.backgroundColor = hex;
+    swatch.style.color = hex; // IMPORTANT pour le glow CSS
+    swatch.dataset.colorName = name;
+    swatch.dataset.colorHex = hex;
+    swatch.title = name;
+    swatch.addEventListener('click', () => {
+      selectorEl.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+      if (onClick) onClick(name, hex);
+    });
+    selectorEl.appendChild(swatch);
+  }
+}
+
+const DEFAULT_MAX_CARDS = 10;
+const DECK_SIZE_OPTIONS = [10, 20, 30]; 
+
+const SWIPE_THRESHOLD = 80;
+const MAX_ROT = 15;
+const MAX_DISP = 150;
+
+// MISE A JOUR: Utilisation des clÃ©s de traduction pour les decks par dÃ©faut
+//const DEFAULT_DECK_INFO = [
+//  { name: "deck_trans_girl", emoji: "ðŸ§›ðŸ»", color: "purple", titleColor: "text-purple-400", cardBorder: "border-purple-400/30", indicatorLeft: "TRANS", indicatorRight: "GIRL", isPrivate: false, password: "", subtitle: "desc_trans_girl", isPublished: true },
+//  { name: "deck_alg_mar", emoji: "ðŸ‡©ðŸ‡¿ðŸ‡²ðŸ‡¦", color: "green", titleColor: "text-green-400", cardBorder: "border-green-400/30", indicatorLeft: "GAUCHE", indicatorRight: "DROITE", isPrivate: false, password: "", subtitle: "desc_alg_mar", isPublished: true },
+//  { name: "deck_ia_real", emoji: "ðŸ¤–ðŸ§ ", color: "cyan", titleColor: "text-cyan-400", cardBorder: "border-cyan-400/30", indicatorLeft: "PC", indicatorRight: "CONSOLE", isPrivate: false, password: "", subtitle: "desc_ia_real", isPublished: true }
+//];
+
+const neutralImg = "https://placehold.co/400x550/FBFCF8/000000?text=?";
+const neutralCard = (correctSide = "left") => ({
+  id: crypto.randomUUID(),
+  text: "",
+  correct: correctSide,
+  img: neutralImg,
+  soluceLink: ""
+});
+
+const INITIAL_DECKS = [
+  Array(10).fill(null).map((_, i) => neutralCard(i % 2 === 0 ? "left" : "right")),
+  Array(10).fill(null).map((_, i) => neutralCard(i % 2 === 0 ? "left" : "right")),
+  Array(10).fill(null).map((_, i) => neutralCard(i % 2 === 0 ? "left" : "right"))
+];
+
+let PERSISTENT_DECKS = [];
+let PERSISTENT_DECK_INFO = [];
+
+const SCORE_MODES = ['normal', 'hardcore']; //pvp plus tard
+
+const state = {
+  playerName: '',
+  currentDeck: 0,
+  currentFilter: 'all',
+  scoreModeFilter: 'normal',   // 'all' | 'normal' | 'hardcore'
+  deckCardsMode: 'soluce', // 'soluce' ou 'zoom'
+  game: {
+    score: 0,
+    cardIndex: 0,
+    isProcessing: false,
+    maxCards: DEFAULT_MAX_CARDS,
+    isHardcoreMode: false,
+  },
+  currentDeckCards: [],
+  resultsRecap: [],
+  isEditingMode: false,
+  editingCardGlobalId: null,
+  previousScreen: null,
+  drag: { startX: 0, currentX: 0, isDragging: false, isMouseDown: false },
+  animationFrameId: null,
+  isAdmin: false,
+  isManagingScores: false,
+  scoresToDelete: new Set(),
+  currentDeckToUnlock: null,
+  currentTagFilter: 'all',
+  cardStats: null
+};
+
+
+const DOM = {};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initI18nCache();
+  queryDOMElements();
+  createColorSwatches(DOM.deckColorSelector);
+  createColorSwatches(DOM.deckColorLeftSelector);
+  createColorSwatches(DOM.deckColorRightSelector);
+  
+  initializeFirebase();
+  
+  state.playerName = localStorage.getItem('player_name') || '';
+  if (state.playerName) {
+    DOM.playerNameInput.value = state.playerName;
+    DOM.playerDisplay.textContent = state.playerName;
+  }
+
+  const savedLang = localStorage.getItem('swipr-lang') || 'fr';
+  window.currentLang = savedLang;
+  setLanguage(savedLang);
+
+  initEventListeners();
+  showScreen(DOM.introScreen);
+});
+
+async function initializeFirebase() {
+  if (!firebaseConfig) {
+    console.error("Firebase config is missing!");
+    showAlert("Erreur de Connexion", "La configuration Firebase est manquante.", "error");
+    return;
+  }
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    storage = getStorage(app); 
+    functions = getFunctions(app); 
+    setLogLevel('Debug'); 
+
+    deckInfoCollection = collection(db, `artifacts/${appId}/public/data/deck_info`);
+    decksCollection = collection(db, `artifacts/${appId}/public/data/decks`);
+    scoresCollection = collection(db, `artifacts/${appId}/public/data/scores`);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        userId = user.uid;
+        try {
+          const adminDocRef = doc(db, 'admin_users', user.uid);
+          const adminDoc = await getDoc(adminDocRef);
+          state.isAdmin = adminDoc.exists();
+        } catch (adminError) {
+          state.isAdmin = false;
+        }
+        isAuthReady = true;
+        loadPersistentData(); 
+      } else {
+        try {
+          if (typeof __initial_auth_token !== 'undefined') {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+        } catch (authError) {
+          console.error("Firebase Auth Error:", authError);
+        }
+      }
+    });
+  } catch (e) {
+    console.error("Error initializing Firebase:", e);
+  }
+}
+
+function queryDOMElements() {
+  // Langue
+  DOM.deckTranslationKeyInput = document.querySelector('[data-deck-translation-key]');
+  
+  DOM.introScreen = document.getElementById('intro-screen');
+  DOM.deckScreen = document.getElementById('deck-screen');
+  DOM.gameScreen = document.getElementById('game-screen');
+  DOM.scoresScreen = document.getElementById('scores-screen'); 
+  DOM.soluceScreen = document.getElementById('soluce-screen'); 
+  DOM.publicSoluceScreen = document.getElementById('public-soluce-screen');
+  DOM.statsScreen = document.getElementById('stats-screen'); 
+  
+  DOM.btnHeaderAdmin = document.getElementById('btn-header-admin');
+  DOM.logoClick = document.getElementById('logo-click');
+  DOM.playerDisplay = document.getElementById('player-display');
+  DOM.playerNameInput = document.getElementById('player-name');
+  DOM.btnStart = document.getElementById('btn-start');
+  DOM.btnViewScores = document.getElementById('btn-view-scores');
+
+  DOM.deckSelectionGrid = document.getElementById('deck-selection-grid');
+  DOM.deckTagFilterBar = document.getElementById('deck-tag-filter-bar'); 
+  DOM.btnViewScoresFromDeck = document.getElementById('btn-view-scores-from-deck');
+  DOM.btnViewPublicSoluce = document.getElementById('btn-view-public-soluce');
+  DOM.btnChangePlayer = document.getElementById('btn-change-player');
+  
+  DOM.overlayLeft = document.getElementById('overlay-left');
+  DOM.overlayRight = document.getElementById('overlay-right');
+  DOM.scoreDisplay = document.getElementById('score-display');
+  DOM.indexDisplay = document.getElementById('index-display');
+  DOM.btnQuitGame = document.getElementById('btn-quit-game');
+  DOM.cardHolder = document.getElementById('card-holder');
+  DOM.indicatorLeft = document.getElementById('indicator-left');
+  DOM.indicatorRight = document.getElementById('indicator-right');
+  DOM.cardElement = document.getElementById('card');
+  DOM.cardImage = document.getElementById('card-image');
+  DOM.cardText = document.getElementById('card-text');
+  DOM.arrowBtnContainer = document.querySelector('.arrow-btn-container');
+  DOM.btnArrowLeft = document.getElementById('btn-arrow-left');
+  DOM.btnArrowRight = document.getElementById('btn-arrow-right');
+  DOM.btnZoomCard = document.getElementById('btn-zoom-card');
+  DOM.messageBox = document.getElementById('message-box');
+  
+  DOM.endOverlay = document.getElementById('end-overlay');
+  DOM.gaugeCircle = document.getElementById('gauge-circle');
+  DOM.gaugePercentage = document.getElementById('gauge-percentage');
+  DOM.resultMessage = document.getElementById('result-message');
+  DOM.recapTitle = document.getElementById('recap-title');
+  DOM.recapList = document.getElementById('recap-list');
+  DOM.btnChooseDeck = document.getElementById('btn-choose-deck');
+  DOM.btnReplay = document.getElementById('btn-replay');
+  DOM.btnViewScoresFromGame = document.getElementById('btn-view-scores-from-game');
+  
+  DOM.btnBackFromScores = document.getElementById('btn-back-from-scores');
+  DOM.scoreFilterButtons = document.getElementById('score-filter-buttons');
+  DOM.btnFilterAll = document.getElementById('btn-filter-all');
+  DOM.scoresList = document.getElementById('scores-list');
+  DOM.scoreManagementTools = document.getElementById('score-management-tools');
+  DOM.btnSelectAllScores = document.getElementById('btn-select-all-scores');
+  DOM.btnDeselectAllScores = document.getElementById('btn-deselect-all-scores');
+  DOM.btnDeleteSelectedScores = document.getElementById('btn-delete-selected-scores');
+
+  DOM.btnToggleEdit = document.getElementById('btn-toggle-edit');
+  DOM.btnAddDeck = document.getElementById('btn-add-deck');
+  DOM.btnForceRefresh = document.getElementById('btn-force-refresh');
+  DOM.btnManageScores = document.getElementById('btn-manage-scores');
+  DOM.btnViewStats = document.getElementById('btn-view-stats'); 
+  DOM.btnExportData = document.getElementById('btn-export-data');
+  DOM.btnImportData = document.getElementById('btn-import-data');
+  DOM.importFileInput = document.getElementById('import-file-input');
+  DOM.btnBackFromSoluceAdmin = document.getElementById('btn-back-from-soluce-admin');
+  DOM.soluceGalleryContainer = document.getElementById('soluce-gallery-container');
+  DOM.soluceInfoText = document.getElementById('soluce-info-text');
+  
+  DOM.btnBackFromStats = document.getElementById('btn-back-from-stats');
+  DOM.btnRecalculateStats = document.getElementById('btn-recalculate-stats');
+  DOM.btnResetStats = document.getElementById('btn-reset-stats'); 
+  DOM.statsOutput = document.getElementById('stats-output');
+  DOM.statsLoader = document.getElementById('stats-loader');
+  DOM.statsResultsContainer = document.getElementById('stats-results-container');
+
+  DOM.btnBackFromPublicSoluce = document.getElementById('btn-back-from-public-soluce');
+  //DOM.publicSoluceGalleryContainer = document.getElementById('public-soluce-gallery-container');
+
+  DOM.imageModal = document.getElementById('image-modal');
+  DOM.modalImage = document.getElementById('modal-image');
+  DOM.btnCloseImageModal = document.getElementById('btn-close-image-modal');
+
+  DOM.passwordModal = document.getElementById('password-modal');
+  DOM.passwordError = document.getElementById('password-error');
+  DOM.btnClosePasswordModal = document.getElementById('btn-close-password-modal');
+  DOM.btnAdminLogin = document.getElementById('btn-admin-login');
+  DOM.btnAdminCreateAccount = document.getElementById('btn-admin-create-account');
+  DOM.adminEmailInput = document.getElementById('admin-email-input');
+  DOM.adminPasswordInput = document.getElementById('admin-password-input');
+
+  DOM.editCardModal = document.getElementById('edit-card-modal');
+  DOM.editModalTitle = document.getElementById('edit-modal-title');
+  DOM.cardForm = document.getElementById('card-form');
+  DOM.editCardDeckIndex = document.getElementById('edit-card-deck-index');
+  DOM.editCardId = document.getElementById('edit-card-id');
+  DOM.editDeckSelect = document.getElementById('edit-deck-select');
+  DOM.editCardText = document.getElementById('edit-card-text');
+  DOM.editCardImg = document.getElementById('edit-card-img');
+  DOM.editCardSoluceLink = document.getElementById('edit-card-soluce-link');
+  DOM.editCardCorrect = document.getElementById('edit-card-correct');
+  DOM.saveCardBtn = document.getElementById('save-card-btn');
+  DOM.btnDeleteCard = document.getElementById('btn-delete-card');
+  DOM.btnCancelEditCard = document.getElementById('btn-cancel-edit-card');
+
+  DOM.deckModal = document.getElementById('deck-modal');
+  DOM.deckForm = document.getElementById('deck-form');
+  DOM.deckModalTitle = document.getElementById('deck-modal-title');
+  DOM.editDeckId = document.getElementById('edit-deck-id');
+  DOM.deckNameInput = document.getElementById('deck-name');
+  DOM.deckEmojiInput = document.getElementById('deck-emoji');
+  DOM.deckSubtitleInput = document.getElementById('deck-subtitle');
+  DOM.deckTags = document.getElementById('deck-tags'); 
+  DOM.deckIndicatorLeftInput = document.getElementById('deck-indicator-left');
+  DOM.deckIndicatorRightInput = document.getElementById('deck-indicator-right');
+  DOM.deckColorSelector = document.getElementById('deck-color-selector');
+  DOM.deckColorLeftSelector = document.getElementById('deck-color-left-selector');
+  DOM.deckColorRightSelector = document.getElementById('deck-color-right-selector');
+  DOM.deckResultPct0 = document.getElementById('deck-result-pct0');
+  DOM.deckResultPct100 = document.getElementById('deck-result-pct100');
+  DOM.deckResultPct50 = document.getElementById('deck-result-pct50');
+  DOM.deckResultDefault = document.getElementById('deck-result-default');
+  
+  DOM.deckIsPrivate = document.getElementById('deck-is-private');
+  DOM.deckPassword = document.getElementById('deck-password');
+  DOM.privateDeckPasswordGroup = document.getElementById('private-deck-password-group');
+  DOM.deckIsPublished = document.getElementById('deck-is-published');
+
+  DOM.btnSaveDeck = document.getElementById('btn-save-deck');
+  DOM.btnDeleteDeck = document.getElementById('btn-delete-deck');
+  DOM.btnCancelDeck = document.getElementById('btn-cancel-deck');
+  DOM.btnCloseDeckModal = document.getElementById('btn-close-deck-modal');
+
+  DOM.alertModal = document.getElementById('alert-modal');
+  DOM.alertModalTitle = document.getElementById('alert-modal-title');
+  DOM.alertModalText = document.getElementById('alert-modal-text');
+  DOM.alertModalButtons = document.getElementById('alert-modal-buttons');
+  DOM.btnCloseAlertModal = document.getElementById('btn-close-alert-modal');
+
+  DOM.deckSizeModal = document.getElementById('deck-size-modal');
+  DOM.btnCloseDeckSizeModal = document.getElementById('btn-close-deck-size-modal');
+  DOM.btnDeckSize10 = document.getElementById('btn-deck-size-10');
+  DOM.btnDeckSize20 = document.getElementById('btn-deck-size-20');
+  DOM.btnDeckSize30 = document.getElementById('btn-deck-size-30');
+  DOM.btnDeckSizeHardcore = document.getElementById('btn-deck-size-hardcore')
+
+  DOM.privateDeckModal = document.getElementById('private-deck-modal');
+  DOM.btnClosePrivateDeckModal = document.getElementById('btn-close-private-deck-modal');
+  DOM.privateDeckPasswordInput = document.getElementById('private-deck-password-input');
+  DOM.btnUnlockPrivateDeck = document.getElementById('btn-unlock-private-deck');
+  DOM.privateDeckError = document.getElementById('private-deck-error');
+
+  DOM.deckCardsModal = document.getElementById('deck-cards-modal');
+  DOM.btnCloseDeckCardsModal = document.getElementById('btn-close-deck-cards-modal');
+  DOM.deckCardsModalTitle = document.getElementById('deck-cards-modal-title');
+  DOM.deckCardsModalBody = document.getElementById('deck-cards-modal-body');
+
+  DOM.deckCardsModeSoluce = document.getElementById('deck-cards-mode-soluce');
+  DOM.deckCardsModeZoom = document.getElementById('deck-cards-mode-zoom');
+
+  DOM.publicDeckSelectionGrid = document.getElementById('public-deck-selection-grid');
+
+  DOM.btnScoreModeToggle = document.getElementById('btn-score-mode-toggle');
+
+}
+
+function initEventListeners() {
+  if (DOM.langSelector) {
+    DOM.langSelector.addEventListener('change', (e) => {
+      setLanguage(e.target.value);
+    });
+  }
+  window.addEventListener('languageChanged', (e) => {
+    if (e.detail && e.detail.lang) setLanguage(e.detail.lang);
+    if (DOM.publicSoluceScreen && DOM.publicSoluceScreen.classList.contains('active')) {
+    generatePublicDeckSelectionScreen();
+  }
+  });
+
+  if (DOM.btnScoreModeToggle) {
+  const labelMap = {
+    normal: 'NORMAL',
+    hardcore: 'UHC',
+  };
+
+  function updateScoreModeLabel() {
+    DOM.btnScoreModeToggle.textContent =
+      labelMap[state.scoreModeFilter] || `MODE: ${state.scoreModeFilter}`;
+  }
+
+  DOM.btnScoreModeToggle.addEventListener('click', () => {
+    const currentIndex = SCORE_MODES.indexOf(state.scoreModeFilter);
+    const nextIndex = (currentIndex + 1) % SCORE_MODES.length;
+    state.scoreModeFilter = SCORE_MODES[nextIndex];
+    updateScoreModeLabel();
+    renderScores();
+  });
+
+  updateScoreModeLabel();
+}
+
+  DOM.btnHeaderAdmin.addEventListener('click', openPasswordModal);
+  if (DOM.logoClick) {
+    DOM.logoClick.addEventListener('click', () => {
+      if (DOM.endOverlay) {
+        DOM.endOverlay.classList.add('hidden');
+      }
+      showScreen(DOM.deckScreen);
+    });
+  }
+  DOM.btnStart.addEventListener('click', continueToDecks);
+  DOM.btnViewScores.addEventListener('click', () => showScoresScreen(DOM.introScreen, false)); 
+  
+  DOM.btnViewScoresFromDeck.addEventListener('click', () => showScoresScreen(DOM.deckScreen, false));
+  // DOM.btnViewPublicSoluce.addEventListener('click', showPublicSoluce);
+  DOM.btnChangePlayer.addEventListener('click', () => showScreen(DOM.introScreen));
+
+  DOM.btnQuitGame.addEventListener('click', quitGame);
+  DOM.cardElement.addEventListener('click', () => {
+    if (DOM.cardImage.src && !DOM.cardImage.src.includes('placehold.co') && !DOM.cardImage.classList.contains('hidden')) {
+      openModal(DOM.cardImage.src);
+    }
+  });
+  DOM.btnZoomCard.addEventListener('click', () => {
+    if (DOM.cardImage.src && !DOM.cardImage.src.includes('placehold.co') && !DOM.cardImage.classList.contains('hidden')) {
+      openModal(DOM.cardImage.src);
+    }
+  });
+  
+  DOM.btnArrowLeft.addEventListener('click', () => handleDecision('left'));
+  DOM.btnArrowRight.addEventListener('click', () => handleDecision('right'));
+  
+  DOM.cardElement.addEventListener('touchstart', onDragStart, { passive: true });
+  DOM.cardElement.addEventListener('touchmove', onDragMove, { passive: true });
+  DOM.cardElement.addEventListener('touchend', onDragEnd);
+  DOM.cardElement.addEventListener('mousedown', onDragStart);
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup', onDragEnd);
+  
+  document.addEventListener('keydown', onKeyDown);
+
+  DOM.btnChooseDeck.addEventListener('click', () => {
+    DOM.endOverlay.classList.add('hidden');
+    showScreen(DOM.deckScreen);
+  });
+  DOM.btnReplay.addEventListener('click', () => {
+    DOM.endOverlay.classList.add('hidden');
+    checkDeckSizeAndStart();
+  });
+  DOM.btnViewScoresFromGame.addEventListener('click', () => showScoresScreen(DOM.gameScreen, false));
+
+  DOM.btnBackFromScores.addEventListener('click', () => {
+    const prevScreen = state.previousScreen;
+    state.isManagingScores = false; 
+    state.scoresToDelete.clear();
+    showScreen(prevScreen || DOM.deckScreen);
+  });
+  DOM.btnFilterAll.addEventListener('click', (e) => filterScores('all', e.target));
+  DOM.btnSelectAllScores.addEventListener('click', selectAllScores);
+  DOM.btnDeselectAllScores.addEventListener('click', deselectAllScores);
+  DOM.btnDeleteSelectedScores.addEventListener('click', deleteSelectedScores);
+
+  DOM.btnToggleEdit.addEventListener('click', toggleEditingMode);
+  DOM.btnAddDeck.addEventListener('click', () => openDeckModal(null));
+  DOM.btnForceRefresh.addEventListener('click', forceReload);
+  DOM.btnManageScores.addEventListener('click', () => showScoresScreen(DOM.soluceScreen, true));
+  DOM.btnViewStats.addEventListener('click', showStatsScreen); 
+  DOM.btnExportData.addEventListener('click', exportData);
+  DOM.btnImportData.addEventListener('click', () => DOM.importFileInput.click());
+  DOM.importFileInput.addEventListener('change', importData);
+  DOM.btnBackFromSoluceAdmin.addEventListener('click', () => {
+    state.isEditingMode = false;
+    showScreen(DOM.deckScreen);
+  });
+  
+  DOM.btnBackFromStats.addEventListener('click', () => showScreen(DOM.soluceScreen));
+  DOM.btnRecalculateStats.addEventListener('click', calculateAndRenderStats);
+  DOM.btnResetStats.addEventListener('click', resetStats);
+
+  DOM.btnBackFromPublicSoluce.addEventListener('click', () => showScreen(DOM.deckScreen));
+  
+  DOM.imageModal.addEventListener('click', (e) => {
+    if (e.target.id === 'image-modal') closeModal(DOM.imageModal);
+  });
+  DOM.btnCloseImageModal.addEventListener('click', () => closeModal(DOM.imageModal));
+
+  DOM.passwordModal.addEventListener('click', (e) => {
+    if (e.target.id === 'password-modal') closeModal(DOM.passwordModal);
+  });
+  DOM.btnClosePasswordModal.addEventListener('click', () => closeModal(DOM.passwordModal));
+  DOM.btnAdminLogin.addEventListener('click', handleAdminLogin);
+  DOM.btnAdminCreateAccount.addEventListener('click', handleAdminCreateAccount);
+  DOM.adminPasswordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleAdminLogin();
+  });
+
+  DOM.editCardModal.addEventListener('click', (e) => {
+    if (e.target.id === 'edit-card-modal') closeModal(DOM.editCardModal);
+  });
+  DOM.saveCardBtn.addEventListener('click', saveCard);
+  DOM.btnDeleteCard.addEventListener('click', deleteCard);
+  DOM.btnCancelEditCard.addEventListener('click', () => closeModal(DOM.editCardModal));
+
+  DOM.deckModal.addEventListener('click', (e) => {
+    if (e.target.id === 'deck-modal') closeModal(DOM.deckModal);
+  });
+  DOM.btnCloseDeckModal.addEventListener('click', () => closeModal(DOM.deckModal));
+  DOM.btnSaveDeck.addEventListener('click', saveDeckInfo);
+  DOM.btnDeleteDeck.addEventListener('click', deleteDeck);
+  DOM.btnCancelDeck.addEventListener('click', () => closeModal(DOM.deckModal));
+  
+  DOM.alertModal.addEventListener('click', (e) => {
+    if (e.target.id === 'alert-modal') closeModal(DOM.alertModal);
+  });
+  DOM.btnCloseAlertModal.addEventListener('click', () => closeModal(DOM.alertModal));
+  
+  DOM.deckSizeModal.addEventListener('click', (e) => {
+    if (e.target.id === 'deck-size-modal') closeModal(DOM.deckSizeModal);
+  });
+  DOM.btnCloseDeckSizeModal.addEventListener('click', () => closeModal(DOM.deckSizeModal));
+
+  DOM.btnDeckSizeHardcore?.addEventListener('click', () => {
+    state.game.maxCards = 'hardcore';  // Chaîne spéciale pour différencier
+    state.game.isHardcoreMode = true;
+    startGame();
+});
+  
+  DOM.privateDeckModal.addEventListener('click', (e) => {
+    if (e.target.id === 'private-deck-modal') closeModal(DOM.privateDeckModal);
+  });
+  DOM.btnClosePrivateDeckModal.addEventListener('click', () => closeModal(DOM.privateDeckModal));
+  DOM.btnUnlockPrivateDeck.addEventListener('click', checkPrivateDeckPassword);
+  DOM.privateDeckPasswordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') checkPrivateDeckPassword();
+  });
+  
+  DOM.deckIsPrivate.addEventListener('change', (e) => {
+      DOM.privateDeckPasswordGroup.classList.toggle('hidden', !e.target.checked);
+  });
+
+  DOM.deckCardsModal.addEventListener('click', (e) => {
+  if (e.target.id === 'deck-cards-modal') closeModal(DOM.deckCardsModal);
+});
+  DOM.btnCloseDeckCardsModal.addEventListener('click', () => closeModal(DOM.deckCardsModal));
+
+  DOM.btnViewPublicSoluce.addEventListener('click', () => {
+  generatePublicDeckSelectionScreen();
+  showScreen(DOM.publicSoluceScreen);
+});
+
+  DOM.deckCardsModeSoluce.addEventListener('click', () => {
+  state.deckCardsMode = 'soluce';
+  DOM.deckCardsModeSoluce.classList.add('deck-cards-mode-active');
+  DOM.deckCardsModeZoom.classList.remove('deck-cards-mode-active');
+});
+
+  DOM.deckCardsModeZoom.addEventListener('click', () => {
+  state.deckCardsMode = 'zoom';
+  DOM.deckCardsModeZoom.classList.add('deck-cards-mode-active');
+  DOM.deckCardsModeSoluce.classList.remove('deck-cards-mode-active');
+});
+
+  document.addEventListener('mousemove', (e) => {
+    requestAnimationFrame(() => {
+      if (DOM.cursorGlow) {
+        DOM.cursorGlow.style.left = `${e.clientX}px`;
+        DOM.cursorGlow.style.top = `${e.clientY}px`;
+        DOM.cursorGlow.style.opacity = '1';
+      }
+    });
+  });
+  
+  document.addEventListener('mouseleave', () => {
+    if (DOM.cursorGlow) {
+      DOM.cursorGlow.style.opacity = '0';
+    }
+  });
+}
+
+function openDeckCardsModal(deckIndex) {
+  const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+  const cards = PERSISTENT_DECKS[deckIndex] || [];
+
+  DOM.deckCardsModalTitle.textContent = deckInfo?.name || 'Deck inconnu';
+  DOM.deckCardsModalBody.innerHTML = '';
+
+  //taille des decks 60
+  cards.slice(0, 60).forEach((card) => {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'soluce-gallery-item recap-card';
+    cardEl.style.width = '100px';
+
+    const sideText =
+      card.correct === 'left'
+        ? (deckInfo.indicatorLeft || 'LEFT')
+        : (deckInfo.indicatorRight || 'RIGHT');
+
+    cardEl.innerHTML = `
+  <div class="recap-card-inner">
+    <div class="card-image-wrapper">
+      <img
+        src="${card.img || 'https://placehold.co/400x550/FBFCF8/000000?text=?'}"
+        alt="Carte"
+        onerror="this.src='https://placehold.co/400x550/000000/FFFFFF?text=?'">
+    </div>
+    <div class="recap-card-footer">
+      <span class="recap-card-text">${card.text || 'Sans texte'}</span>
+      <span class="recap-card-side">${sideText}</span>
+    </div>
+  </div>
+`;
+
+
+    // comportement selon le mode
+    cardEl.addEventListener('click', () => {
+      if (state.deckCardsMode === 'soluce') {
+        if (card.soluceLink && card.soluceLink.trim() !== '') {
+          window.open(card.soluceLink, '_blank');
+        }
+      } else {
+        const src = card.img || 'https://placehold.co/800x1100/000/FFF?text=?';
+        DOM.modalImage.src = src;
+        openModal(DOM.imageModal);
+      }
+    });
+
+    DOM.deckCardsModalBody.appendChild(cardEl);
+  });
+
+  openModal(DOM.deckCardsModal);
+}
+
+function openDeckCardsAdminModal(deckIndex) {
+  const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+  const cards = PERSISTENT_DECKS[deckIndex] || [];
+
+  DOM.deckCardsModalTitle.textContent =
+    (deckInfo?.name || 'Deck inconnu') + ' — Admin';
+  DOM.deckCardsModalBody.innerHTML = '';
+
+  // carte "ajouter une carte"
+  //taille = addCardEl.style.width
+  const addCardEl = document.createElement('div');
+  addCardEl.className = 'recap-card recap-card-add';
+  addCardEl.style.width = '100px';
+  addCardEl.innerHTML = `
+  <div class="recap-card-inner recap-card-inner-add">
+    <div class="recap-card-image-wrapper card-image-wrapper flex items-center justify-center">
+      <span class="text-3xl">＋</span>
+    </div>
+    <div class="recap-card-footer">
+      <span class="recap-card-text">
+        ${t('Ajouter une carte') || 'Ajouter une carte'}
+      </span>
+    </div>
+  </div>
+`;
+  addCardEl.addEventListener('click', () => {
+  openEditModal(deckIndex, null);
+});
+DOM.deckCardsModalBody.appendChild(addCardEl);
+
+// cartes existantes
+cards.forEach((card) => {
+  const cardEl = document.createElement('div');
+  cardEl.className = 'soluce-gallery-item recap-card';
+  cardEl.style.width = '100px';
+
+  const sideText =
+    card.correct === 'left'
+      ? (deckInfo.indicatorLeft || 'LEFT')
+      : (deckInfo.indicatorRight || 'RIGHT');
+
+  cardEl.innerHTML = `
+    <div class="recap-card-inner">
+      <div class="recap-card-image-wrapper card-image-wrapper">
+        <img
+          src="${card.img || neutralImg}"
+          alt="Carte"
+          onerror="this.src='${neutralImg}'">
+      </div>
+      <div class="recap-card-footer">
+        <span class="recap-card-text">${card.text || 'Sans texte'}</span>
+        <span class="recap-card-side">${sideText}</span>
+      </div>
+    </div>
+  `;
+
+  cardEl.addEventListener('click', () => {
+    openEditModal(deckIndex, card.id);
+  });
+
+  DOM.deckCardsModalBody.appendChild(cardEl);
+});
+
+  openModal(DOM.deckCardsModal);
+}
+
+
+function loadPersistentData() {
+  if (!isAuthReady || !db) return;
+  const infoQuery = query(deckInfoCollection);
+  onSnapshot(infoQuery, async (snapshot) => {
+     if (snapshot.empty) {
+      PERSISTENT_DECK_INFO = [];
+      PERSISTENT_DECKS = [];
+      regenerateAllDynamicContent();   // UI vide mais propre
+      return;
+    }
+    let infoData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+    infoData.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+    PERSISTENT_DECK_INFO = infoData;
+    await loadDecksData(); 
+  }, (error) => {
+    console.error("Erreur de chargement des infos de deck:", error);
+    showAlert("Erreur DonnÃ©es", "Impossible de charger les infos des decks.", "error");
+  });
+}
+
+async function loadDecksData() {
+  const deckIds = PERSISTENT_DECK_INFO.map(info => info.id);
+  if (deckIds.length === 0) {
+    PERSISTENT_DECKS = [];
+    regenerateAllDynamicContent();
+    return;
+  }
+  try {
+    const fetchPromises = PERSISTENT_DECK_INFO.map(info => {
+      const cardsSubCollectionRef = collection(db, decksCollection.path, info.id, 'cards');
+      return getDocs(cardsSubCollectionRef);
+    });
+    const allCardSnapshots = await Promise.all(fetchPromises);
+    const decksData = {};
+    allCardSnapshots.forEach((snapshot, index) => {
+      const deckId = PERSISTENT_DECK_INFO[index].id;
+      const cards = snapshot.docs.map(doc => doc.data());
+      decksData[deckId] = { cards: cards };
+    });
+    PERSISTENT_DECKS = PERSISTENT_DECK_INFO.map(info => {
+      return decksData[info.id] ? decksData[info.id].cards : [];
+    });
+    regenerateAllDynamicContent();
+  } catch (error) {
+    console.error("Erreur de chargement des sous-collections de decks:", error);
+    showAlert("Erreur DonnÃ©es", "Impossible de charger les cartes des decks.", "error");
+  }
+}
+
+async function migrateInitialData() {
+  const batch = writeBatch(db);
+  await Promise.all(DEFAULT_DECK_INFO.map(async (info, index) => {
+    const newDeckInfoRef = doc(deckInfoCollection);
+    const newDeckData = {
+      ...info,
+      orderIndex: index,
+      createdAt: Date.now(),
+      isPrivate: info.isPrivate || false, 
+      password: info.password || "",       
+      subtitle: info.subtitle || "",
+      isPublished: info.isPublished ?? true
+    };
+    batch.set(newDeckInfoRef, newDeckData);
+    const newDeckRef = doc(decksCollection, newDeckInfoRef.id);
+    batch.set(newDeckRef, { createdAt: Date.now() });
+    const cards = INITIAL_DECKS[index] ? INITIAL_DECKS[index].map(card => ({
+      ...card, 
+      id: card.id || crypto.randomUUID(),
+      soluceLink: card.soluceLink || ""
+    })) : [];
+    cards.forEach(card => {
+        const newCardRef = doc(db, newDeckRef.path, 'cards', card.id);
+        batch.set(newCardRef, card);
+    });
+  }));
+  try {
+    await batch.commit();
+  } catch (e) {
+    console.error("Echec de la migration:", e);
+    showAlert("Erreur Migration", "Impossible d'initialiser les données de jeu.", "error");
+  }
+}
+
+function exportData() {
+  try {
+    const data = { 
+      decks: PERSISTENT_DECKS.map((cards, index) => ({ id: PERSISTENT_DECK_INFO[index].id, cards: cards })), 
+      info: PERSISTENT_DECK_INFO 
+    };
+    const dataString = JSON.stringify(data, null, 2);
+    const blob = new Blob([dataString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `torg_beta_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Erreur export:", error);
+    showAlert("Erreur", "Ã‰chec de l'exportation.", "error");
+  }
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const content = e.target.result;
+      const data = JSON.parse(content);
+      if (data && Array.isArray(data.decks) && Array.isArray(data.info)) {
+        const onConfirmImport = async () => {
+          try {
+            const importDataFn = httpsCallable(functions, 'importData');
+            const result = await importDataFn({ data: data });
+            showAlert("Import RÃ©ussi", `Import terminÃ© avec succÃ¨s (${result.data.count} decks).`, "success");
+            await loadPersistentData();
+          } catch (fnError) {
+             console.error("Erreur cloud function import:", fnError);
+             showAlert("Erreur Import", "Ã‰chec de l'import via le serveur.", "error");
+          }
+        };
+        showConfirm(
+          "Confirmer l'import",
+          `Import ${data.info.length} decks. Ã‰crase les donnÃ©es Firestore. Continuer ?`,
+          onConfirmImport
+        );
+      } else {
+        throw new Error("Structure JSON invalide.");
+      }
+    } catch (error) {
+      console.error("Erreur import:", error);
+      showAlert("Erreur d'import", `Ã‰chec: ${error.message}`, "error");
+    } finally {
+      event.target.value = null;
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showScreen(screenEl) {
+  const mainScreens = [
+    DOM.introScreen, DOM.deckScreen, DOM.gameScreen, 
+    DOM.scoresScreen, DOM.soluceScreen, DOM.publicSoluceScreen,
+    DOM.statsScreen 
+  ];
+  mainScreens.forEach(s => {
+    s.classList.add('hidden-screen');
+    s.classList.remove('active');
+  });
+  closeModal(DOM.imageModal);
+  closeModal(DOM.passwordModal);
+  closeModal(DOM.editCardModal);
+  closeModal(DOM.deckModal);
+  closeModal(DOM.alertModal);
+  closeModal(DOM.deckSizeModal);
+  closeModal(DOM.privateDeckModal);
+
+  screenEl.classList.remove('hidden-screen');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      screenEl.classList.add('active');
+    });
+  });
+}
+
+function showScoresScreen(prevScreen, isManaging = false) {
+  state.previousScreen = prevScreen;
+  state.isManagingScores = isManaging;
+  DOM.scoreManagementTools.classList.toggle('hidden', !isManaging);
+  state.scoresToDelete.clear();
+  renderScores();
+  showScreen(DOM.scoresScreen);
+}
+
+
+function showAllSoluce() {
+  DOM.soluceGalleryContainer.querySelectorAll('.soluce-deck-content').forEach(el => {
+    el.classList.add('hidden-soluce'); 
+  });
+  DOM.soluceGalleryContainer.querySelectorAll('.admin-deck-header').forEach(el => {
+    el.classList.remove('is-open'); 
+  });
+  updateSoluceDisplayModes();
+  showScreen(DOM.soluceScreen);
+}
+
+// function showPublicSoluce() {
+//   regeneratePublicSoluce();
+//   showScreen(DOM.publicSoluceScreen);
+// }
+
+function regenerateAllDynamicContent() {
+  generateDeckTagFilters(); 
+  generateDeckSelectionScreen();
+  generateSoluceContainers();
+  // generatePublicSoluceContainers(); // plus utilisé
+  generateScoreFilters();
+  
+  DOM.editDeckSelect.innerHTML = '';
+  PERSISTENT_DECK_INFO.forEach((info, index) => {
+    DOM.editDeckSelect.innerHTML += `<option value="${index}">${info.emoji} ${t(info.name)}</option>`;
+  });
+}
+
+
+// function regeneratePublicSoluce() {
+//   generatePublicSoluceContainers();
+// }
+
+function generateDeckSelectionScreen() {
+  DOM.deckSelectionGrid.innerHTML = '';
+
+  const allDecks = PERSISTENT_DECK_INFO.filter(deckInfo => deckInfo.isPublished ?? true);
+
+  const filteredDecks = allDecks.filter(deckInfo => {
+    if (state.currentTagFilter === 'all') return true;
+    return (deckInfo.tags || []).includes(state.currentTagFilter);
+  });
+
+  filteredDecks.forEach((deckInfo) => {
+    const originalIndex = PERSISTENT_DECK_INFO.findIndex(d => d.id === deckInfo.id);
+    if (originalIndex === -1) return;
+
+    const cardCount = (PERSISTENT_DECKS[originalIndex] || []).length;
+
+    // ðŸ”‘ Clé de traduction deck (ex: "decktransgirl")
+    const deckId = deckInfo.translationId || deckInfo.name;
+
+    // ðŸ“ Nom, sous-titre, suffixe de cartes via translations.js V2
+    const translatedName = window.t(`deck.${deckId}.name`);
+    const translatedSubtitle = window.t(`deck.${deckId}.subtitle`);
+    const cardsText = window.t('cardssuffix');      // auto â†’ ui.cardssuffix
+
+    // ðŸ”’ Indicateur privé (UI)
+    const privateIndicator = deckInfo.isPrivate ? ` <span title="${t('ui.Deck PrivÃ©/NSFW') || 'Deck PrivÃ©/NSFW'}">ðŸ”’</span>` : '';
+
+    const el = document.createElement('div');
+    el.className = 'deck-card glass rounded-xl p-6';
+    el.addEventListener('click', (e) => {
+    if (e.target.closest('button.view-cards-btn')) return; // Ne pas trigger selectDeck
+    selectDeck(originalIndex);
+  });
+
+    el.innerHTML = `
+      <div class="text-4xl mb-4 text-center">${deckInfo.emoji || ''}</div>
+      <h3 class="text-xl font-bold mb-2 text-center ${deckInfo.titleColor || ''}">
+        ${translatedName || deckInfo.name || ''}${privateIndicator}
+      </h3>
+      <p class="text-sm text-gray-300 text-center mb-3">
+        ${translatedSubtitle || deckInfo.subtitle || ''}
+      </p>
+      <div class="text-xs text-gray-400 text-center">
+        ${cardCount} ${cardsText || 'cartes'}
+      </div>
+      ${
+        (deckInfo.tags && deckInfo.tags.length > 0)
+          ? `<div class="deck-card-tags mt-3 flex flex-wrap gap-1 justify-center">
+              ${deckInfo.tags
+                .map(tag => `<span class="tag-pill">${window.t(tag) || tag}</span>`)
+                .join('')}
+             </div>`
+          : ''
+      }
+    `;
+
+  //   const viewBtn = document.createElement('button');
+  // viewBtn.className = 'view-cards-btn mt-3 px-3 py-1 text-xs bg-white/10 border border-white/30 rounded w-full hover:bg-white/20 transition-all';
+  // viewBtn.textContent = `${cardCount} carte${cardCount > 1 ? 's' : ''} →`;
+  // viewBtn.onclick = (e) => {
+  //   e.stopPropagation(); // Important : bloque selectDeck
+  //   openDeckCardsModal(originalIndex);
+  // };
+  // el.appendChild(viewBtn);
+
+  DOM.deckSelectionGrid.appendChild(el);
+});
+}
+
+//russie
+function generatePublicDeckSelectionScreen() {
+  if (!DOM.publicDeckSelectionGrid) return;
+
+  DOM.publicDeckSelectionGrid.innerHTML = '';
+
+  PERSISTENT_DECK_INFO.forEach((deckInfo, deckIndex) => {
+    const isPublished = deckInfo.isPublished ?? true;
+    if (!deckInfo || !isPublished) return;
+
+    const deckCard = document.createElement('div');
+    deckCard.className = 'deck-card glass rounded-xl p-8 border-2 border-pink-900/40 hover:border-neon-pink transition-all flex flex-col justify-between';
+
+    const cardCount = (PERSISTENT_DECKS[deckIndex] || []).length;
+
+    // Même mécanique que pour les filtres de scores
+    const deckId = deckInfo.translationId || deckInfo.name;
+    const translatedName = t(`deck.${deckId}.name`) || deckInfo.name;
+    const translatedSubtitle = t(`deck.${deckId}.subtitle`) || deckInfo.subtitle || '';
+    const cardsText = t('cardssuffix') || 'cartes';
+
+    deckCard.innerHTML = `
+      <div class="flex flex-col gap-2">
+        <div class="text-4xl mb-2 text-center">${deckInfo.emoji || '🃏'}</div>
+        <h3 class="text-lg font-bold text-center ${deckInfo.titleColor || ''}">
+          ${translatedName}
+        </h3>
+        <p class="text-xs text-gray-400 text-center">
+          ${translatedSubtitle}
+        </p>
+      </div>
+      <button class="view-cards-btn mt-3 px-3 py-1 text-xs bg-white/10 border border-white/20 w-full">
+        ${t('viewcards') || 'Voir les cartes'}
+      </button>
+    `;
+
+    // Clic sur la carte entière
+    deckCard.addEventListener('click', () => {
+      openDeckCardsModal(deckIndex);
+    });
+
+    // Clic sur le bouton "Voir les cartes" sans double appel
+    const btn = deckCard.querySelector('.view-cards-btn');
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeckCardsModal(deckIndex);
+    });
+
+    DOM.publicDeckSelectionGrid.appendChild(deckCard);
+  });
+}
+
+function generateDeckTagFilters() {
+    const publishedDecks = PERSISTENT_DECK_INFO.filter(deckInfo => deckInfo.isPublished ?? true);
+    const allTags = new Set();
+    publishedDecks.forEach(deckInfo => {
+        (deckInfo.tags || []).forEach(tag => allTags.add(tag));
+    });
+    if (allTags.size === 0) {
+      DOM.deckTagFilterBar.innerHTML = '';
+      DOM.deckTagFilterBar.classList.add('hidden');
+      return;
+    }
+    DOM.deckTagFilterBar.classList.remove('hidden');
+    // CORRECTION: Balisage t() pour "Tous"
+    DOM.deckTagFilterBar.innerHTML = `<button class="filter-btn" data-tag="all">${t('Tous') || 'Tous'}</button>`; 
+    const allBtn = DOM.deckTagFilterBar.querySelector('button[data-tag="all"]');
+    allBtn.addEventListener('click', (e) => filterDecksByTag('all', e.target));
+    if (state.currentTagFilter === 'all') {
+      allBtn.classList.add('active');
+    }
+    allTags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn px-4 py-2 bg-white/6 border border-white/10 rounded-lg text-sm';
+        btn.dataset.tag = tag;
+        btn.textContent = t(tag);
+        if (state.currentTagFilter === tag) {
+          btn.classList.add('active');
+        }
+        btn.addEventListener('click', (e) => filterDecksByTag(tag, e.target));
+        DOM.deckTagFilterBar.appendChild(btn);
+    });
+    allBtn.classList.add('px-4', 'py-2', 'bg-white/6', 'border', 'border-white/10', 'rounded-lg', 'text-sm');
+}
+
+function filterDecksByTag(tag, targetElement) {
+    state.currentTagFilter = tag;
+    DOM.deckTagFilterBar.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    targetElement.classList.add('active');
+    generateDeckSelectionScreen();
+}
+
+// ðŸ” FONCTION generateScoreFilters()
+function generateScoreFilters() {
+  DOM.scoreFilterButtons.innerHTML = '';
+  
+  const publishedDecks = PERSISTENT_DECK_INFO.filter(deckInfo => deckInfo.isPublished ?? true);
+  
+  const allDataBtn = document.createElement('button');
+  allDataBtn.textContent = 'ALLDATA';
+  allDataBtn.className = 'cyber-filter-btn';
+  allDataBtn.addEventListener('click', () => {
+    state.currentFilter = 'all';
+    renderScores();
+  });
+  DOM.scoreFilterButtons.appendChild(allDataBtn);
+
+//   const modeToggleBtn = document.createElement('button');
+// modeToggleBtn.className = 'cyber-filter-btn';
+
+// function updateModeToggleLabel() {
+//   const labelMap = {
+//     normal: 'MODE: NORMAL',
+//     hardcore: 'MODE: UHC',
+//   };
+//   modeToggleBtn.textContent = labelMap[state.scoreModeFilter] || `MODE: ${state.scoreModeFilter}`;
+// }
+// modeToggleBtn.addEventListener('click', () => {
+//   const currentIndex = SCORE_MODES.indexOf(state.scoreModeFilter);
+//   const nextIndex = (currentIndex + 1) % SCORE_MODES.length;
+//   state.scoreModeFilter = SCORE_MODES[nextIndex];
+//   updateModeToggleLabel();
+//   renderScores();
+// });
+
+// // init label
+// updateModeToggleLabel();
+
+// // l’ajouter dans la barre de filtres scores
+// DOM.scoreFilterButtons.appendChild(modeToggleBtn);
+  
+  publishedDecks.forEach((deckInfo) => {
+  const originalIndex = PERSISTENT_DECK_INFO.findIndex(d => d.id === deckInfo.id);
+  const deckId = deckInfo.translationId || deckInfo.name; // âœ… ClÃ© traduction comme page decks
+  const translatedName = window.t(`deck.${deckId}.name`); // âœ… MÃªme principe que generateDeckSelectionScreen
+  const btn = document.createElement('button');
+  btn.textContent = `${deckInfo.emoji} ${translatedName}`; // âœ… Traduit au lieu de deckId brut
+  btn.className = 'cyber-filter-btn';
+  btn.addEventListener('click', () => {
+    state.currentFilter = originalIndex;
+    renderScores();
+  });
+  DOM.scoreFilterButtons.appendChild(btn);
+});
+}
+function moveDeckUp(index) {
+  if (index <= 0) return;
+
+  // swap dans les deux tableaux
+  [PERSISTENT_DECKS[index - 1], PERSISTENT_DECKS[index]] =
+    [PERSISTENT_DECKS[index], PERSISTENT_DECKS[index - 1]];
+
+  [PERSISTENT_DECK_INFO[index - 1], PERSISTENT_DECK_INFO[index]] =
+    [PERSISTENT_DECK_INFO[index], PERSISTENT_DECK_INFO[index - 1]];
+
+  // si tu as une fonction pour sauvegarder l’ordre en base
+  if (typeof saveDeckOrderToFirestore === 'function') {
+    saveDeckOrderToFirestore();
+  }
+
+  // régénérer toutes les vues qui dépendent de l’ordre
+  regenerateAllDynamicContent(); // ou à défaut:
+  // generateSoluceContainers();
+  // generatePublicDeckSelectionScreen();
+}
+
+
+function moveDeckDown(index) {
+  if (index >= PERSISTENT_DECKS.length - 1) return;
+
+  [PERSISTENT_DECKS[index + 1], PERSISTENT_DECKS[index]] =
+    [PERSISTENT_DECKS[index], PERSISTENT_DECKS[index + 1]];
+
+  [PERSISTENT_DECK_INFO[index + 1], PERSISTENT_DECK_INFO[index]] =
+    [PERSISTENT_DECK_INFO[index], PERSISTENT_DECK_INFO[index + 1]];
+
+  if (typeof saveDeckOrderToFirestore === 'function') {
+    saveDeckOrderToFirestore();
+  }
+
+  regenerateAllDynamicContent(); // ou generateSoluceContainers() + generatePublicDeckSelectionScreen()
+}
+
+
+function generateSoluceContainers() {
+  DOM.soluceGalleryContainer.innerHTML = '';
+  DOM.soluceGalleryContainer.className =
+    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8';
+
+  PERSISTENT_DECK_INFO.forEach((deckInfo, deckIndex) => {
+    const deck = PERSISTENT_DECKS[deckIndex] || [];
+    if (!deckInfo) return;
+
+    const privateIndicator = deckInfo.isPrivate
+      ? ` <span title="${t('Deck Privé/NSFW')}">🔒</span>`
+      : '';
+    const isPublished = deckInfo.isPublished ?? true;
+    const draftIndicator = !isPublished
+      ? ` <span title="${t('Brouillon / Non publié')}">📄</span>`
+      : '';
+
+    // === carte principale (même look que ARCHIVES) ===
+    const card = document.createElement('div');
+    card.className =
+      'deck-card glass rounded-xl p-8 border-2 border-pink-900/40 hover:border-neon-pink transition-all flex flex-col justify-between';
+
+    card.innerHTML = `
+      <div class="flex flex-col items-center text-center gap-2 mb-4">
+        <div class="text-4xl mb-2">${deckInfo.emoji || '🃏'}</div>
+        <h3 class="text-2xl font-bold ${deckInfo.titleColor || ''}">
+          ${deckInfo.name}${privateIndicator}${draftIndicator}
+        </h3>
+        <p class="text-sm text-gray-300">
+          ${deckInfo.subtitle || ''}
+        </p>
+        <div class="text-xs text-gray-400">
+          ${deck.length} ${t('cartes') || 'cartes'}
+        </div>
+      </div>
+    `;
+
+    // === barre de boutons admin ===
+    const adminBar = document.createElement('div');
+    adminBar.className = 'flex items-center justify-center gap-2 mt-2';
+
+    const editDeckBtn = document.createElement('button');
+    editDeckBtn.className = 'admin-deck-btn';
+    editDeckBtn.innerHTML = `✏️ <span>${t('Deck') || 'Deck'}</span>`;
+    editDeckBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeckModal(deckIndex);
+    });
+
+    const cardsBtn = document.createElement('button');
+    cardsBtn.className = 'admin-deck-btn';
+    cardsBtn.innerHTML = `🃏 <span>${t('Cartes') || 'Cartes'}</span>`;
+    cardsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeckCardsAdminModal(deckIndex);
+    });
+
+    const upBtn = document.createElement('button');
+    upBtn.className = 'admin-deck-btn';
+    upBtn.textContent = '⬆️';
+    upBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveDeckUp(deckIndex);
+    });
+
+    const downBtn = document.createElement('button');
+    downBtn.className = 'admin-deck-btn';
+    downBtn.textContent = '⬇️';
+    downBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      moveDeckDown(deckIndex);
+    });
+
+    adminBar.appendChild(editDeckBtn);
+    adminBar.appendChild(cardsBtn);
+    adminBar.appendChild(upBtn);
+    adminBar.appendChild(downBtn);
+    card.appendChild(adminBar);
+
+    DOM.soluceGalleryContainer.appendChild(card);
+  });
+}
+
+// function generateSoluceContainers() {
+//   DOM.soluceGalleryContainer.innerHTML = '';
+//   DOM.soluceGalleryContainer.className =
+//     'p-3 bg-white/4 rounded-lg flex-1 overflow-y-auto w-full admin-deck-grid';
+
+//   PERSISTENT_DECKS.forEach((deck, deckIndex) => {
+//     const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+//     if (!deckInfo) return;
+
+//     const deckWrapper = document.createElement('div');
+//     deckWrapper.className = 'soluce-deck-wrapper';
+//     deckWrapper.dataset.deckIndex = deckIndex;
+
+//     const privateIndicator = deckInfo.isPrivate
+//       ? ` <span title="${t('Deck Privé/NSFW')}">🔒</span>`
+//       : '';
+//     const isPublished = deckInfo.isPublished ?? true;
+//     const draftIndicator = !isPublished
+//       ? ` <span title="${t('Brouillon / Non publié')}">📄</span>`
+//       : '';
+//     const cardCount = (deck || []).length;
+//     const cardsText = t('cartes') || 'cartes';
+
+//     const deckCardHeader = document.createElement('div');
+//     deckCardHeader.className = 'deck-card admin-deck-header glass rounded-xl p-6';
+
+//    // clic normal sur le header = ouvrir/fermer
+//     deckCardHeader.addEventListener('click', (e) => {
+//       if (e.target.closest('.admin-deck-btn')) return; // ignore boutons admin
+//       const content = deckWrapper.querySelector('.soluce-deck-content');
+//       if (content) {
+//         content.classList.toggle('hidden-soluce');
+//         deckCardHeader.classList.toggle('is-open');
+//       }
+//     });
+
+//     // Shift+clic n'importe où sur le wrapper = modale
+//     deckWrapper.addEventListener('click', (e) => {
+//       if (!e.shiftKey) return;
+//       e.preventDefault();
+//       e.stopPropagation();
+//       openDeckCardsModal(deckIndex);
+//     });
+
+//     // --- contenu du header (garde ce que tu avais déjà) ---
+//     const deckInfoHtml = `
+//       <div class="deck-card-info flex flex-col gap-2">
+//         <div class="text-4xl mb-2 text-center">${deckInfo.emoji || '🃏'}</div>
+//         <h3 class="text-xl font-bold mb-1 text-center ${deckInfo.titleColor || ''}">
+//           ${deckInfo.name}${privateIndicator}${draftIndicator}
+//         </h3>
+//         <p class="text-sm text-gray-300 text-center mb-1">
+//           ${deckInfo.subtitle || ''}
+//         </p>
+//         <div class="text-xs text-gray-400 text-center">
+//           ${cardCount} ${cardsText}
+//         </div>
+//       </div>
+//     `;
+//     deckCardHeader.innerHTML = deckInfoHtml;
+
+//     // Boutons admin (edit / add card...) ici comme avant
+//     const editBtn = document.createElement('button');
+//     editBtn.className = 'admin-deck-btn';
+//     editBtn.innerHTML = `✏️ <span>${t('Modifier') || 'Modifier'}</span>`;
+//     editBtn.addEventListener('click', (e) => {
+//       e.stopPropagation();
+//       openDeckModal(deckIndex);
+//     });
+//     // etc.
+
+//     deckWrapper.appendChild(deckCardHeader);
+
+//     const cardsContainer = document.createElement('div');
+//     cardsContainer.className = 'soluce-deck-content hidden-soluce';
+//     (deck || []).forEach((card) => {
+//       cardsContainer.appendChild(
+//         createSoluceCardVignette(card, deckInfo, deckIndex, false)
+//       );
+//     });
+//     deckWrapper.appendChild(cardsContainer);
+
+//     DOM.soluceGalleryContainer.appendChild(deckWrapper);
+//   });
+// }
+
+function createSoluceCardVignette(card, deckInfo, deckIndex, isPublic = false) {
+  const el = document.createElement('div');
+  el.className = 'soluce-gallery-item flex flex-col justify-between p-2 glass rounded-lg border-2 border-white/10';
+  el.setAttribute('data-card-id', card.id);
+  el.setAttribute('data-deck-index', deckIndex);
+  
+  const hasSoluceLink = card.soluceLink && card.soluceLink.trim() !== "";
+  el.addEventListener('click', () => {
+    if (!isPublic && state.isEditingMode) {
+      openEditModal(deckIndex, card.id);
+    } else if (hasSoluceLink) {
+      window.open(card.soluceLink, '_blank');
+    } else if (card.img && card.img.trim() !== "" && !card.img.includes('placehold.co')) { 
+      openModal(card.img);
+    }
+  });
+  
+  const imageContainer = document.createElement('div');
+  imageContainer.className = 'w-full h-2/3 object-cover rounded-md mb-1 soluce-gallery-item-image-container';
+
+  if (card.img && card.img.trim() !== "") {
+    imageContainer.style.backgroundImage = `url('${card.img}')`;
+    imageContainer.style.backgroundSize = 'cover';
+    imageContainer.style.backgroundPosition = 'center';
+  } else {
+    imageContainer.style.background = 'rgba(255, 255, 255, 0.05)';
+    imageContainer.innerHTML = `<span class="soluce-text-only-placeholder">${card.text.substring(0, 20)}...</span>`;
+  }
+  if (hasSoluceLink) {
+    imageContainer.innerHTML += `<span class="soluce-link-indicator">ðŸ”—</span>`;
+  }
+  
+  const colorL = deckInfo.colorLeft || DEFAULT_COLOR_LEFT;
+  const colorR = deckInfo.colorRight || DEFAULT_COLOR_RIGHT;
+  const correctColor = card.correct === 'left' ? colorL : colorR;
+  const rawSideText = card.correct === 'left' ? (deckInfo.indicatorLeft || 'GAUCHE') : (deckInfo.indicatorRight || 'DROITE');
+  const correctSideText = t(rawSideText);
+  
+  const textDiv = document.createElement('div');
+  textDiv.className = 'text-xs font-semibold text-gray-200 truncate';
+  textDiv.title = card.text;
+  textDiv.textContent = card.text.split(' (')[0] || "Carte sans texte";
+  
+  const correctDiv = document.createElement('div');
+  correctDiv.className = `text-[10px]`; 
+  correctDiv.style.color = correctColor; 
+  correctDiv.style.textShadow = `0 0 8px ${hexToRgba(correctColor, 0.7)}`; 
+  correctDiv.textContent = `${t('RÃ©p') || 'RÃ©p'}: ${correctSideText}`; 
+  
+  const deckNameDiv = document.createElement('div');
+  deckNameDiv.className = 'text-[9px] text-gray-400 mt-0.5';
+  deckNameDiv.textContent = t(deckInfo.name);
+  
+  el.appendChild(imageContainer);
+  el.appendChild(textDiv);
+  el.appendChild(correctDiv);
+  el.appendChild(deckNameDiv);
+  return el;
+}
+
+function createAddCardVignette(deckIndex) {
+  const addCardEl = document.createElement('div');
+  addCardEl.className = 'soluce-gallery-item add-card-btn';
+  addCardEl.style.display = 'none';
+
+  addCardEl.innerHTML = `
+    <div class="card-image-wrapper flex items-center justify-center">
+      <span class="text-3xl">＋</span>
+    </div>
+  `;
+
+  addCardEl.addEventListener('click', () => openEditModal(deckIndex, null));
+  return addCardEl;
+}
+
+function continueToDecks() {
+  const name = (DOM.playerNameInput.value || '').trim();
+  if (!name) {
+    DOM.playerNameInput.focus();
+    DOM.playerNameInput.classList.add('border-red-500');
+    return;
+  }
+  DOM.playerNameInput.classList.remove('border-red-500');
+  state.playerName = name;
+  localStorage.setItem('player_name', state.playerName);
+  DOM.playerDisplay.textContent = state.playerName;
+  showScreen(DOM.deckScreen);
+}
+
+function selectDeck(deckIndex) {
+  state.currentDeck = deckIndex;
+  const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+  state.currentDeckToUnlock = deckIndex;
+  if (deckInfo.isPrivate) {
+    openPrivateDeckModal();
+  } else {
+    checkDeckSizeAndStart();
+  }
+}
+
+function openPrivateDeckModal() {
+  DOM.privateDeckPasswordInput.value = '';
+  DOM.privateDeckError.classList.add('hidden');
+  openModal(DOM.privateDeckModal);
+  DOM.privateDeckPasswordInput.focus();
+}
+
+function checkPrivateDeckPassword() {
+  const deckInfo = PERSISTENT_DECK_INFO[state.currentDeckToUnlock];
+  const enteredPassword = DOM.privateDeckPasswordInput.value;
+  if (!deckInfo) {
+    DOM.privateDeckError.textContent = "Erreur interne. Deck non trouvÃ©.";
+    DOM.privateDeckError.classList.remove('hidden');
+    return;
+  }
+  if (enteredPassword === deckInfo.password) {
+    DOM.privateDeckError.classList.add('hidden');
+    closeModal(DOM.privateDeckModal);
+    state.currentDeck = state.currentDeckToUnlock;
+    checkDeckSizeAndStart(); 
+  } else {
+    DOM.privateDeckError.textContent = "Mot de passe incorrect.";
+    DOM.privateDeckError.classList.remove('hidden');
+    DOM.privateDeckPasswordInput.value = '';
+    DOM.privateDeckPasswordInput.focus();
+  }
+}
+
+function checkDeckSizeAndStart() {
+  const fullDeck = PERSISTENT_DECKS[state.currentDeck] || [];
+  const deckLength = fullDeck.length;
+
+  [DOM.btnDeckSize10, DOM.btnDeckSize20, DOM.btnDeckSize30].forEach((btn, index) => {
+    const size = DECK_SIZE_OPTIONS[index];
+    if (!btn) return;
+
+    btn.disabled = deckLength < size;
+
+    btn.onclick = () => {
+      state.game.maxCards = size;
+      state.game.isHardcoreMode = false;
+      startGame();
+    };
+  });
+
+  if (DOM.btnDeckSizeHardcore) {
+    DOM.btnDeckSizeHardcore.disabled = deckLength === 0;
+    DOM.btnDeckSizeHardcore.onclick = () => {
+      state.game.maxCards = 'hardcore';
+      state.game.isHardcoreMode = true;
+      startGame();
+    };
+  }
+
+  openModal(DOM.deckSizeModal);
+}
+
+
+
+function startGame() {
+  closeModal(DOM.deckSizeModal);
+
+  state.resultsRecap = [];
+  state.game.score = 0;
+  state.game.cardIndex = 0;
+  state.game.isProcessing = false;
+
+  const deckInfo = PERSISTENT_DECK_INFO[state.currentDeck];
+  let selectedCards = PERSISTENT_DECKS[state.currentDeck] || [];
+
+  if (state.game.isHardcoreMode) {
+    selectedCards = shuffleArray([...selectedCards]);      // tout le deck mélangé
+    state.game.maxCards = selectedCards.length;            // limite = taille du deck
+  } else {
+    selectedCards = shuffleArray(selectedCards).slice(0, state.game.maxCards);
+  }
+
+  state.currentDeckCards = selectedCards;
+
+  if (state.currentDeckCards.length === 0) {
+    showAlert('Erreur', 'Aucune carte disponible.', 'error');
+    return;
+  }
+  
+  // âœ… Mettre Ã  jour les indicateurs avec traduction
+  const deckId = deckInfo.translationId || deckInfo.name;
+  const leftText = window.t(`deck.${deckId}.indicatorLeft`) || deckInfo.indicatorLeft;
+  const rightText = window.t(`deck.${deckId}.indicatorRight`) || deckInfo.indicatorRight;
+  
+  DOM.indicatorLeft.textContent = leftText;
+  DOM.indicatorRight.textContent = rightText;
+  
+  // Couleurs des indicateurs
+  const colorL = deckInfo.colorLeft || DEFAULT_COLOR_LEFT;
+  const colorR = deckInfo.colorRight || DEFAULT_COLOR_RIGHT;
+  
+  DOM.indicatorLeft.style.color = colorL;
+  DOM.indicatorLeft.style.background = hexToRgba(colorL, 0.3);
+  
+  DOM.indicatorRight.style.color = colorR;
+  DOM.indicatorRight.style.background = hexToRgba(colorR, 0.3);
+  
+  // RÃ©initialiser les overlays
+  DOM.overlayLeft.classList.remove('fade-out-left');
+  DOM.overlayRight.classList.remove('fade-out-right');
+  
+  // Afficher le jeu
+  showScreen(DOM.gameScreen);
+  displayCard();
+  updateUI();
+}
+
+
+function preloadGameImages(cardRefs) {
+  const fullDeck = PERSISTENT_DECKS[state.currentDeck];
+  cardRefs.forEach(ref => {
+    const card = fullDeck.find(c => c.id === ref.id);
+    if (card && card.img) {
+      const img = new Image();
+      img.src = card.img;
+    }
+  });
+}
+
+function endGame() {
+  state.game.isProcessing = true;
+  const pct = Math.round((state.game.score / state.game.maxCards) * 100);
+  saveScore(state.playerName, state.currentDeck, state.game.score, pct); 
+  displayErrorRecap();
+  updateUI();
+  state.game.isProcessing = false;
+  DOM.endOverlay.classList.remove('hidden');
+  const circumference = 2 * Math.PI * 80;
+  const offset = circumference - (pct / 100) * circumference;
+  setTimeout(() => DOM.gaugeCircle.style.strokeDashoffset = offset, 100);
+  DOM.gaugePercentage.textContent = pct + '%';
+  const result = getResultMessage(pct); 
+  DOM.resultMessage.textContent = result.text;
+  DOM.resultMessage.className = `result-message text-2xl font-bold mb-4 px-4 py-3 rounded-lg ${result.color}`;
+}
+
+function quitGame() {
+  showScreen(DOM.deckScreen);
+}
+
+function handleDecision(decision) {
+  if (state.game.isProcessing || state.game.cardIndex >= state.game.maxCards) return;
+  state.game.isProcessing = true;
+  
+  const currentCardRef = state.currentDeckCards[state.game.cardIndex];
+  const cur = PERSISTENT_DECKS[state.currentDeck].find(c => c.id === currentCardRef.id);
+  
+  if (!cur) {
+    state.game.cardIndex++;
+    state.game.isProcessing = false;
+    displayCard();
+    return;
+  }
+
+  const isCorrect = decision === cur.correct;
+  currentCardRef.isCorrect = isCorrect;
+  currentCardRef.img = cur.img;
+  currentCardRef.text = cur.text;
+  state.resultsRecap.push(currentCardRef);   // une seule entrée dans le récap
+
+  if (isCorrect) {
+    state.game.score++;
+  } else {
+    // 🔥 Si on est en mode Hardcore, game over immédiat
+    if (state.game.isHardcoreMode) {
+      triggerHapticFeedback(false);   // feedback erreur
+      // optionnel : petite anim sur la carte avant la fin
+      endGame();
+      state.game.isProcessing = false;
+      return;                          // surtout ne pas avancer cardIndex
+    }
+    // mode normal : on laisse la suite du flux gérer la carte suivante
+  }
+
+  triggerHapticFeedback(isCorrect);
+  
+  if (decision === 'left') {
+    DOM.overlayLeft.style.opacity = '0.6';
+    DOM.overlayLeft.style.transition = 'opacity 0.2s ease-out';
+  } else {
+    DOM.overlayRight.style.opacity = '0.6';
+    DOM.overlayRight.style.transition = 'opacity 0.2s ease-out';
+  }
+  
+  const slideClass = decision === 'left' ? 'slide-out-left' : 'slide-out-right';
+  DOM.cardElement.classList.add(slideClass);
+  
+  setTimeout(() => {
+    DOM.cardElement.classList.remove(slideClass);
+
+    // En Hardcore, on a déjà fait endGame + return, donc ce bloc ne sera pas exécuté.
+    state.game.cardIndex++;
+    
+    DOM.overlayLeft.style.opacity = '0';
+    DOM.overlayRight.style.opacity = '0';
+    DOM.overlayLeft.style.transition = 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+    DOM.overlayRight.style.transition = 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+    
+    if (state.game.cardIndex < state.game.maxCards) {
+      updateUI();
+      displayCard();
+      state.game.isProcessing = false;
+    } else {
+      endGame();
+    }
+  }, 360);
+}
+
+
+function triggerHapticFeedback(isCorrect) {
+  if ('vibrate' in navigator) {
+    if (isCorrect) {
+      navigator.vibrate(50);
+    } else {
+      navigator.vibrate([100, 50, 100]);
+    }
+  }
+}
+
+function onDragStart(e) {
+  if (state.game.isProcessing || state.game.cardIndex >= state.game.maxCards || isModalOpen()) return;
+  if (e.type === 'mousedown') {
+    state.drag.isMouseDown = true;
+    state.drag.startX = e.clientX;
+    e.preventDefault();
+  } else {
+    state.drag.isDragging = true;
+    state.drag.startX = e.touches[0].clientX;
+  }
+  state.drag.currentX = state.drag.startX;
+  DOM.cardElement.style.transition = 'none'; 
+  DOM.cardElement.style.cursor = 'grabbing';
+}
+
+function onDragMove(e) {
+  if (state.game.isProcessing || isModalOpen() || (!state.drag.isMouseDown && !state.drag.isDragging)) return;
+  if (e.type === 'mousemove') {
+    state.drag.currentX = e.clientX;
+  } else {
+    state.drag.currentX = e.touches[0].clientX;
+  }
+  if (state.animationFrameId) {
+    cancelAnimationFrame(state.animationFrameId);
+  }
+  state.animationFrameId = requestAnimationFrame(() => {
+    const dx = state.drag.currentX - state.drag.startX;
+    let rot = (dx / MAX_DISP) * MAX_ROT;
+    rot = Math.max(-MAX_ROT, Math.min(MAX_ROT, rot));
+    DOM.cardElement.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+    updateVisualFeedback(dx);
+  });
+}
+
+function onDragEnd(e) {
+  if (state.game.isProcessing || isModalOpen() || (!state.drag.isMouseDown && !state.drag.isDragging)) return;
+  const isMouseUp = e.type === 'mouseup';
+  if (isMouseUp) {
+    state.drag.isMouseDown = false;
+  } else {
+    state.drag.isDragging = false;
+  }
+  DOM.cardElement.style.cursor = 'grab';
+  const dx = state.drag.currentX - state.drag.startX;
+  state.drag.startX = 0;
+  if (Math.abs(dx) < 10 && !isMouseUp) {
+    DOM.cardElement.style.transition = 'transform .35s cubic-bezier(.22,.9,.27,1), opacity .35s';
+    DOM.cardElement.style.transform = 'none';
+    return;
+  }
+  DOM.cardElement.style.transition = 'transform .35s cubic-bezier(.22,.9,.27,1), opacity .35s'; 
+  updateVisualFeedback(0); 
+  if (Math.abs(dx) < 10 && isMouseUp) {
+     DOM.cardElement.style.transform = 'none';
+     return;
+  }
+  if (dx > SWIPE_THRESHOLD) handleDecision('right');
+  else if (dx < -SWIPE_THRESHOLD) handleDecision('left');
+  else DOM.cardElement.style.transform = 'none';
+}
+    
+function onKeyDown(e) {
+  if (!DOM.gameScreen.classList.contains('hidden-screen')) {
+    if (isModalOpen()) return;
+    if (e.key === 'ArrowLeft') handleDecision('left');
+    if (e.key === 'ArrowRight') handleDecision('right');
+  }
+  if (e.key === 'Escape') {
+    if (DOM.imageModal.classList.contains('active')) closeModal(DOM.imageModal);
+    else if (DOM.passwordModal.classList.contains('active')) closeModal(DOM.passwordModal);
+    else if (DOM.editCardModal.classList.contains('active')) closeModal(DOM.editCardModal);
+    else if (DOM.deckModal.classList.contains('active')) closeModal(DOM.deckModal);
+    else if (DOM.alertModal.classList.contains('active')) closeModal(DOM.alertModal);
+    else if (DOM.deckSizeModal.classList.contains('active')) closeModal(DOM.deckSizeModal); 
+    else if (DOM.privateDeckModal.classList.contains('active')) closeModal(DOM.privateDeckModal); 
+  }
+}
+
+async function handleAdminCreateAccount() {
+  const email = DOM.adminEmailInput.value;
+  const password = DOM.adminPasswordInput.value;
+  if (!email || password.length < 6) {
+    DOM.passwordError.textContent = "Email invalide ou mot de passe trop court (6+).";
+    DOM.passwordError.classList.remove('hidden');
+    return;
+  }
+  DOM.passwordError.classList.add('hidden');
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    showAlert(
+      "Compte Admin CrÃ©Ã© !",
+      `Votre compte est crÃ©Ã©.\nID Admin: ${user.uid}\nAjoutez-le dans Firestore ('admin_users').`,
+      "success"
+    );
+    closeModal(DOM.passwordModal);
+  } catch (error) {
+    if (error.code === 'auth/email-already-in-use') {
+      DOM.passwordError.textContent = "Cet email est dÃ©jÃ  utilisÃ©.";
+    } else {
+      DOM.passwordError.textContent = error.message;
+    }
+    DOM.passwordError.classList.remove('hidden');
+  }
+}
+
+async function handleAdminLogin() {
+  const email = DOM.adminEmailInput.value;
+  const password = DOM.adminPasswordInput.value;
+  if (!email || !password) {
+    DOM.passwordError.textContent = "Veuillez entrer un email et un mot de passe.";
+    DOM.passwordError.classList.remove('hidden');
+    return;
+  }
+  DOM.passwordError.classList.add('hidden');
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    state.isAdmin = true; 
+    closeModal(DOM.passwordModal);
+    showAllSoluce();
+  } catch (error) {
+    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+      DOM.passwordError.textContent = "Email ou mot de passe incorrect.";
+    } else {
+      DOM.passwordError.textContent = "Erreur de connexion.";
+    }
+    DOM.passwordError.classList.remove('hidden');
+  }
+}
+
+function toggleEditingMode() {
+  state.isEditingMode = !state.isEditingMode;
+  updateSoluceDisplayModes();
+}
+
+function updateSoluceDisplayModes() {
+  DOM.soluceGalleryContainer.querySelectorAll('.soluce-gallery-item:not(.add-card-btn)').forEach(item => {
+    item.classList.toggle('editing-mode', state.isEditingMode);
+  });
+  DOM.btnToggleEdit.textContent = state.isEditingMode ? "Quitter l'Édition" : "Activer l'Édition";
+  DOM.btnAddDeck.style.display = state.isEditingMode ? 'block' : 'none';
+  DOM.btnManageScores.style.display = state.isEditingMode ? 'block' : 'none';
+  DOM.btnViewStats.style.display = state.isEditingMode ? 'block' : 'none'; 
+  DOM.btnExportData.style.display = state.isEditingMode ? 'block' : 'none';
+  DOM.btnImportData.style.display = state.isEditingMode ? 'block' : 'none';
+  DOM.soluceGalleryContainer.querySelectorAll('.add-card-btn').forEach(btn => {
+    btn.style.display = state.isEditingMode ? 'flex' : 'none';
+  });
+  DOM.soluceGalleryContainer.querySelectorAll('.admin-deck-controls').forEach(controls => {
+    controls.style.display = state.isEditingMode ? 'flex' : 'none';
+  });
+  DOM.soluceGalleryContainer.querySelectorAll('.admin-deck-header').forEach(header => {
+    header.classList.toggle('editing-mode-header', state.isEditingMode);
+  });
+  if (state.isEditingMode) {
+    DOM.soluceInfoText.textContent = "Mode ÉDITION : Cliquez sur un deck pour voir/cacher ses cartes. Cliquez sur une carte pour la modifier.";
+  } else {
+    DOM.soluceInfoText.textContent = "Mode CONSULTATION : Cliquez sur un deck pour voir/cacher ses cartes. Cliquez sur une carte pour l'agrandir.";
+  }
+}
+
+function setupImageDropZone() {
+  let dropZone = document.getElementById('image-drop-zone');
+  let dropZoneText = document.getElementById('drop-zone-text'); 
+  
+  if (!dropZone) {
+    dropZone = document.createElement('div');
+    dropZone.id = 'image-drop-zone';
+    dropZone.className = 'drop-zone';
+    dropZone.innerHTML = `
+      <div id="drop-zone-text">
+        <p class="font-semibold mb-1">📎 Glissez  une image ici</p>
+        <p class="text-xs">ou cliquez pour sélectionner</p>
+      </div>
+      <img id="drop-zone-preview" class="drop-zone-preview hidden" />
+    `;
+    const imgInput = DOM.editCardImg;
+    imgInput.parentNode.insertBefore(dropZone, imgInput);
+    dropZoneText = document.getElementById('drop-zone-text'); 
+  }
+  const preview = document.getElementById('drop-zone-preview');
+  dropZone.addEventListener('click', (e) => {
+    if (e.target === preview || DOM.saveCardBtn.disabled) return; 
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = (e) => handleImageFile(e.target.files[0], preview, dropZoneText);
+    fileInput.click();
+  });
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    if (DOM.saveCardBtn.disabled) return;
+    dropZone.classList.add('drag-over');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('drag-over');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (DOM.saveCardBtn.disabled) return;
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleImageFile(file, preview, dropZoneText);
+    } else {
+      showAlert("Fichier invalide", "Veuillez glisser une image.", "warning");
+    }
+  });
+}
+
+async function handleImageFile(file, previewEl, textEl) {
+  if (!file) return;
+  DOM.saveCardBtn.disabled = true; 
+  textEl.innerHTML = `<p class="font-semibold mb-1 text-yellow-400">TÃ©lÃ©versement... â˜ï¸</p>`;
+  try {
+    const compressedFile = await resizeImage(file, 800, 0.8, 'file'); 
+    const storageRef = ref(storage, `card_images/${userId}/${Date.now()}-${file.name}`);
+    const snapshot = await uploadBytes(storageRef, compressedFile);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    DOM.editCardImg.value = downloadURL;
+    previewEl.src = downloadURL;
+    previewEl.classList.remove('hidden');
+    textEl.innerHTML = `<p class="font-semibold mb-1 text-green-400">Image chargÃ©e !</p>`;
+  } catch (error) {
+    console.error("Erreur d'upload ou compression:", error);
+    showAlert("Erreur d'Upload", `Impossible de téléverser l'image: ${error.message}`, "error");
+    textEl.innerHTML = `<p class="font-semibold mb-1 text-red-400">Ã‰chec de l'upload</p>`;
+  } finally {
+    DOM.saveCardBtn.disabled = false; 
+  }
+}
+
+async function openEditModal(deckIndex, cardId = null) {
+   if (DOM.deckCardsModal && DOM.deckCardsModal.classList.contains('active')) {
+    closeModal(DOM.deckCardsModal);
+  }
+  state.editingCardGlobalId = cardId;
+  DOM.passwordModal.classList.remove('active');
+  setupImageDropZone(); 
+  
+  const preview = document.getElementById('drop-zone-preview');
+  const textEl = document.getElementById('drop-zone-text');
+  
+  textEl.innerHTML = `<p class="font-semibold mb-1">📎 Glissez  une image ici</p><p class="text-xs">ou cliquez pour sélectionner</p>`;
+  DOM.saveCardBtn.disabled = false;
+
+  if (cardId === null) {
+    DOM.editModalTitle.textContent = 'Ajouter une carte';
+    DOM.editCardId.value = '';
+    DOM.editCardText.value = '';
+    DOM.editCardImg.value = '';
+    DOM.editCardSoluceLink.value = '';
+    DOM.editCardCorrect.value = 'left';
+    DOM.editDeckSelect.value = deckIndex !== null ? deckIndex.toString() : '0';
+    DOM.editDeckSelect.disabled = false;
+    DOM.btnDeleteCard.style.display = 'none';
+    if (preview) preview.classList.add('hidden');
+  } else {
+    const deck = PERSISTENT_DECKS[deckIndex];
+    const card = deck.find(c => c.id === cardId);
+    if (card) {
+      DOM.editModalTitle.textContent = 'Modifier la carte';
+      DOM.editCardId.value = cardId;
+      DOM.editCardDeckIndex.value = deckIndex;
+      DOM.editCardText.value = card.text;
+      DOM.editCardImg.value = card.img; 
+      DOM.editCardSoluceLink.value = card.soluceLink || '';
+      DOM.editCardCorrect.value = card.correct;
+      DOM.editDeckSelect.value = deckIndex.toString();
+      DOM.editDeckSelect.disabled = true;
+      DOM.btnDeleteCard.style.display = 'block';
+      if (preview && card.img) {
+        preview.src = card.img;
+        preview.classList.remove('hidden');
+        textEl.innerHTML = `<p class="font-semibold mb-1 text-green-400">Image chargée</p>`;
+      }
+    }
+  }
+  openModal(DOM.editCardModal);
+}
+
+async function saveCard() {
+  const id = DOM.editCardId.value || crypto.randomUUID();
+  const deckInfoIndex = parseInt(DOM.editDeckSelect.value);
+  const text = DOM.editCardText.value;
+  const img = DOM.editCardImg.value; 
+  const soluceLink = DOM.editCardSoluceLink.value.trim();
+  const correct = DOM.editCardCorrect.value;
+  
+  if (DOM.saveCardBtn.disabled) {
+    showAlert("Patientez", "Téléversement de l'image en cours...", "warning");
+    return;
+  }
+  if (!isAuthReady) {
+    showAlert("Erreur", "Non authentifiÃ©.", "error");
+    return;
+  }
+  if (!text.trim() && !img.trim()) {
+     showAlert("Carte vide", "Veuillez ajouter au moins un texte ou une image.", "warning");
+     return;
+  }
+  const newCard = { id, text, img, correct, soluceLink };
+  const deckInfoDoc = PERSISTENT_DECK_INFO[deckInfoIndex];
+  if (!deckInfoDoc || !deckInfoDoc.id) {
+    showAlert("Erreur", "Deck non trouvé.", "error");
+    return;
+  }
+  const firestoreDeckId = deckInfoDoc.id;
+  try {
+    const saveCardSecurely = httpsCallable(functions, 'saveCard');
+    await saveCardSecurely({
+      deckId: firestoreDeckId, 
+      cardData: newCard       
+    });
+    closeModal(DOM.editCardModal);
+    await loadPersistentData(); 
+  } catch (e) {
+    console.error("Error calling saveCard function:", e);
+    showAlert("Erreur Sauvegarde", `Impossible de sauvegarder la carte: ${e.message}`, "error");
+  }
+}
+
+function deleteCard() {
+  const cardId = DOM.editCardId.value;
+  const deckInfoIndex = parseInt(DOM.editCardDeckIndex.value);
+  if (!cardId || isNaN(deckInfoIndex)) return;
+  const onConfirmDelete = async () => {
+    if (!isAuthReady) {
+      showAlert("Erreur", "Non authentifié.", "error");
+      return;
+    }
+    const deckInfoDoc = PERSISTENT_DECK_INFO[deckInfoIndex];
+    if (!deckInfoDoc || !deckInfoDoc.id) {
+      showAlert("Erreur", "Deck non trouvé.", "error");
+      return;
+    }
+    const firestoreDeckId = deckInfoDoc.id;
+    try {
+      const deleteCardSecurely = httpsCallable(functions, 'deleteCard');
+      await deleteCardSecurely({
+        deckId: firestoreDeckId,
+        cardId: cardId
+      });
+      closeModal(DOM.editCardModal);
+      await loadPersistentData(); 
+    } catch (e) {
+      console.error("Error calling deleteCard function:", e);
+      showAlert("Erreur Suppression", `Impossible de supprimer la carte: ${e.message}`, "error");
+    }
+  };
+  showConfirm(
+    "Supprimer la carte",
+    "ÃŠtes-vous sÃ»r ? Action irréversible.",
+    onConfirmDelete
+  );
+}
+
+function openDeckModal(deckIndex = null) {
+  DOM.deckColorSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  DOM.deckColorLeftSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  DOM.deckColorRightSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  
+  DOM.editDeckId.value = '';
+  DOM.deckIsPrivate.checked = false;
+  DOM.deckPassword.value = '';
+  DOM.privateDeckPasswordGroup.classList.add('hidden');
+  DOM.btnDeleteDeck.style.display = 'none'; 
+  DOM.deckIsPublished.checked = true; 
+
+  if (deckIndex === null) {
+    DOM.deckModalTitle.textContent = "Créer un Deck";
+    DOM.deckNameInput.value = '';
+    DOM.deckEmojiInput.value = '';
+    DOM.deckSubtitleInput.value = '';
+    DOM.deckTags.value = ''; 
+
+    // â­ NOUVEAU: RÃ©initialiser translationId
+    if (DOM.deckTranslationKeyInput) {
+      DOM.deckTranslationKeyInput.value = '';
+    }
+
+    DOM.deckIndicatorLeftInput.value = 'GAUCHE';
+    DOM.deckIndicatorRightInput.value = 'DROITE';
+    DOM.deckColorSelector.querySelector('.color-swatch').classList.add('selected');
+    
+    DOM.deckColorLeftSelector.querySelector(`[data-color-hex="${DEFAULT_COLOR_LEFT}"]`).classList.add('selected');
+    DOM.deckColorRightSelector.querySelector(`[data-color-hex="${DEFAULT_COLOR_RIGHT}"]`).classList.add('selected');
+    
+    DOM.deckResultPct0.value = "";
+    DOM.deckResultPct100.value = "";
+    DOM.deckResultPct50.value = "";
+    DOM.deckResultDefault.value = "";
+
+    // aprÃ¨s avoir vidÃ© les .selected
+    const defaultTitle = DOM.deckColorSelector.querySelector('[data-color-name="gray"]');
+    if (defaultTitle) defaultTitle.classList.add('selected');
+
+    const swatchLDefault = DOM.deckColorLeftSelector.querySelector(`[data-color-hex="${DEFAULT_COLOR_LEFT}"]`);
+    if (swatchLDefault) swatchLDefault.classList.add('selected');
+
+    const swatchRDefault = DOM.deckColorRightSelector.querySelector(`[data-color-hex="${DEFAULT_COLOR_RIGHT}"]`);
+    if (swatchRDefault) swatchRDefault.classList.add('selected');
+
+  } else {
+    DOM.deckModalTitle.textContent = "Modifier le Deck";
+    const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+
+    // â­ NOUVEAU: Charger translationId
+    if (DOM.deckTranslationKeyInput) {
+      DOM.deckTranslationKeyInput.value = deckInfo.translationId || deckInfo.name;
+    }
+
+    DOM.editDeckId.value = deckIndex;
+    DOM.deckNameInput.value = deckInfo.name;
+    DOM.deckEmojiInput.value = deckInfo.emoji;
+    DOM.deckSubtitleInput.value = deckInfo.subtitle || '';
+    DOM.deckTags.value = (deckInfo.tags && Array.isArray(deckInfo.tags)) ? deckInfo.tags.join(', ') : ''; 
+    DOM.deckIndicatorLeftInput.value = deckInfo.indicatorLeft || 'GAUCHE';
+    DOM.deckIndicatorRightInput.value = deckInfo.indicatorRight || 'DROITE';
+    
+    // 1. Initialiser Couleur GAUCHE
+    const colorL = deckInfo.colorLeft || DEFAULT_COLOR_LEFT;
+    let swatchL = DOM.deckColorLeftSelector.querySelector(`[data-color-hex="${colorL}"]`);
+    if(!swatchL) swatchL = DOM.deckColorLeftSelector.querySelector(`[data-color-hex="${DEFAULT_COLOR_LEFT}"]`);
+    if(swatchL) {
+        DOM.deckColorLeftSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        swatchL.classList.add('selected');
+    }
+    // 2. Initialiser Couleur DROITE
+    const colorR = deckInfo.colorRight || DEFAULT_COLOR_RIGHT;
+    let swatchR = DOM.deckColorRightSelector.querySelector(`[data-color-hex="${colorR}"]`);
+    if(!swatchR) swatchR = DOM.deckColorRightSelector.querySelector(`[data-color-hex="${DEFAULT_COLOR_RIGHT}"]`);
+    if(swatchR) {
+        DOM.deckColorRightSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        swatchR.classList.add('selected');
+    }
+    // 3. Initialiser Couleur TITRE (Nom)
+    const colorName = deckInfo.color || 'gray';
+    let swatchT = DOM.deckColorSelector.querySelector(`[data-color-name="${colorName}"]`);
+    if(!swatchT) swatchT = DOM.deckColorSelector.querySelector(`[data-color-name="gray"]`);
+    if (swatchT) {
+       DOM.deckColorSelector.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+       swatchT.classList.add('selected');
+    }
+    DOM.deckResultPct0.value = deckInfo.resultMessages?.pct0 || "";
+    DOM.deckResultPct100.value = deckInfo.resultMessages?.pct100 || "";
+    DOM.deckResultPct50.value = deckInfo.resultMessages?.pct50 || "";
+    DOM.deckResultDefault.value = deckInfo.resultMessages?.default || "";
+
+    DOM.deckIsPrivate.checked = deckInfo.isPrivate || false;
+    DOM.deckPassword.value = deckInfo.password || '';
+    DOM.privateDeckPasswordGroup.classList.toggle('hidden', !deckInfo.isPrivate);
+    DOM.deckIsPublished.checked = deckInfo.isPublished ?? true; 
+    
+    DOM.btnDeleteDeck.style.display = 'block';
+    
+    const swatch = DOM.deckColorSelector.querySelector(`[data-color-name="${deckInfo.color}"]`);
+    if (swatch) {
+      swatch.classList.add('selected');
+    } else {
+      DOM.deckColorSelector.querySelector('.color-swatch').classList.add('selected');
+    }
+  }
+  openModal(DOM.deckModal);
+  DOM.deckNameInput.focus();
+}
+
+async function saveDeckInfo() {
+  const name = DOM.deckNameInput.value.trim();
+  const emoji = DOM.deckEmojiInput.value.trim();
+  const subtitle = DOM.deckSubtitleInput.value.trim();
+
+  // â­ NOUVEAU : rÃ©cupÃ©rer translationId (ou name si vide)
+  const translationId = (DOM.deckTranslationKeyInput?.value || name).trim();
+
+  if (!name || !emoji) {
+    showAlert('Erreur', 'Le nom et l\'emoji sont requis.', 'error');
+    return;
+  }
+
+  const tagsInput = DOM.deckTags.value.trim();
+  const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+  
+  const indicatorLeft = DOM.deckIndicatorLeftInput.value.trim();
+  const indicatorRight = DOM.deckIndicatorRightInput.value.trim();
+ const selectedColorEl = DOM.deckColorSelector.querySelector('.color-swatch.selected');
+const colorName = selectedColorEl ? selectedColorEl.dataset.colorName : 'gray';
+
+const selectedLeft = DOM.deckColorLeftSelector.querySelector('.color-swatch.selected');
+const colorLeft = selectedLeft ? selectedLeft.dataset.colorHex : DEFAULT_COLOR_LEFT;
+
+const selectedRight = DOM.deckColorRightSelector.querySelector('.color-swatch.selected');
+const colorRight = selectedRight ? selectedRight.dataset.colorHex : DEFAULT_COLOR_RIGHT;
+  const resultMessages = {
+    pct0: DOM.deckResultPct0.value.trim() || "",
+    pct100: DOM.deckResultPct100.value.trim() || "",
+    pct50: DOM.deckResultPct50.value.trim() || "",
+    default: DOM.deckResultDefault.value.trim() || "",
+  };
+
+  const isPrivate = DOM.deckIsPrivate.checked;
+  const password = DOM.deckPassword.value.trim();
+  const isPublished = DOM.deckIsPublished.checked; 
+
+  if (!name || !indicatorLeft || !indicatorRight) {
+    showAlert("Formulaire incomplet", "Remplissez tous les champs requis.", "warning");
+    return;
+  }
+  if (isPrivate && (password.length !== 4 || !/^\d+$/.test(password))) {
+    showAlert("Mot de passe invalide", "Le mot de passe pour un deck privÃ© doit Ãªtre composÃ© de 4 chiffres.", "warning");
+    return;
+  }
+  if (!isAuthReady) {
+    showAlert("Erreur", "Non authentifiÃ©.", "error");
+    return;
+  }
+
+  const colorClasses = getColorClasses(colorName);
+  const deckIndexToEdit = DOM.editDeckId.value;
+
+  const deckData = {
+    name: name,
+    emoji: emoji,
+    subtitle: subtitle,
+    translationId,  
+    tags: tags, 
+    indicatorLeft: indicatorLeft,
+    indicatorRight: indicatorRight,
+    color: colorName,       // Sauvegarde nom couleur Titre
+    colorLeft: colorLeft,   // Sauvegarde Hex Gauche
+    colorRight: colorRight, // Sauvegarde Hex Droite
+    ...colorClasses,        // GÃ©nÃ©rÃ© par la nouvelle fonction getColorClasses
+    ...colorClasses,
+    orderIndex: PERSISTENT_DECK_INFO.length, 
+    createdAt: Date.now(), 
+    isPrivate: isPrivate, 
+    password: isPrivate ? password : "",
+    colorLeft: colorLeft, 
+    colorRight: colorRight, 
+    resultMessages: resultMessages,
+    isPublished: isPublished
+  };
+
+  if (deckIndexToEdit !== "") {
+    const deckInfoDoc = PERSISTENT_DECK_INFO[parseInt(deckIndexToEdit)];
+    if (!deckInfoDoc || !deckInfoDoc.id) {
+      showAlert("Erreur", "Deck non trouvÃ©.", "error");
+      return;
+    }
+    try {
+      const saveDeck = httpsCallable(functions, 'saveDeck');
+      await saveDeck({ 
+        deckId: deckInfoDoc.id, 
+        deckData: { ...deckInfoDoc, ...deckData } 
+      });
+      closeModal(DOM.deckModal);
+      await loadPersistentData(); 
+    } catch (e) {
+      console.error("Error calling saveDeck function:", e);
+      showAlert("Erreur Sauvegarde", `Impossible de modifier le deck: ${e.message}`, "error");
+    }
+  } else {
+    try {
+      const saveDeck = httpsCallable(functions, 'saveDeck');
+      await saveDeck({ 
+        deckId: null, 
+        deckData: deckData 
+      });
+      closeModal(DOM.deckModal);
+      await loadPersistentData(); 
+    } catch (e) {
+      console.error("Error calling saveDeck function:", e);
+      showAlert("Erreur Sauvegarde", `Impossible de crÃ©er le deck: ${e.message}`, "error");
+    }
+  }
+}
+
+async function moveDeck(deckIndex, direction) {
+  if (!isAuthReady || !state.isAdmin) {
+    showAlert("Erreur", "Action non autorisÃ©e.", "error");
+    return;
+  }
+  const currentIndex = parseInt(deckIndex, 10);
+  if (direction === 'up' && currentIndex === 0) return;
+  if (direction === 'down' && currentIndex === PERSISTENT_DECK_INFO.length - 1) return;
+  const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+  const deckA = PERSISTENT_DECK_INFO[currentIndex];
+  const deckB = PERSISTENT_DECK_INFO[newIndex];
+  if (!deckA || !deckB) return;
+
+  const batch = writeBatch(db);
+  const docARef = doc(deckInfoCollection, deckA.id);
+  const docBRef = doc(deckInfoCollection, deckB.id);
+  batch.update(docARef, { orderIndex: deckB.orderIndex });
+  batch.update(docBRef, { orderIndex: deckA.orderIndex });
+  try {
+    await batch.commit();
+  } catch (e) {
+    console.error("Erreur lors du dÃ©placement du deck:", e);
+    showAlert("Erreur", "Impossible de dÃ©placer le deck.", "error");
+  }
+}
+
+async function deleteDeck() {
+  const deckIndexToDelete = DOM.editDeckId.value;
+  if (deckIndexToDelete === "") return; 
+  const deckInfoDoc = PERSISTENT_DECK_INFO[parseInt(deckIndexToDelete)];
+  if (!deckInfoDoc || !deckInfoDoc.id) {
+    showAlert("Erreur", "Deck non trouvÃ©.", "error");
+    return;
+  }
+  const deckName = deckInfoDoc.name;
+  const onConfirmDelete = async () => {
+    if (!isAuthReady) {
+      showAlert("Erreur", "Non authentifiÃ©.", "error");
+      return;
+    }
+    try {
+      const deleteDeckSecurely = httpsCallable(functions, 'deleteDeck');
+      await deleteDeckSecurely({ deckId: deckInfoDoc.id });
+      showAlert("Suppression RÃ©ussie", `Le deck "${deckName}" supprimÃ©.`, "success");
+      closeModal(DOM.deckModal);
+      await loadPersistentData(); 
+    } catch (e) {
+      console.error("Error calling deleteDeck function:", e);
+      showAlert("Erreur Suppression", `Impossible de supprimer le deck: ${e.message}`, "error");
+    }
+  };
+  showConfirm(
+    `Supprimer le Deck "${deckName}" ?`, 
+    "Cette action est irrÃ©versible et supprimera aussi toutes les cartes ET tous les scores associÃ©s.", 
+    onConfirmDelete
+  );
+}
+
+function showStatsScreen() {
+  showScreen(DOM.statsScreen);
+  if (state.cardStats) {
+    renderCardStats(state.cardStats);
+  } else {
+    DOM.statsResultsContainer.innerHTML = '<p class="text-center p-4">Cliquez sur "Calculer" pour dÃ©marrer l\'analyse.</p>';
+  }
+}
+
+function resetStats() {
+  state.cardStats = null;
+  DOM.statsResultsContainer.innerHTML = '<p class="text-center p-4">Stats rÃ©initialisÃ©es. Cliquez sur "Calculer" pour une nouvelle analyse.</p>';
+  showAlert("Stats RÃ©initialisÃ©es", "Le cache des statistiques a Ã©tÃ© vidÃ©.", "info");
+}
+
+async function calculateAndRenderStats() {
+  DOM.statsLoader.classList.remove('hidden');
+  DOM.statsResultsContainer.innerHTML = '';
+  try {
+    const stats = await calculateCardStats();
+    state.cardStats = stats;
+    renderCardStats(stats);
+  } catch (e) {
+    console.error("Erreur calcul stats:", e);
+    showAlert("Erreur Stats", `Impossible de calculer les stats: ${e.message}`, "error");
+    DOM.statsResultsContainer.innerHTML = '<p class="text-center p-4 text-red-400">Erreur de calcul.</p>';
+  } finally {
+    DOM.statsLoader.classList.add('hidden');
+  }
+}
+
+async function calculateCardStats() {
+  if (!isAuthReady) throw new Error("Authentification non prÃªte.");
+  const stats = {}; 
+  const deckMap = {}; 
+  
+  PERSISTENT_DECKS.forEach((deck, deckIndex) => {
+    const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+    if (!deckInfo) return;
+    deckMap[deckInfo.id] = deckInfo.name;
+    deck.forEach(card => {
+      stats[card.id] = {
+        plays: 0,
+        errors: 0,
+        cardData: card,
+        deckId: deckInfo.id,
+        deckName: deckInfo.name,
+        deckEmoji: deckInfo.emoji
+      };
+    });
+  });
+
+  const scoresQuery = query(scoresCollection);
+  const scoresSnapshot = await getDocs(scoresQuery);
+  scoresSnapshot.docs.forEach(doc => {
+    const score = doc.data();
+    if (score.results && Array.isArray(score.results)) {
+      score.results.forEach(playedCard => {
+        const cardId = playedCard.id;
+        if (stats[cardId]) {
+          stats[cardId].plays++;
+          if (playedCard.isCorrect === false) { 
+            stats[cardId].errors++;
+          }
+        }
+      });
+    }
+  });
+  return { stats, deckMap };
+}
+
+function renderCardStats(data) {
+  const { stats, deckMap } = data;
+  DOM.statsResultsContainer.innerHTML = '';
+
+  const hardestCards = {}; 
+  Object.values(stats).forEach(cardStat => {
+    if (cardStat.plays === 0) return; 
+    const errorRate = (cardStat.errors / cardStat.plays) * 100;
+    const deckId = cardStat.deckId;
+    if (!hardestCards[deckId] || errorRate > hardestCards[deckId].errorRate) {
+      hardestCards[deckId] = { card: cardStat, errorRate: errorRate };
+    }
+  });
+
+  const hardestContainer = document.createElement('div');
+  hardestContainer.innerHTML = '<h4 class="text-xl font-bold mb-3 text-cyan-400">Cartes les plus Difficiles (par Deck)</h4>';
+  const hardestGrid = document.createElement('div');
+  hardestGrid.className = 'grid grid-cols-2 md:grid-cols-4 gap-4 mb-8';
+  
+  Object.keys(deckMap).forEach(deckId => {
+    const hardest = hardestCards[deckId];
+    const el = document.createElement('div');
+    el.className = 'p-3 glass rounded-lg';
+    const deckInfo = PERSISTENT_DECK_INFO.find(d => d.id === deckId);
+    
+    if (hardest) {
+      const card = hardest.card.cardData;
+      const cardImg = card.img ? `<img src="${card.img}" class="w-full h-24 object-cover rounded mb-2" />` : `<div class="w-full h-24 bg-gray-700 rounded mb-2 flex items-center justify-center text-xs p-2">${card.text.substring(0,30)}...</div>`;
+      el.innerHTML = `
+        <h5 class="text-sm font-semibold truncate mb-1">${hardest.card.deckEmoji} ${t(hardest.card.deckName)}</h5>
+        ${cardImg}
+        <p class="text-xs truncate" title="${card.text}">${card.text.split(' (')[0]}</p>
+        <p class="text-lg font-bold text-red-400">${hardest.errorRate.toFixed(0)}% <span class="text-xs text-gray-300">d'erreur</span></p>
+        <p class="text-xs text-gray-400">${hardest.card.errors} / ${hardest.card.plays} parties</p>
+      `;
+    } else {
+      el.innerHTML = `
+        <h5 class="text-sm font-semibold truncate mb-1">${deckInfo.emoji} ${t(deckInfo.name)}</h5>
+        <div class="w-full h-24 bg-gray-800 rounded mb-2 flex items-center justify-center">
+          <span class="text-xs text-gray-500">Aucune donnÃ©e</span>
+        </div>
+      `;
+    }
+    hardestGrid.appendChild(el);
+  });
+  hardestContainer.appendChild(hardestGrid);
+  DOM.statsResultsContainer.appendChild(hardestContainer);
+
+  const allStatsContainer = document.createElement('div');
+  allStatsContainer.innerHTML = '<h4 class="text-xl font-bold mb-3 text-cyan-400">Toutes les Cartes (triÃ©es par Taux d\'Erreur)</h4>';
+  const allStatsList = document.createElement('div');
+  allStatsList.className = 'space-y-2';
+
+  const allCards = Object.values(stats)
+    .filter(s => s.plays > 0)
+    .sort((a, b) => {
+      const rateA = a.errors / a.plays;
+      const rateB = b.errors / b.plays;
+      return rateB - rateA; 
+    });
+
+  allCards.forEach(cardStat => {
+    const card = cardStat.cardData;
+    const errorRate = (cardStat.errors / cardStat.plays) * 100;
+    const cardImg = card.img ? `<img src="${card.img}" class="w-16 h-16 object-cover rounded" />` : `<div class="w-16 h-16 bg-gray-700 rounded flex-shrink-0 flex items-center justify-center text-xs">Texte</div>`;
+    const el = document.createElement('div');
+    el.className = 'flex items-center gap-4 p-3 glass rounded-lg';
+    el.innerHTML = `
+      ${cardImg}
+      <div class="flex-1 overflow-hidden">
+        <p class="text-sm truncate" title="${card.text}">${card.text.split(' (')[0]}</p>
+        <p class="text-xs text-gray-400">${cardStat.deckEmoji} ${t(cardStat.deckName)}</p>
+      </div>
+      <div class="w-24 text-right flex-shrink-0">
+        <p class="text-xl font-bold ${errorRate > 50 ? 'text-red-400' : (errorRate > 10 ? 'text-yellow-400' : 'text-green-400')}">${errorRate.toFixed(0)}%</p>
+        <p class="text-xs text-gray-400">${cardStat.errors} erreur(s) / ${cardStat.plays} parties</p>
+      </div>
+    `;
+    allStatsList.appendChild(el);
+  });
+  allStatsContainer.appendChild(allStatsList);
+  DOM.statsResultsContainer.appendChild(allStatsContainer);
+}
+
+async function forceReload() {
+  console.log("ðŸ”„ SYNC: Rechargement manuel demandé...");
+  if (!isAuthReady) {
+    showAlert("Erreur", "Connexion au système impossible.", "error");
+    return;
+  }
+  const btn = DOM.btnForceRefresh;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = 'â³ ...';
+  btn.disabled = true;
+  try {
+    PERSISTENT_DECKS = [];
+    PERSISTENT_DECK_INFO = [];
+    await loadPersistentData();
+    showAlert("SystÃ¨me Mis Ã  Jour", "Les donnéees ont été resynchronisées avec la base.", "success");
+  } catch (error) {
+    console.error("Erreur Sync:", error);
+    showAlert("Erreur Sync", "Échec de la récupération des données.", "error");
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+}
+
+function updateUI() {
+  const maxCards = state.game.maxCards;
+  DOM.scoreDisplay.textContent = state.game.score;
+  const cardNum = Math.min(state.game.cardIndex + 1, maxCards);
+  DOM.indexDisplay.textContent = `${cardNum}/${maxCards}`;
+  const finished = state.game.cardIndex >= maxCards;
+  DOM.cardHolder.classList.toggle('hidden', finished);
+  DOM.arrowBtnContainer.classList.toggle('hidden', finished);
+  DOM.endOverlay.classList.toggle('hidden', !finished);
+}
+
+function displayCard() {
+  if (state.game.cardIndex < state.game.maxCards) {
+    const cur = PERSISTENT_DECKS[state.currentDeck].find(c => c.id === state.currentDeckCards[state.game.cardIndex].id);
+    if (cur) {
+      if (cur.img && cur.img.trim() !== "") {
+        DOM.cardElement.innerHTML = `
+          <div class="card-container-inner">
+            <img
+              src="${cur.img}"
+              alt=""
+              onerror="this.src='${neutralImg}'">
+          </div>
+        `;
+        DOM.cardText.classList.remove('text-only-card');
+      } else {
+      DOM.cardElement.innerHTML = `
+        <div class="card-container-inner">
+          <img
+            src="${neutralImg}"
+            alt=""
+            onerror="this.src='${neutralImg}'">
+        </div>
+      `;
+      DOM.cardText.classList.add('text-only-card');
+    }
+      DOM.cardText.textContent = cur.text; // On ne traduit pas le contenu des cartes, c'est du contenu utilisateur
+    } else {
+    DOM.cardElement.innerHTML = `
+      <div class="card-container-inner">
+        <img
+          src="${neutralImg}"
+          alt=""
+          onerror="this.src='${neutralImg}'">
+      </div>
+    `;
+    DOM.cardText.classList.remove('text-only-card'); 
+    DOM.cardText.textContent = t("Erreur - Carte non trouvée");
+  }
+    DOM.cardElement.style.transform = 'none';
+    DOM.cardElement.style.opacity = '1';
+    DOM.cardElement.classList.remove('slide-out-left', 'slide-out-right');
+    DOM.overlayLeft.style.transition = 'none';
+    DOM.overlayRight.style.transition = 'none';
+    DOM.overlayLeft.style.opacity = '0';
+    DOM.overlayRight.style.opacity = '0';
+    void DOM.overlayLeft.offsetWidth;
+    DOM.overlayLeft.style.transition = 'opacity .2s cubic-bezier(0.4, 0, 0.2, 1)';
+    DOM.overlayRight.style.transition = 'opacity .2s cubic-bezier(0.4, 0, 0.2, 1)';
+    
+    // TRADUCTION DES INDICATEURS GAUCHE/DROITE
+    const deckInfo = PERSISTENT_DECK_INFO[state.currentDeck];
+      if (deckInfo) {
+        DOM.indicatorLeft.textContent = t(deckInfo.indicatorLeft);
+        DOM.indicatorRight.textContent = t(deckInfo.indicatorRight);
+      }
+    DOM.indicatorLeft.style.opacity = '0';
+    DOM.indicatorRight.style.opacity = '0';
+  } else {
+    endGame();
+  }
+}
+
+function updateVisualFeedback(dx) {
+  const opacityRatio = Math.min(1, Math.abs(dx) / 100); 
+  if (dx < 0) {
+    DOM.overlayLeft.style.opacity = (opacityRatio * 0.9).toString();
+    DOM.overlayRight.style.opacity = '0';
+    DOM.indicatorLeft.style.opacity = opacityRatio > 0.1 ? '1' : '0';
+    DOM.indicatorRight.style.opacity = '0';
+    DOM.indicatorLeft.style.transform = `translateY(-50%) translateX(${Math.min(0, 10 + dx / 5)}px)`;
+  } else if (dx > 0) {
+    DOM.overlayRight.style.opacity = (opacityRatio * 0.9).toString();
+    DOM.overlayLeft.style.opacity = '0';
+    DOM.indicatorRight.style.opacity = opacityRatio > 0.1 ? '1' : '0';
+    DOM.indicatorLeft.style.opacity = '0';
+    DOM.indicatorRight.style.transform = `translateY(-50%) translateX(${Math.max(0, dx / 5 - 10)}px)`;
+  } else {
+    DOM.overlayLeft.style.opacity = '0';
+    DOM.overlayRight.style.opacity = '0';
+    DOM.indicatorLeft.style.opacity = '0';
+    DOM.indicatorRight.style.opacity = '0';
+  }
+}
+
+function getResultMessage(errorPercent) {
+  const deckIndex = state.currentDeck;
+  const customMessages = PERSISTENT_DECK_INFO[deckIndex]?.resultMessages;
+  const genericDefault = {
+    0: { text: "result_perfect", color: "bg-green-600" },
+    50: { text: "result_average", color: "bg-yellow-600" },
+    default: { text: "result_good", color: "bg-blue-600" }
+  };
+  
+  const fallbackMessages = genericDefault;
+
+  if (errorPercent === 0) {
+    const fallback = fallbackMessages[0] || fallbackMessages.default;
+    return { 
+      text: t(customMessages?.pct0 || fallback.text), 
+      color: fallback.color 
+    };
+  }
+  if (errorPercent === 100 && (fallbackMessages[100] || genericDefault[100])) {
+    const fallback = fallbackMessages[100] || genericDefault[100];
+    return { 
+      text: t(customMessages?.pct100 || fallback.text), 
+      color: fallback.color 
+    };
+  }
+  if (errorPercent >= 50 && (fallbackMessages[50] || genericDefault[50])) {
+    const fallback = fallbackMessages[50] || genericDefault[50];
+    return { 
+      text: t(customMessages?.pct50 || fallback.text), 
+      color: fallback.color 
+    };
+  }
+  const fallback = fallbackMessages.default;
+  return { 
+    text: t(customMessages?.default || fallback.text), 
+    color: fallback.color 
+  };
+}
+
+
+function getColorClasses(colorName) {
+  const colorHex = tailwindColors[colorName] || tailwindColors["gray"];
+  const titleColor = `text-${colorName}-400`; 
+  const cardBorder = `border-white/10`; 
+  
+  let styleTag = document.getElementById('dynamic-color-styles');
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = 'dynamic-color-styles';
+    document.head.appendChild(styleTag);
+  }
+  
+  const styles = `
+    .${titleColor} { color: ${colorHex}; text-shadow: 0 0 15px ${hexToRgba(colorHex, 0.6)}; }
+  `;
+  
+  if (!styleTag.innerHTML.includes(`.${titleColor} {`)) {
+     styleTag.innerHTML += styles;
+  }
+
+  return { titleColor: titleColor, cardBorder: cardBorder };
+}
+
+
+function resizeImage(file, maxWidth, quality, outputType = 'dataURL') {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        if (outputType === 'file') {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error("Erreur lors de la crÃ©ation du Blob."));
+            }
+          }, 'image/jpeg', quality);
+        } else {
+          const dataUrl = canvas.toDataURL('image/jpeg', quality); 
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = (error) => reject(error);
+      img.src = event.target.result;
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function hexToRgba(hex, alpha) {
+  if (!hex || typeof hex !== 'string' || hex.charAt(0) !== '#') {
+    return `rgba(168, 85, 247, ${alpha})`; 
+  }
+  const r = parseInt(hex.slice(1, 3), 16) || 0;
+  const g = parseInt(hex.slice(3, 5), 16) || 0;
+  const b = parseInt(hex.slice(5, 7), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function shuffleArray(array) {
+  const newArray = [...array]; 
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
+
+function displayErrorRecap() {
+  DOM.recapList.innerHTML = '';
+  if (state.resultsRecap.length === 0) {
+    DOM.recapTitle.textContent = t("Aucune carte jouée.");
+    return;
+  }
+  DOM.recapTitle.textContent = t("Résultat de la partie");
+  
+  const deckInfo = PERSISTENT_DECK_INFO[state.currentDeck];
+  if (!deckInfo) {
+      console.error("displayErrorRecap: Impossible de trouver deckInfo.");
+      return;
+  }
+      
+  state.resultsRecap.forEach((playedCard) => {
+    const card = PERSISTENT_DECKS[state.currentDeck].find(c => c.id === playedCard.id);
+    if (!card) return;
+    const status = playedCard.isCorrect ? 'success' : 'error';
+    const statusText = playedCard.isCorrect ? t('RÉUSSIE') : t('ERREUR'); 
+    const el = document.createElement('div');
+    el.className = `result-vignette ${status} flex flex-col items-center justify-between`;
+    const hasSoluceLink = card.soluceLink && card.soluceLink.trim() !== "";
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => {
+      if (hasSoluceLink) {
+        window.open(card.soluceLink, '_blank');
+      } else if (card.img && !card.img.includes('placehold.co')) { 
+        openModal(card.img);
+      }
+    });
+
+    const cardImgHtml = card.img ? 
+        `<img src="${card.img}" alt="${statusText}" onerror="this.onerror=null;this.src='https://placehold.co/100x60/${status === 'success' ? '10B981' : 'EF4444'}/FFFFFF?text=${statusText}';" />` :
+        `<div class="recap-text-only-placeholder">${statusText}</div>`;
+
+    const rawSideText = card.correct === 'left' 
+      ? (deckInfo.indicatorLeft || 'GAUCHE') 
+      : (deckInfo.indicatorRight || 'DROITE');
+    const correctSideText = t(rawSideText);
+    
+    el.innerHTML = `
+      ${cardImgHtml}
+      <div class="text-[0.6rem] text-gray-300 truncate w-full mt-0.5" title="${correctSideText}">${correctSideText}</div>
+    `;
+    DOM.recapList.appendChild(el);
+  });
+}
+
+// ðŸ” FONCTION DE FILTRAGE (Ã€ AJOUTER AVANT renderScores())
+function filterScoresBySearch() {
+  const searchInput = document.getElementById('scores-search-input');
+  if (!searchInput) return;
+  
+  const searchTerm = searchInput.value.toLowerCase().trim();
+  const scoreItems = document.querySelectorAll('[data-score-id]');
+  
+  scoreItems.forEach(item => {
+    const playerName = item.getAttribute('data-player-name') || '';
+    const matches = playerName.toLowerCase().includes(searchTerm);
+    item.style.display = matches ? 'block' : 'none';
+  });
+}
+
+// âœ… FONCTION renderScores() COMPLÃˆTE ET CORRECTE
+async function renderScores() {
+  if (!isAuthReady) {
+    DOM.scoresList.innerHTML = '<div class="text-gray-300 text-center py-6">' + t('loading_connection') + '</div>';
+    return;
+  }
+  
+  DOM.scoresList.innerHTML = '<div class="text-gray-300 text-center py-6">' + t('loading_scores') + '</div>';
+  state.scoresToDelete.clear();
+  
+  try {
+    let scoresQuery;
+    if (state.currentFilter === 'all') {
+      scoresQuery = query(scoresCollection);
+    } else {
+      const deckInfo = PERSISTENT_DECK_INFO[state.currentFilter];
+      const deckId = deckInfo ? deckInfo.id : "invalid_deck_id";
+      scoresQuery = query(scoresCollection, where("deckId", "==", deckId));
+    }
+    
+    const snapshot = await getDocs(scoresQuery);
+    let allScores = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+    allScores.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // 🔒 Decks publiés seulement
+    let visibleScores = allScores.filter(score => {
+      const deckInfo = PERSISTENT_DECK_INFO.find(d => d.id === score.deckId);
+      return !deckInfo || (deckInfo.isPublished ?? true);
+    });
+
+    // 🔥 Filtre de mode
+    if (state.scoreModeFilter === 'normal') {
+      visibleScores = visibleScores.filter(score => score.mode !== 'hardcore'); // ou === 'normal'
+    } else if (state.scoreModeFilter === 'hardcore') {
+      visibleScores = visibleScores.filter(score => score.mode === 'hardcore');
+    }
+
+    const filtered = visibleScores.slice(0, 100);
+    
+    DOM.scoresList.innerHTML = '';
+    if (filtered.length === 0) {
+      DOM.scoresList.innerHTML = '<div class="text-gray-300 text-center py-6">' + t('no_scores') + '</div>';
+      return;
+    }
+    
+    // ✅ AFFICHE TOUS LES SCORES (après filtrage de mode)
+    filtered.forEach(score => {
+      const el = document.createElement('div');
+      el.className = 'relative score-item-container flex flex-col p-3 bg-white/5 rounded-lg hover:bg-white/8 transition';
+      el.dataset.scoreId = score.id;
+      el.dataset.playerName = score.player || '';
+      
+      const deckEmoji = score.deckEmoji || '❌';
+      const safePlayerName = (score.player || "Sans nom").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const infoContainer = document.createElement('div');
+      infoContainer.className = 'flex justify-between items-start';
+      
+      const playerInfo = document.createElement('div');
+      playerInfo.innerHTML = `
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-xl">${deckEmoji}</span>
+          <span class="font-semibold">${safePlayerName}</span>
+        </div>
+        <div class="text-xs text-gray-400">${new Date(score.timestamp).toLocaleString('fr-FR')}</div>
+      `;
+      
+      const scoreInfo = document.createElement('div');
+      scoreInfo.className = 'text-right';
+      scoreInfo.innerHTML = `
+        <div class="text-2xl font-bold ${score.percentage === 0 ? 'text-green-400' : score.percentage === 100 ? 'text-pink-400' : 'text-purple-400'}">${score.percentage}%</div>
+        <div class="text-xs text-gray-400">${score.errors} ${t('of_error')}</div>
+      `;
+      
+      infoContainer.appendChild(playerInfo);
+      infoContainer.appendChild(scoreInfo);
+      el.appendChild(infoContainer);
+      
+      if (score.results && Array.isArray(score.results)) {
+        const recapContainer = document.createElement('div');
+        recapContainer.className = 'score-recap-container';
+        score.results.forEach(cardResult => {
+          const vignette = document.createElement('div');
+          const status = cardResult.isCorrect ? 'success' : 'error';
+          vignette.className = `score-vignette ${status}`;
+          if (cardResult.img) {
+            vignette.style.backgroundImage = `url('${cardResult.img}')`;
+          } else if (!cardResult.isCorrect) {
+            vignette.textContent = '✕';
+          }
+          recapContainer.appendChild(vignette);
+        });
+        el.appendChild(recapContainer);
+      }
+      
+      // Gestion mode ADMIN : sélection des scores à supprimer
+el.classList.toggle('selectable-score', state.isManagingScores);
+
+// On supprime tout ancien handler pour éviter les bugs
+el.onclick = null;
+
+if (state.isManagingScores) {
+  el.onclick = () => {
+    const id = el.dataset.scoreId;
+    if (state.scoresToDelete.has(id)) {
+      state.scoresToDelete.delete(id);
+      el.classList.remove('score-selected');
+    } else {
+      state.scoresToDelete.add(id);
+      el.classList.add('score-selected');
+    }
+  };
+}
+
+
+  DOM.scoresList.appendChild(el);
+});
+    
+    const searchInput = document.getElementById('scores-search-input');
+    if (searchInput && !searchInput._listenerAdded) {
+      searchInput.addEventListener('input', filterScoresBySearch);
+      searchInput._listenerAdded = true;
+    }
+    
+  } catch (error) {
+    console.error('Error rendering scores:', error);
+    DOM.scoresList.innerHTML = '<div class="text-gray-300 text-center py-6">' + t('error_loading_scores') + '</div>';
+  }
+}
+
+
+function filterScores(filter, targetElement) {
+  state.currentFilter = filter;
+  DOM.scoreFilterButtons.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  targetElement.classList.add('active'); 
+  renderScores();
+}
+
+async function saveScore(playerName, deckIndex, errors, percentage) {
+  if (!isAuthReady) {
+    console.error("Impossible de sauvegarder le score, utilisateur non authentifiÃ©.");
+    return;
+  }
+  const deckInfo = PERSISTENT_DECK_INFO[deckIndex];
+  const scoreData = {
+    player: playerName,
+    userId: userId,
+    deck: deckIndex,
+    deckId: deckInfo ? deckInfo.id : "unknown",
+    deckName: deckInfo ? deckInfo.name : "Deck Inconnu",
+    deckEmoji: deckInfo ? deckInfo.emoji : "❌",
+    errors: errors,
+    percentage: percentage,
+    timestamp: Date.now(),
+    results: state.resultsRecap,
+    mode: state.game.isHardcoreMode ? "hardcore" : "normal",
+    cardsPlayed: state.game.cardIndex + 1,
+  };
+    try {
+    await addDoc(scoresCollection, scoreData);
+    console.log("Score sauvegardé avec succès.");
+  } catch (e) {
+    console.error("Erreur lors de la sauvegarde du score:", e);
+  }
+
+}
+function selectAllScores() {
+  state.scoresToDelete.clear();
+
+  const items = DOM.scoresList.querySelectorAll('.score-item-container');
+  items.forEach(el => {
+    const id = el.dataset.scoreId;
+    if (!id) return;
+    state.scoresToDelete.add(id);
+    el.classList.add('score-selected');
+  });
+}
+
+function deselectAllScores() {
+  state.scoresToDelete.clear();
+
+  const items = DOM.scoresList.querySelectorAll('.score-item-container');
+  items.forEach(el => {
+    el.classList.remove('score-selected');
+  });
+}
+
+function deleteSelectedScores() {
+  if (state.scoresToDelete.size === 0) {
+    showAlert(t('no_selection'), t('select_to_delete'), "warning");
+    return;
+  }
+  const onConfirm = async () => {
+    try {
+      const deleteScores = httpsCallable(functions, 'deleteScoresSecurely');
+      const scoreIds = Array.from(state.scoresToDelete);
+      await deleteScores({ scoreIds: scoreIds });
+      showAlert(t('success'), `${state.scoresToDelete.size} ${t('scores_deleted')}`, "success");
+      state.scoresToDelete.clear();
+      state.cardStats = null; 
+      renderScores(); 
+    } catch (e) {
+      console.error("Error calling deleteScoresSecurely function:", e);
+      showAlert(t('error'), `Impossible de supprimer les scores: ${e.message}`, "error");
+    }
+  };
+  showConfirm(
+    `${t('btnDelete')} ${state.scoresToDelete.size} score(s) ?`, 
+    t('action_irreversible'), 
+    onConfirm
+  );
+}
+
+function openModal(modalEl) {
+  if (typeof modalEl === 'string') {
+    DOM.modalImage.src = modalEl;
+    DOM.imageModal.classList.add('active');
+  } else {
+    modalEl.classList.add('active');
+  }
+}
+
+function closeModal(modalEl) {
+  modalEl.classList.remove('active');
+}
+
+function openPasswordModal() {
+  DOM.adminEmailInput.value = '';
+  DOM.adminPasswordInput.value = '';
+  DOM.passwordError.classList.add('hidden');
+  openModal(DOM.passwordModal);
+  DOM.adminEmailInput.focus();
+}
+
+function isModalOpen() {
+  return DOM.imageModal.classList.contains('active') || 
+         DOM.passwordModal.classList.contains('active') || 
+         DOM.editCardModal.classList.contains('active') ||
+         DOM.deckModal.classList.contains('active') ||
+         DOM.alertModal.classList.contains('active') ||
+         DOM.deckSizeModal.classList.contains('active') || 
+         DOM.privateDeckModal.classList.contains('active'); 
+}
+
+function showAlert(title, text, type = 'info') {
+  DOM.alertModalTitle.textContent = title;
+  DOM.alertModalText.textContent = text;
+  DOM.alertModalButtons.innerHTML = '';
+  DOM.alertModalTitle.className = "text-2xl font-bold mb-4 ";
+  switch (type) {
+    case 'success':
+      DOM.alertModalTitle.classList.add('text-green-400');
+      break;
+    case 'error':
+      DOM.alertModalTitle.classList.add('text-red-400');
+      break;
+    case 'warning':
+      DOM.alertModalTitle.classList.add('text-yellow-400');
+      break;
+    default:
+      DOM.alertModalTitle.classList.add('text-white');
+  }
+  const okButton = document.createElement('button');
+  okButton.textContent = "OK";
+  okButton.className = "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold";
+  okButton.onclick = () => closeModal(DOM.alertModal);
+  DOM.alertModalButtons.appendChild(okButton);
+  openModal(DOM.alertModal);
+}
+
+function showConfirm(title, text, onConfirm) {
+  DOM.alertModalTitle.textContent = title;
+  DOM.alertModalText.textContent = text;
+  DOM.alertModalButtons.innerHTML = '';
+  DOM.alertModalTitle.className = "text-2xl font-bold mb-4 text-white";
+  const cancelButton = document.createElement('button');
+  cancelButton.textContent = "Annuler";
+  cancelButton.className = "px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold";
+  cancelButton.onclick = () => closeModal(DOM.alertModal);
+  const confirmButton = document.createElement('button');
+  confirmButton.textContent = "Confirmer";
+  confirmButton.className = "px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold";
+  confirmButton.onclick = () => {
+    closeModal(DOM.alertModal);
+    onConfirm();
+  };
+  DOM.alertModalButtons.appendChild(cancelButton);
+  DOM.alertModalButtons.appendChild(confirmButton);
+  openModal(DOM.alertModal);
+}

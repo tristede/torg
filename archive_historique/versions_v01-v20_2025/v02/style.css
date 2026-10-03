@@ -1,0 +1,931 @@
+/* STYLES CSS COMPLETS (style.css) */
+
+/* FIX: Supprimer le cadre blanc et faire du plein écran */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  /* MODIFICATION: Ajout d'une couleur de fond fixe pour empêcher le "flash blanc" au scroll */
+  background-color: #0b1220;
+  /* MODIFICATION: Suppression de overflow: hidden; C'EST CE QUI BLOQUAIT LE SCROLL */
+  /* overflow: hidden; */ 
+  background: linear-gradient(180deg, #0b1220 0%, #071018 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: white;
+  /* MODIFICATION: Suppression du halo global, on l'appliquera spécifiquement */
+  /* text-shadow: 0 0 8px rgba(220, 220, 255, 0.1); */
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  /* MODIFICATION: Suppression du centrage pour le mode plein écran */
+  /* align-items: center; */
+  /* justify-content: center; */
+  width: 100vw;
+  height: 100vh;
+  /* MODIFICATION: Bloque le "rebond" blanc sur mobile */
+  overscroll-behavior: none;
+  /* MODIFICATION: Augmentation de la graisse de la police pour la lisibilité */
+  font-weight: 500;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* MODIFICATION: Suppression de align-items: center; pour le mode plein écran */
+  /* align-items: center; */
+  /* MODIFICATION: Suppression de justify-content: center; pour permettre à l'en-tête de rester en haut */
+  /* justify-content: center; */
+}
+
+.bg-game { 
+  background: linear-gradient(180deg, #0b1220 0%, #071018 100%);
+  width: 100%;
+  height: 100%;
+}
+
+.glass { 
+  background: rgba(255,255,255,0.03); 
+  backdrop-filter: blur(6px); 
+  border: 1px solid rgba(255,255,255,0.04); 
+}
+
+.card-container {
+  transition: transform .35s cubic-bezier(.22,.9,.27,1), opacity .35s, box-shadow .35s ease; /* Ajout de box-shadow à la transition */
+  will-change: transform, opacity;
+  touch-action: none;
+  cursor: grab;
+  /* MODIFICATION: Empêche le surlignage bleu (sélection) */
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none; /* Standard */
+  /* MODIFICATION: Halo/ombre plus intense */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 255, 255, 0.1);
+}
+
+.card-container:hover {
+  /* MODIFICATION: Effet de glow au survol plus intense */
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.slide-out-left { 
+  transform: translateX(-150vw) rotate(-22deg) !important; 
+  opacity: 0; 
+}
+
+.slide-out-right { 
+  transform: translateX(150vw) rotate(-22deg) !important; 
+  opacity: 0; 
+}
+
+.screen {
+  display: flex;
+  /* MODIFICATION: align-items et justify-content sont gérés par Tailwind dans le HTML */
+  /* align-items: center; */
+  /* justify-content: center; */
+  width: 100%;
+  /* MODIFICATION: Suppression de overflow-y: auto; Le défilement sera géré par les enfants */
+  flex: 1;
+  /* overflow-y: auto; */
+  min-height: 0; /* Correction pour le scrolling flexbox */
+  padding: 1.5rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.screen.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hidden-screen {
+  display: none;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Animation d'entrée pour les éléments de page */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.screen.active > * {
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.screen.active > *:nth-child(2) { animation-delay: 0.05s; }
+.screen.active > *:nth-child(3) { animation-delay: 0.1s; }
+.screen.active > *:nth-child(4) { animation-delay: 0.15s; }
+
+/* MODIFICATION: Règle pour bloquer l'overscroll sur les galeries */
+#scores-list,
+#soluce-gallery-container,
+#public-soluce-gallery-container,
+#stats-output { /* NOUVEAU: Ajout pour les stats */
+  overscroll-behavior: contain;
+}
+
+.circular-gauge { 
+  width: 200px; 
+  height: 200px; 
+  position: relative; 
+}
+
+.circular-gauge svg { 
+  transform: rotate(-90deg); 
+}
+
+.gauge-bg { 
+  fill: none; 
+  stroke: rgba(255,255,255,0.1); 
+  stroke-width: 20; 
+}
+
+.gauge-progress { 
+  fill: none; 
+  stroke: url(#gaugeGradient); 
+  stroke-width: 20; 
+  stroke-linecap: round; 
+  transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+.gauge-center { 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  text-align: center; 
+  /* MODIFICATION: Glow plus intense pour le pourcentage */
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+}
+
+/* MODIFICATION: Restauration de l'animation sur .deck-card */
+.deck-card { 
+  transition: all 0.3s ease; 
+  cursor: pointer; 
+}
+
+.deck-card:hover { 
+  transform: translateY(-8px); 
+  /* MODIFICATION: Ombre subtile, suppression du glow blanc que vous n'aimiez pas */
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+}
+
+/* NOUVEAU: Glow pour les titres de deck colorés */
+.text-purple-400 {
+  text-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+}
+.text-cyan-400 {
+  text-shadow: 0 0 15px rgba(34, 211, 238, 0.6);
+}
+.text-pink-400 {
+  text-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+}
+.text-green-400 {
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+}
+.text-yellow-400 {
+  text-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
+}
+.text-gray-400 {
+  /* Pas de glow pour le gris par défaut */
+}
+.text-red-400 {
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+}
+.text-blue-400 {
+  text-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+}
+.text-indigo-400 {
+  text-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+}
+.text-emerald-400 {
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+}
+.text-orange-400 {
+  text-shadow: 0 0 15px rgba(249, 115, 22, 0.6);
+}
+/* FIN NOUVEAU */
+
+.filter-btn { 
+  transition: all 0.2s ease; 
+}
+
+.filter-btn.active { 
+  background: rgba(99, 102, 241, 0.5); 
+  border-color: rgb(99, 102, 241); 
+}
+
+.pop { 
+  animation: popInUp .36s cubic-bezier(.2,.9,.3,1) both; 
+}
+
+@keyframes popInUp { 
+  from { 
+    transform: translateY(18px) scale(.99); 
+    opacity: 0; 
+  } 
+  to { 
+    transform: translateY(0) scale(1); 
+    opacity: 1; 
+  } 
+}
+
+input[type="text"].player-input { 
+  background: #f3f4f6; 
+  color: #0f172a; 
+}
+
+.msg { 
+  transition: opacity .25s ease; 
+}
+
+.result-message { 
+  animation: fadeInScale 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) 0.3s both; 
+}
+
+@keyframes fadeInScale { 
+  from { 
+    opacity: 0; 
+    transform: scale(0.8); 
+  } 
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  } 
+}
+
+/* Overlay gradients - Plus fluides */
+.overlay-gradient {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* MODIFICATION: Ajout d'un z-index pour le placer entre le fond et le contenu */
+  z-index: 5;
+}
+
+#overlay-left { 
+  left: 0; 
+  /* MODIFIÉ: Background retiré, sera géré par JS */
+}
+
+#overlay-right { 
+  right: 0; 
+  /* MODIFIÉ: Background retiré, sera géré par JS */
+}
+
+.swipe-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity .2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#indicator-left { 
+  left: -1rem; 
+  /* MODIFIÉ: color et background retirés */
+}
+
+#indicator-right { 
+  right: -1rem; 
+  /* MODIFIÉ: color et background retirés */
+}
+
+.error-card-recap { 
+  transition: transform 0.3s ease; 
+  cursor: pointer; 
+}
+
+.error-card-recap:hover { 
+  transform: translateY(-3px); 
+}
+
+/* AMÉLIORATION: Modales avec animations élaborées */
+.base-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: none;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.base-modal.active {
+  display: flex;
+  opacity: 1;
+}
+
+#password-modal-content, 
+#edit-modal-content, 
+#deck-modal-content, 
+#alert-modal-content,
+#deck-size-modal-content, /* NOUVEAU */
+#private-deck-modal-content /* NOUVEAU */
+{
+  max-width: 90%;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  max-height: 90%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.base-modal.active #password-modal-content,
+.base-modal.active #edit-modal-content,
+.base-modal.active #deck-modal-content,
+.base-modal.active #alert-modal-content,
+.base-modal.active #deck-size-modal-content, /* NOUVEAU */
+.base-modal.active #private-deck-modal-content /* NOUVEAU */
+{
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* AMÉLIORATION: Zoom d'image optimisé et uniforme */
+#modal-content {
+  max-width: 95vw;
+  max-height: 95vh;
+  padding: 0;
+  background: transparent;
+  border-radius: 1rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.base-modal.active #modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
+#modal-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 1rem;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8),
+              0 0 100px rgba(168, 85, 247, 0.3);
+  animation: imageZoomIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes imageZoomIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 2rem;
+  cursor: pointer;
+  color: white;
+  text-shadow: 0 0 10px black;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.close-btn:hover {
+  color: #ec4899;
+  transform: scale(1.1) rotate(90deg);
+}
+
+/* MODIFICATION: Style pour les champs de la modale admin */
+#admin-email-input,
+#admin-password-input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  margin-bottom: 0.75rem;
+}
+
+/* Boutons flèches */
+.arrow-btn-container {
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.arrow-btn {
+  width: 70px;
+  height: 48px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  border: 2px solid;
+  /* MODIFICATION: Halo/ombre plus intense */
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.7);
+}
+
+.arrow-btn:hover {
+  transform: scale(1.05);
+  /* MODIFICATION: Augmentation du halo au survol */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 40px rgba(168, 85, 247, 1);
+}
+
+.arrow-btn:active {
+  transform: scale(0.95);
+}
+
+#btn-arrow-left {
+  background-color: rgba(168, 85, 247, 0.2);
+  border-color: #a855f7;
+  color: #a855f7;
+}
+
+#btn-arrow-right {
+  background-color: rgba(236, 72, 153, 0.2);
+  border-color: #ec4899;
+  color: #ec4899;
+  /* MODIFICATION: Halo/ombre plus intense */
+  box-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
+}
+
+/* MODIFICATION: Règle spécifique pour le hover du bouton droit */
+#btn-arrow-right:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 40px rgba(236, 72, 153, 1);
+}
+
+.arrow-svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  stroke-width: 2;
+}
+
+.arrow-btn-zoom {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  transition: background-color 0.2s, transform 0.2s;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.05);
+  /* MODIFICATION: Halo/ombre plus intense */
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.arrow-btn-zoom:hover {
+  transform: scale(1.05);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+  /* MODIFICATION: Augmentation du halo au survol */
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+#btn-view-soluce-deck {
+  transition: transform 0.2s ease;
+}
+
+#btn-view-soluce-deck:hover {
+  transform: scale(1.05);
+}
+
+/* Galerie Soluce */
+.soluce-gallery-item {
+  width: 120px;
+  height: 160px;
+  transition: transform 0.3s ease;
+  object-fit: cover;
+  position: relative;
+  padding: 0.5rem;
+  cursor: default;
+}
+
+.soluce-gallery-item-image-container {
+  position: relative;
+  cursor: default;
+}
+
+.soluce-gallery-item.editing-mode {
+  cursor: pointer !important;
+  outline: 2px dashed #34d399;
+}
+
+.soluce-gallery-item.editing-mode:hover {
+  transform: scale(1.02);
+}
+
+.soluce-gallery-item {
+  cursor: pointer;
+}
+
+.edit-overlay-consult { 
+  display: none !important; 
+}
+
+.soluce-deck-title {
+  width: 100%;
+  text-align: center;
+  padding: 0.5rem 0;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.edit-deck-btn {
+  font-size: 1rem;
+  cursor: pointer;
+  display: none;
+  transition: transform 0.2s;
+}
+
+.edit-deck-btn:hover {
+  transform: scale(1.2);
+}
+
+/* NOUVEAU: Styles pour les boutons de déplacement */
+.deck-move-btn {
+  font-size: 1rem;
+  cursor: pointer;
+  display: none; /* Caché par défaut, géré par JS */
+  transition: transform 0.2s;
+  margin-left: 0.5rem;
+}
+.deck-move-btn:hover {
+  transform: scale(1.3);
+}
+/* NOUVEAU: Wrapper pour le deck en admin */
+.soluce-deck-wrapper {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.soluce-deck-content.hidden-soluce {
+  display: none;
+}
+
+.soluce-deck-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+#edit-card-modal input, 
+#edit-card-modal select, 
+#deck-modal-content input, 
+#deck-modal-content select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  margin-bottom: 0.75rem;
+}
+/* NOUVEAU: Style pour les inputs de type checkbox */
+#edit-card-modal input[type="checkbox"],
+#deck-modal-content input[type="checkbox"] {
+  width: auto;
+  margin-bottom: 0;
+}
+
+
+#edit-card-modal label, 
+#deck-modal-content label {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 0.25rem;
+  text-align: left;
+}
+
+.soluce-link-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #f472b6;
+  font-size: 1.25rem;
+  pointer-events: none;
+}
+
+.result-vignette {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  text-align: center;
+  max-width: 100px;
+  min-width: 80px;
+  margin: 0.25rem;
+}
+
+.result-vignette.success {
+  border: 2px solid #10B981;
+}
+
+.result-vignette.error {
+  border: 2px solid #EF4444;
+}
+
+.result-vignette img {
+  width: 100%;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.result-vignette .result-status {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.result-vignette.success .result-status {
+  color: #10B981;
+}
+
+.result-vignette.error .result-status {
+  color: #EF4444;
+}
+
+.add-card-btn {
+  width: 120px;
+  height: 160px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+}
+
+.add-card-btn:hover {
+  border-color: #34d399;
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.add-card-btn svg {
+  width: 40px;
+  height: 40px;
+  stroke: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.add-card-btn:hover svg {
+  stroke: #34d399;
+  transform: scale(1.1);
+}
+
+.color-swatch {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-swatch.selected {
+  border-color: #ffffff;
+  transform: scale(1.1);
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+#alert-modal-text {
+  white-space: pre-wrap;
+}
+
+/* NOUVEAU: Zone de drop pour images */
+.drop-zone {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  margin-bottom: 0.75rem;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #34d399;
+}
+.drop-zone-preview {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+.drop-zone-preview.hidden {
+  display: none;
+}
+
+/* NOUVEAU: Styles pour l'écran des scores (vignettes) */
+.score-recap-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.score-vignette {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.score-vignette:hover {
+  transform: scale(1.05);
+}
+.score-vignette.success {
+  border-color: #10B981;
+}
+.score-vignette.error {
+  border-color: #EF4444;
+}
+.delete-score-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(239, 68, 68, 0.4);
+  color: white;
+  border: 1px solid #ef4444;
+  border-radius: 99px;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+  display: none; /* MODIFIÉ: Caché par défaut */
+}
+.delete-score-btn:hover {
+  background: rgba(239, 68, 68, 0.8);
+  transform: scale(1.1);
+}
+/* NOUVEAU: Checkbox de sélection de score */
+.score-select-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  accent-color: #ec4899;
+  z-index: 10;
+  cursor: pointer;
+}
+
+/* NOUVEAU: Style pour les boutons de taille de deck désactivés */
+.deck-size-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #4b5563; /* Gris */
+}
+.deck-size-btn:disabled:hover {
+  background-color: #4b5563; /* Empêche le hover */
+}
+
+/* ----------------------------------------------------------------------
+  STYLES MANQUANTS AJOUTÉS
+----------------------------------------------------------------------
+*/
+
+/* NOUVEAU: Styles pour les cartes "Texte Seul" */
+.text-only-card {
+  margin: auto 0; /* Centre verticalement le texte */
+  font-size: 1.5rem; /* Agrandit le texte */
+  line-height: 2rem;
+  padding-bottom: 20%; /* Remonte un peu le texte */
+}
+
+.soluce-text-only-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 0.75rem;
+  color: #ccc;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.recap-text-only-placeholder {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: #444;
+  border-radius: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.result-vignette.success .recap-text-only-placeholder { background: #10B981; color: white; }
+.result-vignette.error .recap-text-only-placeholder { background: #EF4444; color: white; }
+
+/* NOUVEAU: Styles pour les Tags de Deck */
+.deck-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.5rem;
+  margin-top: 0.75rem;
+}
+.deck-card-tags span {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  color: #ccc;
+}
+
+/* NOUVEAU: Style pour les vignettes de score texte seul */
+.score-vignette.vignette-text-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+.score-vignette.vignette-text-only.success { color: #10B981; }
+.score-vignette.vignette-text-only.error { color: #EF4444; }

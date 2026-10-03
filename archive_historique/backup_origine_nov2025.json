@@ -1,0 +1,354 @@
+{
+  "decks": [
+    [
+      {
+        "id": "48e087d0-7453-48c2-b2a1-ebebd3c5d959",
+        "text": "Trans or Girl ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "3e021c3f-b753-4873-aa94-1d555984688d",
+        "text": "Manger de la pizza (GAUCHE) ou faire du sport (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "5513c270-d0b0-434c-a8b8-dc2e491b1b06",
+        "text": "La Terre est plate (GAUCHE) ou ronde (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "880eb6cf-f9dc-4e61-80ee-be1e0d7749e5",
+        "text": "Voyager dans le passé (GAUCHE) ou futur (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "6af4853a-998a-485a-a55c-7a5bfde681e8",
+        "text": "Un chat (GAUCHE) ou un chien (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "af25e43a-b43f-418c-b315-7b1c6413450d",
+        "text": "Lire un livre (GAUCHE) ou regarder un film (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "b0e85505-a175-4be7-adde-509cda0cc18f",
+        "text": "Montagne (GAUCHE) ou plage (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "8422f479-bfd6-429f-89fa-f31b4bb7a214",
+        "text": "Riche (GAUCHE) ou célèbre (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "f85a65dd-a749-440b-91b4-d02515462aee",
+        "text": "Sucré (GAUCHE) ou salé (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "722cd88c-8230-4535-a7b1-f0f1e4dcceff",
+        "text": "Télétravail (GAUCHE) ou bureau (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "b4ffaa1c-f9ee-4112-b5ca-c0a4b79c2011",
+        "text": "Ville (GAUCHE) ou Campagne (DROITE) ?",
+        "correct": "left",
+        "img": "https://placehold.co/400x550/6B7280/FFFFFF?text=Ville+vs+Campagne",
+        "soluceLink": "https://fr.wikipedia.org/wiki/Ville"
+      },
+      {
+        "id": "b55f072d-91cb-4440-8d84-9246cb582fed",
+        "text": "Hiver (GAUCHE) ou Été (DROITE) ?",
+        "correct": "right",
+        "img": "https://placehold.co/400x550/EAB308/000000?text=Hiver+vs+Ete",
+        "soluceLink": ""
+      },
+      {
+        "id": "c27e6c06-6ee4-437f-a956-c32dc74b7152",
+        "text": "Réveil matinal (GAUCHE) ou grasse matinée (DROITE) ?",
+        "correct": "right",
+        "img": "https://placehold.co/400x550/F59E0B/FFFFFF?text=Reveil+vs+Grasse+Mat",
+        "soluceLink": ""
+      },
+      {
+        "id": "680a838f-b9c5-4c51-bb00-260b4631bd1a",
+        "text": "Écrire à la main (GAUCHE) ou taper (DROITE) ?",
+        "correct": "right",
+        "img": "https://placehold.co/400x550/A78BFA/FFFFFF?text=Main+vs+Taper",
+        "soluceLink": ""
+      },
+      {
+        "id": "54029074-bd5b-4248-a37e-47da7e984e9f",
+        "text": "Voiture (GAUCHE) ou Vélo (DROITE) ?",
+        "correct": "right",
+        "img": "https://placehold.co/400x550/3B82F6/FFFFFF?text=Voiture+vs+Velo",
+        "soluceLink": ""
+      }
+    ],
+    [
+      {
+        "id": "f157cfb7-1c43-44c9-a4ec-482a3614e8ef",
+        "text": "PC (GAUCHE) ou Console (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "c398a9df-7807-437b-bf09-9824ee57f6bc",
+        "text": "Star Wars (GAUCHE) ou Star Trek (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": "https://fr.wikipedia.org/wiki/Star_Wars"
+      },
+      {
+        "id": "8cd049e0-2ebd-40a6-8e08-b1bae851f05e",
+        "text": "Marvel (GAUCHE) ou DC (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "f899087c-b9b1-4d35-9763-335343c3c7fa",
+        "text": "PlayStation (GAUCHE) ou Xbox (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "cc3f8bb4-e16c-4a58-ab0c-0e31c720610c",
+        "text": "iPhone (GAUCHE) ou Android (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "b6cdd8b8-7d46-48f6-a04c-5c7819536e80",
+        "text": "Dark Mode (GAUCHE) ou Light Mode (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "316ddf1c-b33b-488a-b7ef-8481607d0e0d",
+        "text": "Tabs (GAUCHE) ou Spaces (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "c83cf9fc-4a07-4e0e-81ef-1df597f187b4",
+        "text": "Windows (GAUCHE) ou Mac (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "6ea643d0-5d88-4f84-8eda-637aca1f82a4",
+        "text": "Netflix (GAUCHE) ou Disney+ (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "7325792a-afe4-49ad-a9cc-d1754ab3aa8e",
+        "text": "RPG (GAUCHE) ou FPS (DROITE) ?",
+        "correct": "left",
+        "img": "httpss://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "89e3e29f-b994-4a68-8da3-8b8ba51c055c",
+        "text": "Clavier QWERTY (GAUCHE) ou AZERTY (DROITE) ?",
+        "correct": "right",
+        "img": "https://placehold.co/400x550/DC2626/FFFFFF?text=QWERTY+vs+AZERTY",
+        "soluceLink": ""
+      },
+      {
+        "id": "8c6b4763-2be2-45db-aaad-fb6f16fedff5",
+        "text": "Front-end (GAUCHE) ou Back-end (DROITE) ?",
+        "correct": "left",
+        "img": "https://placehold.co/400x550/3B82F6/FFFFFF?text=Front+vs+Back",
+        "soluceLink": ""
+      },
+      {
+        "id": "7e7fdc2e-9e50-4e54-b699-3386f2f399ea",
+        "text": "IA (GAUCHE) ou Robotique (DROITE) ?",
+        "correct": "left",
+        "img": "https://placehold.co/400x550/6B7280/FFFFFF?text=IA+vs+Robots",
+        "soluceLink": ""
+      },
+      {
+        "id": "13989278-c05d-4bbd-b3b3-a2f8106be66e",
+        "text": "Open Source (GAUCHE) ou Propriétaire (DROITE) ?",
+        "correct": "left",
+        "img": "https://placehold.co/400x550/22C55E/FFFFFF?text=Open+vs+Proprio",
+        "soluceLink": ""
+      },
+      {
+        "id": "6d4bf036-13b4-4702-9baa-7915641918f0",
+        "text": "Manga (GAUCHE) ou Comics (DROITE) ?",
+        "correct": "left",
+        "img": "https://placehold.co/400x550/F97316/FFFFFF?text=Manga+vs+Comics",
+        "soluceLink": ""
+      }
+    ],
+    [
+      {
+        "id": "5601740f-0c50-4afc-998e-0680e40b8591",
+        "text": "Café (GAUCHE) ou Thé (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "b869c377-3ce8-4109-a480-3bd2815f3777",
+        "text": "Matin (GAUCHE) ou Soir (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "0b78f586-e831-4e8f-b8c9-2548cffaf6cc",
+        "text": "Été (GAUCHE) ou Hiver (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "281264de-a37b-4acf-a524-758b86f58504",
+        "text": "Ville (GAUCHE) ou Campagne (DROITE) ?",
+        "correct": "left",
+        "img": "httpss://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "f469ba8e-62ea-4079-8030-6f5bf5ade418",
+        "text": "Douche (GAUCHE) ou Bain (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "ae6ed050-f6ca-493f-ba52-c3f5ef8fe303",
+        "text": "Chiens (GAUCHE) ou Chats (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "b46590ac-d69d-4a41-970f-4c494f1222bc",
+        "text": "Spotify (GAUCHE) ou Apple Music (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "c471369b-ed1d-4732-8ba8-76d17730bb7f",
+        "text": "Restaurant (GAUCHE) ou Fast-food (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "e690dd44-ccd6-4372-9fe9-0d0bc9d4a8f0",
+        "text": "Voiture (GAUCHE) ou Transports en commun (DROITE) ?",
+        "correct": "left",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "546b4938-fb64-476a-9c8b-81bdedf09e86",
+        "text": "Sortir (GAUCHE) ou Rester chez soi (DROITE) ?",
+        "correct": "right",
+        "img": "https://pbs.twimg.com/media/G5KxekAWAAAawBF?format=jpg&name=large",
+        "soluceLink": ""
+      },
+      {
+        "id": "91e3e904-934c-476d-8eb8-d759b062553f",
+        "text": "Vivre à la mer (GAUCHE) ou à la montagne (DROITE) ?",
+        "correct": "right",
+        "img": "https://placehold.co/400x550/10B981/FFFFFF?text=Mer+vs+Montagne",
+        "soluceLink": ""
+      },
+      {
+        "id": "67577bf7-96a1-4c53-83ef-e7ab8856476d",
+        "text": "Argent liquide (GAUCHE) ou Carte bancaire (DROITE) ?",
+        "correct": "right",
+        "img": "https://placehold.co/400x550/FBBF24/000000?text=Cash+vs+Carte",
+        "soluceLink": ""
+      },
+      {
+        "id": "13f134b4-89cf-4017-8dad-abaad0330d9e",
+        "text": "Voyage en sac à dos (GAUCHE) ou hôtel de luxe (DROITE) ?",
+        "correct": "left",
+        "img": "httpss://placehold.co/400x550/8B5CF6/FFFFFF?text=Sac+vs+Luxe",
+        "soluceLink": ""
+      },
+      {
+        "id": "3d60d8cb-7bed-4b12-8c4c-a266f0451b1e",
+        "text": "Chocolat noir (GAUCHE) ou au lait (DROITE) ?",
+        "correct": "left",
+        "img": "https://placehold.co/400x550/78350F/FFFFFF?text=Noir+vs+Lait",
+        "soluceLink": ""
+      },
+      {
+        "id": "87c9eaf0-05ee-4db9-9d54-34ffbf850787",
+        "text": "Écouter de la musique (GAUCHE) ou des podcasts (DROITE) ?",
+        "correct": "left",
+        "img": "https://placehold.co/400x550/A78BFA/FFFFFF?text=Musique+vs+Podcast",
+        "soluceLink": ""
+      }
+    ]
+  ],
+  "info": [
+    {
+      "name": "Deck Classic",
+      "emoji": "🧜🏻",
+      "color": "purple",
+      "titleColor": "text-purple-400",
+      "cardBorder": "border-purple-400/30",
+      "indicatorLeft": "TRANS",
+      "indicatorRight": "GIRL"
+    },
+    {
+      "name": "Deck Hardcore",
+      "emoji": "🧚🏻",
+      "color": "cyan",
+      "titleColor": "text-cyan-400",
+      "cardBorder": "border-cyan-400/30",
+      "indicatorLeft": "PC",
+      "indicatorRight": "CONSOLE"
+    },
+    {
+      "name": "Deck Cosplay",
+      "emoji": "🧝🏻‍♀️",
+      "color": "pink",
+      "titleColor": "text-pink-400",
+      "cardBorder": "border-pink-400/30",
+      "indicatorLeft": "COSPLAY",
+      "indicatorRight": "IRL"
+    }
+  ]
+}

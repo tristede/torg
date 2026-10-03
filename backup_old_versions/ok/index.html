@@ -1,0 +1,785 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <!-- CSP - Autorise les images de multiples sources -->
+  <meta
+  http-equiv="Content-Security-Policy"
+  content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.tailwindcss.com https://apis.google.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' https://placehold.co https://firebasestorage.googleapis.com https://pbs.twimg.com https://i0.wp.com https://wp.com data: blob:;
+    connect-src 'self'
+      https://firestore.googleapis.com
+      wss://firestore.googleapis.com
+      https://firebase.googleapis.com
+      https://firebasestorage.googleapis.com
+      https://www.gstatic.com
+      https://identitytoolkit.googleapis.com
+      https://securetoken.googleapis.com
+      https://us-central1-torg-31596.cloudfunctions.net;
+    frame-src 'self' https://*.firebaseapp.com;
+    object-src 'none';
+  ">
+  <title>SWIPR Alpha</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎰</text></svg>">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Base Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Font pour l'arabe (Darija) -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Font pour l'Amazigh (Tifinagh) -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tifinagh&display=swap" rel="stylesheet">
+  
+  <!-- Font pour le Japonais -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Space Mono", "monospace"],
+            mono: ["Space Mono", "monospace"],
+            arabic: ["Tajawal", "sans-serif"],
+            tifinagh: ["Noto Sans Tifinagh", "sans-serif"],
+            jp: ["Noto Sans JP", "sans-serif"],
+          },
+          colors: {
+            "neon-pink": "#ff00ff",
+            "neon-white": "#ffffff",
+            "neon-dark": "#050505",
+            "neon-dim": "#440044",
+          },
+        },
+      },
+    };
+  </script>
+  
+  <!-- Styles personnalisés -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- ✅ TRANSLATIONS.JS - CHARGE AVANT APP.JS -->
+  <script src="translations.js" defer></script>
+  
+  <!-- App Script -->
+  <script src="app.js" type="module" defer></script>
+  
+</head>
+
+<body class="bg-dark-bg text-gray-200 font-mono overflow-hidden selection:bg-neon-pink selection:text-black">
+  
+  <!-- Effets Visuels de fond -->
+  <div class="crt-overlay pointer-events-none"></div>
+  <div class="grid-background pointer-events-none"></div>
+  
+  <!-- Overlays Gradient Pour les effets de swipe -->
+  <div id="overlay-left" class="overlay-gradient pointer-events-none"></div>
+  <div id="overlay-right" class="overlay-gradient pointer-events-none"></div>
+
+    <!-- 🔥 Dégradés latéraux dynamiques -->
+  <div id="swipe-gradient-left"  class="swipe-gradient swipe-gradient-left"></div>
+  <div id="swipe-gradient-right" class="swipe-gradient swipe-gradient-right"></div>
+  
+  <!-- HEADER -->
+  <header class="flex items-center justify-between mb-2 px-4 pt-4 pb-4 relative flex-shrink-0 z-50 border-b border-white/10 bg-dark-bg/80 backdrop-blur-sm">
+    <!-- Bouton Admin -->
+    <div class="flex-shrink-0 w-24 text-left">
+      <button id="btn-header-admin" class="cyber-btn-small text-10px px-2 py-1">SYS.ADMIN</button>
+    </div>
+    
+<!-- LOGO IMAGE - Cliquer pour decks -->
+<div id="logo-click"
+     class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 logo-container group cursor-default z-10">
+  <img src="Logo Swipr.webp" alt="SWIPR"
+       class="h-16 md:h-20 object-contain drop-shadow-0015px_rgba(255,0,255,0.4)
+              transition-transform hover:scale-105 duration-300">
+</div>
+    
+    <!-- Groupe Droite: Langues + Info Joueur -->
+    <div class="flex-shrink-0 w-auto flex items-center justify-end gap-3 rtl:text-left rtl:flex-row-reverse">
+      <!-- SÉLECTEUR DE LANGUE (MENU DÉROULANT) -->
+      <div class="relative group">
+        <select id="lang-selector" class="header-select cyber-input text-xs sm:text-sm font-bold cursor-pointer uppercase appearance-none pr-8 pl-2 py-1 focus:border-neon-pink focus:shadow-[0_0_10px_#ff00ff]">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="ja" class="font-jp">🇯🇵 日本語</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="ma">🇲🇦 Darija</option>
+          <option value="ht">🇭🇹 Kreyòl</option>
+         <!--<option value="zgh" class="font-tifinagh">Amazigh</option>-->
+         <!--<option value="zh">🇨🇳 Chinois (Pinyin)</option>-->
+        </select>
+        <!-- Flèche custom pour le select -->
+        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-white group-hover:text-neon-pink transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+      </div>
+      
+      <!-- Info Joueur -->
+      <div class="text-10px text-neon-pink flex flex-col items-end rtl:items-start min-w-[60px]">
+        <span class="opacity-50 text-white" data-i18n="userId">ID</span>
+        <span id="player-display" class="truncate font-bold max-w-[80px]">GUEST</span>
+      </div>
+    </div>
+  </header>
+  
+  <!-- MAIN CONTAINER -->
+  <main class="relative z-10 w-full flex-1 flex flex-col p-4 overflow-hidden">
+    
+    <!-- 1. ÉCRAN D'INTRODUCTION -->
+    <section id="intro-screen" class="screen active z-40 justify-center items-center">
+      <div class="w-full max-w-md text-center mx-auto cyber-panel p-8">
+        <h2 class="text-2xl font-bold mb-6 text-white uppercase tracking-widest border-b border-neon-pink pb-2 inline-block" data-i18n="loginTitle">Login Sequence</h2>
+        <p class="text-xs text-gray-400 mb-6 font-mono" data-i18n="loginSubtitle">Identification required.</p>
+        
+        <input id="player-name" class="cyber-input w-full mb-6 text-center text-lg" type="text" maxlength="24" placeholder="PSEUDO" data-i18n-placeholder="pseudo">
+        
+        <div class="flex gap-4 justify-center flex-col sm:flex-row">
+          <button id="btn-start" class="cyber-btn border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black" data-i18n="btnInit">INITIALISER</button>
+          <button id="btn-view-scores" class="cyber-btn border-white text-white hover:border-neon-pink hover:text-neon-pink" data-i18n="btnDatabase">DATABASE</button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 2. ÉCRAN DE SÉLECTION DE DECK -->
+    <section id="deck-screen" class="screen hidden-screen z-35 flex-col h-full overflow-hidden p-0">
+      <div class="w-full max-w-5xl mx-auto flex flex-col h-full">
+        <!-- Zone Scrollable -->
+        <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+         
+          <h2 class="text-xl font-bold uppercase tracking-widest text-white" data-i18n="selectModule">Select Module</h2>
+          
+          <div id="deck-tag-filter-bar" class="flex gap-2 mb-6 flex-wrap justify-center flex-shrink-0 hidden"></div>
+          <div id="deck-selection-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8"></div>
+        </div>
+        
+        <!-- Footer Fixe -->
+        <div class="w-full p-4 bg-dark-bg border-t border-white/10 shrink-0 z-50 flex justify-center gap-3">
+          <button id="btn-view-scores-from-deck" class="cyber-btn-small" data-i18n="btnScores">SCORES</button>
+          <button id="btn-view-public-soluce" class="cyber-btn-small border-neon-pink text-neon-pink" data-i18n="btnArchives">ARCHIVES</button>
+          <button id="btn-change-player" class="cyber-btn-small border-red-500 text-red-500" data-i18n="btnLogout">LOGOUT</button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 3. ÉCRAN DE JEU -->
+    <section id="game-screen" class="screen hidden-screen z-30 flex-col justify-center items-center">
+      <div class="flex justify-between w-full mb-4 items-center px-2 flex-shrink-0 font-mono text-xs md:text-sm">
+        <div class="cyber-badge border-neon-pink text-neon-pink">
+          <span data-i18n="pts">PTS</span>
+          <span id="score-display">0</span>
+        </div>
+        <div class="cyber-badge border-white text-white">
+          DATA <span id="index-display">1/10</span>
+        </div> 
+        <button id="btn-quit-game" class="cyber-btn-small border-red-500 text-red-500 hover:bg-red-500 hover:text-black" data-i18n="btnAbort">ABORT</button>
+      </div>
+      
+     <!-- Conteneur Carte -->
+  <div id="card-holder" class="relative w-full max-w-lg mx-auto h-[500px] flex items-center justify-center px-2 perspective-1000">
+  <div id="indicator-left" class="swipe-indicator text-white border-white bg-black/80">GAUCHE</div>
+  <div id="indicator-right" class="swipe-indicator text-neon-pink border-neon-pink bg-black/80">DROITE</div>
+  
+  <div id="card" class="card-container w-auto h-full bg-black border-2 border-white/20 rounded-2xl shadow-[0_0_20px_rgba(255,0,255,0.2)]">
+
+    <!-- Déco coins
+    <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-neon-pink z-10"></div>
+    <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-neon-pink z-10"></div>
+    <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-neon-pink z-10"></div>
+    <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-neon-pink z-10"></div> -->
+    
+    <!-- Contenu de la carte -->
+<div class="w-full h-full relative overflow-hidden" style="aspect-ratio: 5/7; width: auto; margin: auto;">
+  <div id="card-image-wrapper" class="card-container-inner rounded-2xl overflow-hidden">
+    <img
+      id="card-image"
+      src=""
+      alt="CARD"
+      class="card-img-optimized w-full h-full object-cover"
+    />
+  </div>
+</div>
+
+</div>
+      <!-- Scanline effect -->
+      <div class="absolute inset-0 bg-scanline pointer-events-none opacity-20"></div>
+    </div>
+    
+    <div class="absolute bottom-2 left-0 w-full text-center">
+      <p id="card-text" class="text-xs text-neon-pink font-mono opacity-70"></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOUTON IN GAME -->
+<div class="flex justify-center items-center gap-8 arrow-btn-container mx-auto mt-6">
+  <div class="flex items-center gap-2">
+    <button id="btn-arrow-left" class="arrow-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+           class="w-8 h-8 arrow-icon-left" fill="currentColor">
+        <path d="M15 19l-7-7 7-7"></path>
+      </svg>
+    </button>
+    <span id="arrow-left-label" class="text-xs font-mono text-neon-pink opacity-70"></span>
+  </div>
+
+  <button id="btn-zoom-card" class="arrow-btn-zoom">
+    <!-- zoom -->
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         stroke-width="2" stroke="currentColor" class="w-6 h-6 zoom-icon">
+      <path stroke-linecap="square" stroke-linejoin="miter"
+            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+    </svg>
+  </button>
+
+  <div class="flex items-center gap-2">
+    <span id="arrow-right-label" class="text-xs font-mono text-neon-pink opacity-70"></span>
+    <button id="btn-arrow-right" class="arrow-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+           class="w-8 h-8 arrow-icon-right" fill="currentColor">
+        <path d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+      
+      <!-- Overlay Fin de partie -->
+      <div id="end-overlay" class="absolute inset-0 flex-col justify-center items-center text-center hidden z-40 bg-dark-bg/95 p-6 overflow-y-auto backdrop-blur-xl">
+        <h2 class="text-4xl font-black text-neon-pink mb-6 glitch-text" data-text="GAME OVER" data-i18n="gameover">GAME OVER</h2>
+        
+                <!-- Deck et Mode -->
+        <div class="flex gap-4 justify-center mb-6 text-sm uppercase">
+            <div id="end-deck-info" class="flex items-center gap-2">
+                <span id="end-deck-emoji" style="font-size: 1.5rem;"></span>
+                <span id="end-deck-name" class="text-neon-pink font-bold"></span>
+            </div>
+            <div id="end-mode-info" class="text-gray-400">
+                <span id="end-mode-label">NORMAL</span>
+            </div>
+        </div>
+
+        <div class="circular-gauge mx-auto mb-6 relative">
+          <svg viewBox="0 0 200 200" width="200" height="200">
+            <circle class="gauge-bg stroke-gray-800" cx="100" cy="100" r="80" stroke-width="15"></circle>
+            <circle id="gauge-circle" class="gauge-progress stroke-neon-pink" cx="100" cy="100" r="80" stroke-width="15" stroke-dasharray="502.65" stroke-dashoffset="502.65"></circle>
+          </svg>
+          <div class="gauge-center flex flex-col items-center">
+            <div class="text-4xl font-black text-white" id="gauge-percentage">0</div>
+            <div class="text-10px text-neon-pink uppercase tracking-widest bg-black px-2 mt-1 border border-neon-pink" data-i18n="accuracy">Accuracy</div>
+          </div>
+        </div>
+        
+        <p class="text-xs text-gray-500 mb-2 uppercase tracking-widest" data-i18n="classification">Classification</p>
+        <div id="result-message" class="text-xl font-bold mb-6 px-6 py-2 border-2 border-neon-pink text-neon-pink uppercase bg-black"></div>
+        
+        <div id="error-recap" class="w-full mb-4 p-2 bg-black border border-white/10 rounded-lg relative z-10">
+                  <p id="recap-title" class="text-xs font-bold text-gray-400 mb-2 uppercase text-left border-b border-white/10 pb-1 flex items-center gap-2" data-i18n="logErrors">Errors</p>
+                  <div id="recap-list" class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar"></div>
+              </div>
+        
+        <div class="flex gap-3 justify-center flex-wrap w-full max-w-md mx-auto">
+          <button id="btn-choose-deck" class="cyber-btn flex-1 border-white text-white hover:bg-white hover:text-black" data-i18n="btnMenu">MENU</button>
+          <button id="btn-replay" class="cyber-btn flex-1 border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black" data-i18n="btnRetry">RETRY</button>
+          <button id="btn-view-scores-from-game" class="cyber-btn flex-1 border-gray-500 text-gray-500 hover:border-white hover:text-white" data-i18n="btnScores">SCORES</button>
+        </div>
+      </div>
+      
+      <div id="message-box" class="mt-4 p-2 border border-yellow-500 text-yellow-500 bg-black/80 text-center hidden font-mono text-xs"></div>
+    </section>
+    
+<!-- 4. ÉCRAN DES SCORES -->
+<section id="scores-screen" class="screen hidden-screen p-6 z-20 flex-col items-start bg-dark-bg">
+  <div class="w-full max-w-3xl mx-auto flex flex-col h-full cyber-panel p-6">
+    <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-4 relative">
+      <h3 class="text-xl font-bold uppercase tracking-widest text-white">
+        <span class="text-neon-pink">DB</span>SCORES
+      </h3>
+
+      <input
+        type="text"
+        id="scores-search-input"
+        placeholder="🔍"
+        class="cyber-btn-small"
+        data-i18n="search_scores_placeholder"
+        style="position: absolute; left: 50%; transform: translateX(-50%); width: 180px; padding: 0.4rem 0.8rem; font-size: 0.85rem;"
+      >
+
+      <!-- bouton mode à côté de RETOUR -->
+      <div class="flex items-center gap-7">
+    <button id="btn-score-mode-toggle" class="cyber-btn-small">MODE: NORMAL</button>
+    <button id="btn-back-from-scores" class="cyber-btn-small" data-i18n="btnBack">BACK</button>
+  </div>
+    </div>
+
+
+    <div id="score-management-tools" class="hidden flex-shrink-0 w-full flex justify-between items-center mb-4 p-3 border border-red-500/30 bg-red-900/10">
+      <div class="flex items-center gap-3">
+        <button id="btn-select-all-scores" class="text-xs text-red-300 hover:text-white underline" data-i18n="btnAll">TOUT</button>
+        <button id="btn-deselect-all-scores" class="text-xs text-red-300 hover:text-white underline" data-i18n="btnNone">RIEN</button>
+      </div>
+      <button id="btn-delete-selected-scores" class="text-xs bg-red-600 text-white px-3 py-1 font-bold hover:bg-red-500" data-i18n="btnDelete">SUPPRIMER</button>
+    </div>
+    
+    <!-- Boutons de filtre (APRÈS la barre de recherche) -->
+    <div id="score-filter-buttons" class="flex gap-2 mb-4 flex-wrap flex-shrink-0">
+      <button id="btn-filter-all" class="cyber-filter-btn active">ALLDATA</button>
+    </div>
+    
+    <div id="scores-list" class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar"></div>
+  </div>
+</section>
+
+    <section id="soluce-screen" class="screen hidden-screen z-20 flex-col h-full overflow-hidden p-0">
+  <div class="w-full max-w-6xl mx-auto flex flex-col h-full">
+    
+    <!-- PAGE admin -->
+    <div class="cyber-panel p-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-white/10">
+      <h3 class="text-xl font-bold uppercase text-neon-pink">ROOTACCESS</h3>
+      <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
+        <button id="btn-toggle-edit" class="cyber-btn-small border-neon-pink text-neon-pink">EDITMODE</button>
+        <button id="btn-add-deck" class="cyber-btn-small border-white text-white">NEWDECK</button>
+        <button id="btn-force-refresh" class="cyber-btn-small border-green-500 text-green-500 hover:bg-green-500 hover:text-black" title="Forcer la synchronisation Firestore">🔄 SYNC</button>
+        <button id="btn-manage-scores" class="cyber-btn-small border-yellow-500 text-yellow-500 hidden">DATABASE</button>
+        <button id="btn-view-stats" class="cyber-btn-small border-white text-white hidden">STATS</button>
+        <button id="btn-export-data" class="cyber-btn-small hidden">EXTRAIREDECKS</button>
+        <button id="btn-import-data" class="cyber-btn-small hidden">IMPORTDECKS</button>
+        <input type="file" id="import-file-input" class="hidden" accept=".json">
+        <button id="btn-back-from-soluce-admin" class="cyber-btn-small bg-white text-black font-bold hover:bg-gray-200" data-i18n="btnExit">EXIT</button>
+      </div>
+    </div>
+
+    <!-- Zone Scrollable -->
+    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      <p id="soluce-info-text" class="text-xs text-gray-400 mb-4 font-mono px-2">
+        Mode administrateur activé.
+      </p>
+
+      <!-- grille des decks admin (comme public mais avec outils d’édition) -->
+      <div id="soluce-gallery-container" class="admin-deck-grid pb-20"></div>
+    </div>
+
+    <!-- Footer fixe -->
+    <div class="w-full p-3 bg-dark-bg border-t border-white/10 shrink-0 z-50 flex justify-between items-center text-[10px] text-gray-500 px-4">
+      <span>Click = éditer deck/cartes</span>
+      <span>SHIFT + click = ouvrir les cartes</span>
+    </div>
+  </div>
+</section>
+
+    
+    <!-- 6. ÉCRAN PUBLIC SOLUCE (nouvelle version) -->
+<section id="public-soluce-screen" class="screen hidden-screen z-20 flex-col h-full overflow-hidden p-0">
+  <div class="w-full max-w-5xl mx-auto flex flex-col h-full">
+    <!-- Zone Scrollable -->
+    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      <h2 class="text-xl font-bold uppercase tracking-widest text-neon-pink">
+        ARCHIVES
+      </h2>
+
+      <!-- barre de tags si tu veux plus tard -->
+      <div id="public-deck-tag-filter-bar" class="flex gap-2 mb-6 flex-wrap justify-center flex-shrink-0 hidden"></div>
+
+      <!-- grille de decks publique -->
+      <div id="public-deck-selection-grid"
+           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="w-full p-4 bg-dark-bg border-t border-white/10 shrink-0 z-50 flex justify-center">
+      <button id="btn-back-from-public-soluce" class="cyber-btn-small">BACK</button>
+    </div>
+  </div>
+</section>
+
+    
+    <!-- 7. ÉCRAN STATISTIQUES -->
+    <section id="stats-screen" class="screen hidden-screen p-6 z-20 flex-col items-start">
+      <div class="w-full max-w-5xl mx-auto flex flex-col h-full cyber-panel p-6">
+        <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+          <h3 class="text-xl font-bold uppercase text-neon-pink">ANALYTICS</h3>
+          <button id="btn-back-from-stats" class="cyber-btn-small">BACK</button>
+        </div>
+        
+        <div class="mb-6 flex gap-3">
+          <button id="btn-recalculate-stats" class="cyber-btn-small border-neon-pink text-neon-pink">CALCULER</button>
+          <button id="btn-reset-stats" class="cyber-btn-small border-red-500 text-red-500">RESET</button>
+        </div>
+        
+        <div id="stats-output" class="flex-1 overflow-y-auto custom-scrollbar">
+          <div id="stats-loader" class="text-center p-8 hidden text-neon-pink animate-pulse">COMPUTING...</div>
+          <div id="stats-results-container"></div>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+  
+  <!-- MODALES -->
+  
+  <!-- Modale Connexion Admin -->
+  <div id="password-modal" class="base-modal">
+    <span id="btn-close-password-modal" class="close-btn">×</span>
+    <div id="password-modal-content" class="cyber-modal w-full max-w-xs text-center">
+      <h4 class="text-lg font-bold mb-4 text-neon-pink uppercase">AdminAuth</h4>
+      <input type="email" id="admin-email-input" placeholder="USER" class="cyber-input w-full mb-3">
+      <input type="password" id="admin-password-input" placeholder="PASS" class="cyber-input w-full mb-6">
+      <button id="btn-admin-login" class="cyber-btn w-full border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black mb-2">LOGIN</button>
+      <button id="btn-admin-create-account" class="text-xs text-gray-500 hover:text-white underline">Create Root User</button>
+      <p id="password-error" class="text-xs text-red-500 mt-3 hidden bg-black p-1 border border-red-500">ACCESS DENIED</p>
+    </div>
+  </div>
+  
+  <!-- Modale Édition/Ajout de Carte -->
+  <div id="edit-card-modal" class="base-modal">
+    <span id="btn-close-edit-modal" class="close-btn">×</span>
+    <div id="edit-modal-content" class="cyber-modal w-full max-w-lg flex flex-col h-90vh">
+      <h4 id="edit-modal-title" class="text-xl font-bold mb-4 text-neon-pink uppercase border-b border-white/20 pb-2">EditNode</h4>
+      <form id="card-form" class="flex flex-col flex-grow min-h-0" onsubmit="return false;">
+        <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar space-y-4">
+          <input type="hidden" id="edit-card-deck-index">
+          <input type="hidden" id="edit-card-id">
+          
+          <div>
+            <label class="text-xs text-neon-pink uppercase">TargetDeck</label>
+            <select id="edit-deck-select" class="cyber-input w-full"></select>
+          </div>
+          
+          <div>
+            <label class="text-xs text-neon-pink uppercase">QueryString</label>
+            <input type="text" id="edit-card-text" class="cyber-input w-full" placeholder="Text...">
+          </div>
+          
+          <div>
+            <label class="text-xs text-neon-pink uppercase">ImageSource</label>
+            <input type="url" id="edit-card-img" class="cyber-input w-full mb-2" placeholder="http...">
+                        <!-- Zone de collage du presse-papiers -->
+            <div class="mb-4 p-3 border border-dashed border-gray-600 rounded bg-black50">
+              <button 
+                type="button" 
+                id="btn-paste-image" 
+                class="cyber-btn-small border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black w-full"
+              >
+                📋 COLLER IMAGE (Ctrl+V)
+              </button>
+              <p class="text-xs text-gray-500 mt-2 text-center">Ou collez directement une image du presse-papiers</p>
+            </div>
+
+            <div id="drop-zone" class="border-2 border-dashed border-gray-600 hover:border-neon-pink p-4 text-center cursor-pointer bg-black/50 transition-colors">
+              <span id="drop-zone-text" class="text-xs text-gray-400">UPLOADBINARY</span>
+              <img id="drop-zone-preview" src="" alt="Preview" class="hidden max-h-32 mx-auto mt-2 border border-white">
+            </div>
+          </div>
+          
+          <div>
+            <label class="text-xs text-neon-pink uppercase">LinkRef</label>
+            <input type="url" id="edit-card-soluce-link" class="cyber-input w-full" placeholder="URL...">
+          </div>
+          
+          <div>
+            <label class="text-xs text-neon-pink uppercase">ExpectedValue</label>
+            <select id="edit-card-correct" class="cyber-input w-full">
+              <option value="left">LEFT 0</option>
+              <option value="right">RIGHT 1</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex gap-3 pt-4 border-t border-white/10 flex-shrink-0">
+          <button type="button" id="save-card-btn" class="cyber-btn flex-1 border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black">SAVE</button>
+          <button type="button" id="btn-delete-card" class="cyber-btn flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-black" style="display: none;">DELETE</button>
+          <button type="button" id="btn-cancel-edit-card" class="cyber-btn flex-1 border-gray-500 text-gray-500 hover:border-white hover:text-white">CANCEL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modale Deck -->
+  <div id="deck-modal" class="base-modal">
+    <span id="btn-close-deck-modal" class="close-btn">×</span>
+    <div id="deck-modal-content" class="cyber-modal w-full max-w-lg flex flex-col h-90vh">
+      <h4 id="deck-modal-title" class="text-xl font-bold mb-4 text-neon-pink uppercase border-b border-white/20 pb-2">DeckConfig</h4>
+      <form id="deck-form" class="flex flex-col flex-grow min-h-0" onsubmit="return false;">
+        <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar space-y-4">
+          <input type="hidden" id="edit-deck-id">
+          
+          <div class="grid grid-cols-4 gap-2">
+            <div class="col-span-3">
+              <label class="text-xs text-gray-500">NAME</label>
+              <input type="text" id="deck-name" required class="cyber-input w-full">
+            </div>
+            <div class="col-span-1">
+              <label class="text-xs text-gray-500">ICON</label>
+              <input type="text" id="deck-emoji" class="cyber-input w-full text-center">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs text-neon-pink">TRANSLATION ID</label>
+            <input type="text" id="deck-translation-key-input" class="cyber-input w-full text-xs font-mono text-neon-pink" data-deck-translation-key placeholder="decktransgirl">
+          </div>
+          
+          <div>
+            <label class="text-xs text-gray-500">SUBTITLE</label>
+            <input type="text" id="deck-subtitle" class="cyber-input w-full">
+          </div>
+          
+          <div>
+            <label class="text-xs text-gray-500">TAGS (comma separated)</label>
+            <input type="text" id="deck-tags" class="cyber-input w-full">
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs text-white">LEFTLABEL</label>
+              <input type="text" id="deck-indicator-left" required class="cyber-input w-full text-white">
+            </div>
+            <div>
+              <label class="text-xs text-neon-pink">RIGHTLABEL</label>
+              <input type="text" id="deck-indicator-right" required class="cyber-input w-full text-neon-pink">
+            </div>
+          </div>
+          
+          <!-- Color Pickers -->
+         <div class="space-y-4 border border-white/10 p-3 bg-white/5 mt-4 mb-4">
+      <h5 class="text-neon-pink font-bold text-sm border-b border-white/10 pb-1 mb-2">PERSONNALISATION</h5>
+      
+      <div>
+        <label class="text-xs text-gray-400 uppercase mb-1 block">COULEUR DU NOM</label>
+        <div id="deck-color-selector" class="color-selector-container"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-white uppercase mb-1 block">SWIPE GAUCHE</label>
+          <div id="deck-color-left-selector" class="color-selector-container"></div>
+        </div>
+        
+        <div>
+          <label class="text-xs text-neon-pink uppercase mb-1 block">SWIPE DROIT</label>
+          <div id="deck-color-right-selector" class="color-selector-container"></div>
+        </div>
+      </div>
+    </div>
+          
+          <div class="border border-white/10 p-2 bg-black/20">
+            <label class="text-xs text-yellow-500 block mb-2">ENDMESSAGES</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="deck-result-pct0" placeholder="0%" class="cyber-input w-full text-xs">
+              <input type="text" id="deck-result-pct100" placeholder="100%" class="cyber-input w-full text-xs">
+              <input type="text" id="deck-result-pct50" placeholder="50%" class="cyber-input w-full text-xs">
+              <input type="text" id="deck-result-default" placeholder="DEFAULT" class="cyber-input w-full text-xs">
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 border border-white/10 p-2">
+            <input type="checkbox" id="deck-is-private" class="accent-neon-pink">
+            <label for="deck-is-private" class="text-sm">RESTRICTED ACCESS (NSFW)</label>
+          </div>
+          
+          <div id="private-deck-password-group" class="hidden">
+            <input type="text" id="deck-password" pattern="[0-9]{4}" maxlength="4" placeholder="PIN (4 digits)" class="cyber-input w-full tracking-widest text-center">
+          </div>
+          
+          <div class="flex items-center gap-2 border border-white/10 p-2">
+            <input type="checkbox" id="deck-is-published" checked class="accent-neon-pink">
+            <label for="deck-is-published" class="text-sm">PUBLISHED</label>
+          </div>
+        </div>
+        
+        <div class="mt-4 flex gap-3 pt-4 border-t border-white/10 flex-shrink-0">
+          <button type="button" id="btn-save-deck" class="cyber-btn flex-1 border-neon-pink text-neon-pink hover:bg-neon-pink hover:text-black">WRITE</button>
+          <button type="button" id="btn-delete-deck" class="cyber-btn flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-black" style="display: none;">ERASE</button>
+          <button type="button" id="btn-cancel-deck" class="cyber-btn flex-1 border-gray-500 text-gray-500 hover:border-white hover:text-white">EXIT</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+<!-- Modale Zoom image - VERSION LIMITÉE -->
+<div id="image-modal" class="base-modal">
+  <span id="btn-close-image-modal" class="close-btn">x</span>
+
+  <!-- Conteneur vertical centré -->
+  <div class="w-full h-full flex flex-col items-center justify-center">
+    <!-- Bloc image -->
+    <div id="modal-content"
+         class="p-4 pb-2 border-neon-pink image-modal-container bg-transparent">
+      <img
+        id="modal-image"
+        src=""
+        alt="ZOOM"
+        class="image-modal-img"
+        style="max-width: 900px; max-height: 60vh; object-fit: contain;"
+      />
+    </div>
+
+  <span
+    id="btn-modal-soluce"
+    class="mt-2 text-2xs uppercase tracking-widest text-neon-pink cursor-pointer hidden text-center opacity-80 hover:opacity-50 transition-opacity"
+    data-i18n="btnSoluce">
+    SOLUCE
+  </span>
+  </div>
+</div>
+
+  
+  <!-- Modale Alerte -->
+  <div id="alert-modal" class="base-modal">
+    <span id="btn-close-alert-modal" class="close-btn">×</span>
+    <div id="alert-modal-content" class="cyber-modal w-full max-w-sm text-center border-2 border-red-500">
+      <h4 id="alert-modal-title" class="text-2xl font-bold mb-4 uppercase text-red-500 blink">ALERT</h4>
+      <p id="alert-modal-text" class="text-white mb-6 font-mono text-sm"></p>
+      <div id="alert-modal-buttons" class="flex gap-3 justify-center"></div>
+    </div>
+  </div>
+  
+  <!-- Modale Taille Deck -->
+  <div id="deck-size-modal" class="base-modal">
+    <span id="btn-close-deck-size-modal" class="close-btn">×</span>
+    <div id="deck-size-modal-content" class="cyber-modal w-full max-w-xs text-center">
+      <h4 class="text-lg font-bold mb-6 text-neon-pink uppercase" data-i18n="selectBatch">Select Batch Size</h4>
+      <div class="flex flex-col gap-3">
+        <button id="btn-deck-size-10" class="cyber-btn border-white text-white hover:bg-white hover:text-black">10 UNITS</button>
+        <button id="btn-deck-size-20" class="cyber-btn border-white text-white hover:bg-white hover:text-black">20 UNITS</button>
+        <button id="btn-deck-size-30" class="cyber-btn border-white text-white hover:bg-white hover:text-black">30 UNITS</button>
+        <button id="btn-deck-size-hardcore" class="cyber-btn border-white text-white hover:bg-red-500 hover:text-white font-bold">MODE HARDCORE</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modale PIN -->
+  <div id="private-deck-modal" class="base-modal">
+    <span id="btn-close-private-deck-modal" class="close-btn">×</span>
+    <div id="private-deck-modal-content" class="cyber-modal w-full max-w-xs text-center border-neon-pink">
+      <h4 class="text-xl font-bold mb-4 text-neon-pink">LOCKED</h4>
+      <input type="password" id="private-deck-password-input" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" class="cyber-input w-full mb-4 text-center text-2xl tracking-0.5em text-neon-pink border-neon-pink">
+      <button id="btn-unlock-private-deck" class="cyber-btn w-full bg-neon-pink text-black font-bold hover:bg-white">DECRYPT</button>
+      <p id="private-deck-error" class="text-xs text-red-500 mt-3 hidden">INVALID KEY</p>
+    </div>
+  </div>
+
+<!-- Modale Liste des cartes du deck - AVEC MODE SÉLECTION -->
+<div id="deck-cards-modal" class="base-modal">
+  <span id="btn-close-deck-cards-modal" class="close-btn">&times;</span>
+  <div id="deck-cards-modal-content" class="cyber-modal w-full max-w-4xl h-90vh flex flex-col">
+    
+    <!-- TITRE AVEC COMPTEUR -->
+    <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/20">
+      <h4 id="deck-cards-modal-title" class="text-xl font-bold text-neon-pink uppercase">
+        Liste des cartes
+      </h4>
+      <span id="admin-selection-count" class="text-xs text-neon-pink bg-black/40 px-3 py-1 rounded border border-neon-pink/50 hidden">
+        0 sélectionnée(s)
+      </span>
+    </div>
+
+    <!-- MODE SOLUCE/AGRANDIR + MODE ADMIN (TOUS DANS LA MÊME LIGNE) -->
+    <div class="flex items-center justify-end gap-2 mb-3 text-xs flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="opacity-60">Mode :</span>
+        <button id="deck-cards-mode-soluce" class="deck-cards-mode-btn deck-cards-mode-active">
+          SOLUCE
+        </button>
+        <button id="deck-cards-mode-zoom" class="deck-cards-mode-btn">
+          AGRANDIR
+        </button>
+      </div>
+
+      <!-- BOUTONS MODE CONSULTER/SÉLECTION (ADMIN) -->
+      <div id="admin-mode-controls" class="flex items-center gap-2 hidden">
+        <button id="btn-mode-view" class="deck-cards-mode-btn">
+          CONSULTER
+        </button>
+        <button id="btn-mode-select" class="deck-cards-mode-btn">
+          SÉLECTION
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTRÔLES SÉLECTION (TOUS, RIEN, SUPPRIMER) -->
+    <div id="admin-selection-controls" class="flex items-center justify-center gap-2 mb-3 pb-3 border-b border-white/10 hidden">
+      <button id="btn-select-all" class="cyber-btn border-neon-pink text-neon-pink text-xs px-3 py-1">
+        TOUS
+      </button>
+      <button id="btn-select-none" class="cyber-btn border-gray-500 text-gray-500 text-xs px-3 py-1">
+        RIEN
+      </button>
+      <button id="btn-delete-selected" class="cyber-btn border-red-500 text-red-500 text-xs px-3 py-1">
+        SUPPRIMER
+      </button>
+    </div>
+
+    <!-- GRILLE DE CARTES -->
+    <div id="deck-cards-modal-body" class="deck-cards-grid custom-scrollbar p-4 flex-1 overflow-y-auto">
+    </div>
+
+  </div>
+</div>
+
+
+  <!-- SCRIPT DE COMPATIBILITÉ POUR LE SÉLECTEUR DE LANGUE -->
+ <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const langSelect = document.getElementById('lang-selector');
+      
+      // Fonction pour appliquer les changements
+      const updateLanguageSettings = (lang) => {
+        // 1. Gestion de la police et de la direction
+        // On applique le mode "Arabe" (RTL + Font spécifique) UNIQUEMENT pour l'arabe classique ('ar')
+        // Pour le Darija ('ma'), on le traite comme du Français ou de l'Anglais (LTR + Space Mono)
+        if (lang === 'ar') {
+          document.body.setAttribute('dir', 'rtl');
+          document.body.classList.add('font-arabic');
+        } else {
+          // Pour tout le reste (ma, fr, en...), on reste en mode standard
+          document.body.setAttribute('dir', 'ltr');
+          document.body.classList.remove('font-arabic');
+        }
+
+        // 2. Gestion des polices spéciales (Japonais, Tifinagh...)
+        // On retire d'abord les classes spéciales pour repartir sur Space Mono
+        document.body.classList.remove('font-tifinagh', 'font-jp');
+
+        // On réapplique seulement si nécessaire
+        if (lang === 'zgh') document.body.classList.add('font-tifinagh');
+        if (lang === 'ja') document.body.classList.add('font-jp');
+      };
+
+      if (langSelect) {
+        langSelect.addEventListener('change', (e) => {
+          const selectedLang = e.target.value;
+          localStorage.setItem('swipr_lang', selectedLang);
+          
+          updateLanguageSettings(selectedLang);
+          
+          window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: selectedLang } }));
+        });
+        
+        // Appliquer au chargement si une langue était déjà sauvegardée
+        const savedLang = localStorage.getItem('swipr_lang');
+        if (savedLang) {
+            updateLanguageSettings(savedLang);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

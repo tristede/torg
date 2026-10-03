@@ -1,0 +1,307 @@
+{
+  "decks": [
+    {
+      "id": "aQQAczbcSqW1aDMhllWh",
+      "cards": [
+        {
+          "img": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCg0KPCEtLSBVcGxvYWRlZCB0bzogU1ZHIFJlcG8sIHd3dy5zdmdyZXBvLmNvbSwgR2VuZXJhdG9yOiBTVkcgUmVwbyBNaXhlciBUb29scyAtLT4KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJJY29ucyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgDQoJIHZpZXdCb3g9IjAgMCAzMiAzMiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPg0KCS5zdDB7ZmlsbDojRkZGRkZGO30NCgkuc3Qxe2ZpbGw6IzNBNTU5Rjt9DQoJLnN0MntmaWxsOiNGNEY0RjQ7fQ0KCS5zdDN7ZmlsbDojRkYwMDg0O30NCgkuc3Q0e2ZpbGw6IzAwNjNEQjt9DQoJLnN0NXtmaWxsOiMwMEFDRUQ7fQ0KCS5zdDZ7ZmlsbDojRkZFQzA2O30NCgkuc3Q3e2ZpbGw6I0ZGMDAwMDt9DQoJLnN0OHtmaWxsOiMyNUQzNjY7fQ0KCS5zdDl7ZmlsbDojMDA4OEZGO30NCgkuc3QxMHtmaWxsOiMzMTQzNTg7fQ0KCS5zdDExe2ZpbGw6I0VFNjk5Njt9DQoJLnN0MTJ7ZmlsbDojMDFBRUYzO30NCgkuc3QxM3tmaWxsOiNGRkZFRkY7fQ0KCS5zdDE0e2ZpbGw6I0YwNkEzNTt9DQoJLnN0MTV7ZmlsbDojMDBBREVGO30NCgkuc3QxNntmaWxsOiMxNzY5RkY7fQ0KCS5zdDE3e2ZpbGw6IzFBQjdFQTt9DQoJLnN0MTh7ZmlsbDojNjAwMUQxO30NCgkuc3QxOXtmaWxsOiNFNDEyMTQ7fQ0KCS5zdDIwe2ZpbGw6IzA1Q0U3ODt9DQoJLnN0MjF7ZmlsbDojN0I1MTlDO30NCgkuc3QyMntmaWxsOiNGRjQ1MDA7fQ0KCS5zdDIze2ZpbGw6IzAwRjA3Njt9DQoJLnN0MjR7ZmlsbDojRkZDOTAwO30NCgkuc3QyNXtmaWxsOiMwMEQ2RkY7fQ0KCS5zdDI2e2ZpbGw6I0ZGM0E0NDt9DQoJLnN0Mjd7ZmlsbDojRkY2QTM2O30NCgkuc3QyOHtmaWxsOiMwMDYxRkU7fQ0KCS5zdDI5e2ZpbGw6I0Y3OTgxQzt9DQoJLnN0MzB7ZmlsbDojRUUxQjIyO30NCgkuc3QzMXtmaWxsOiNFRjM1NjE7fQ0KCS5zdDMye2ZpbGw6bm9uZTtzdHJva2U6I0ZGRkZGRjtzdHJva2Utd2lkdGg6MjtzdHJva2UtbWl0ZXJsaW1pdDoxMDt9DQoJLnN0MzN7ZmlsbDojMDA5N0QzO30NCgkuc3QzNHtmaWxsOiMwMTMwOEE7fQ0KCS5zdDM1e2ZpbGw6IzAxOUNERTt9DQoJLnN0MzZ7ZmlsbDojRkZEMDQ5O30NCgkuc3QzN3tmaWxsOiMxNkEwNUQ7fQ0KCS5zdDM4e2ZpbGw6IzQ0ODZGNDt9DQoJLnN0Mzl7ZmlsbDpub25lO30NCgkuc3Q0MHtmaWxsOiMzNEE4NTM7fQ0KCS5zdDQxe2ZpbGw6IzQyODVGNDt9DQoJLnN0NDJ7ZmlsbDojRkJCQzA1O30NCgkuc3Q0M3tmaWxsOiNFQTQzMzU7fQ0KPC9zdHlsZT4NCjxwYXRoIGNsYXNzPSJzdDgiIGQ9Ik0xNywwQzguNywwLDIsNi43LDIsMTVjMCwzLjQsMS4xLDYuNiwzLjIsOS4ybC0yLjEsNi40Yy0wLjEsMC40LDAsMC44LDAuMywxLjFDMy41LDMxLjksMy44LDMyLDQsMzINCgljMC4xLDAsMC4zLDAsMC40LTAuMWw2LjktMy4xQzEzLjEsMjkuNiwxNSwzMCwxNywzMGM4LjMsMCwxNS02LjcsMTUtMTVTMjUuMywwLDE3LDB6Ii8+DQo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjUuNywyMC41Yy0wLjQsMS4yLTEuOSwyLjItMy4yLDIuNEMyMi4yLDIzLDIxLjksMjMsMjEuNSwyM2MtMC44LDAtMi0wLjItNC4xLTEuMWMtMi40LTEtNC44LTMuMS02LjctNS44DQoJTDEwLjcsMTZDMTAuMSwxNS4xLDksMTMuNCw5LDExLjZjMC0yLjIsMS4xLTMuMywxLjUtMy44YzAuNS0wLjUsMS4yLTAuOCwyLTAuOGMwLjIsMCwwLjMsMCwwLjUsMGMwLjcsMCwxLjIsMC4yLDEuNywxLjJsMC40LDAuOA0KCWMwLjMsMC44LDAuNywxLjcsMC44LDEuOGMwLjMsMC42LDAuMywxLjEsMCwxLjZjLTAuMSwwLjMtMC4zLDAuNS0wLjUsMC43Yy0wLjEsMC4yLTAuMiwwLjMtMC4zLDAuM2MtMC4xLDAuMS0wLjEsMC4xLTAuMiwwLjINCgljMC4zLDAuNSwwLjksMS40LDEuNywyLjFjMS4yLDEuMSwyLjEsMS40LDIuNiwxLjZsMCwwYzAuMi0wLjIsMC40LTAuNiwwLjctMC45bDAuMS0wLjJjMC41LTAuNywxLjMtMC45LDIuMS0wLjYNCgljMC40LDAuMiwyLjYsMS4yLDIuNiwxLjJsMC4yLDAuMWMwLjMsMC4yLDAuNywwLjMsMC45LDAuN0MyNi4yLDE4LjUsMjUuOSwxOS44LDI1LjcsMjAuNXoiLz4NCjwvc3ZnPg==",
+          "id": "208a5fe4-92db-4721-9498-a0e88a970591",
+          "text": "",
+          "correct": "right",
+          "soluceLink": "https://youtu.be/JhTvaRogQp8"
+        }
+      ]
+    },
+    {
+      "id": "Art9xovyAcWu7008v9LM",
+      "cards": [
+        {
+          "correct": "left",
+          "text": "",
+          "id": "243f26b5-4006-4763-850a-cc72ad110cc4",
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=TEST"
+        },
+        {
+          "correct": "right",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=TEST",
+          "soluceLink": "",
+          "text": "",
+          "id": "7b74dad1-fa6e-4f74-a968-ca005ce16519"
+        },
+        {
+          "text": "",
+          "img": "",
+          "id": "8e2148a4-083b-40a2-8153-461b879e68e5",
+          "soluceLink": "",
+          "correct": "left"
+        },
+        {
+          "correct": "right",
+          "id": "7553e50c-895b-4689-afd9-c84b40641449",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": "",
+          "text": ""
+        },
+        {
+          "soluceLink": "",
+          "correct": "left",
+          "text": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "bec4ade7-c92a-4e60-b464-159d1ce2e2a5"
+        },
+        {
+          "text": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "correct": "right",
+          "id": "9b418664-c52a-4de9-a911-9c541d3f7dd5",
+          "soluceLink": ""
+        },
+        {
+          "correct": "left",
+          "id": "6c532871-0874-499e-aae9-5474eb66b798",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": "",
+          "text": ""
+        },
+        {
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": "",
+          "id": "dcf3ee68-6d79-4f2e-a445-9a42d096fb8f",
+          "text": "",
+          "correct": "right"
+        },
+        {
+          "text": "",
+          "correct": "left",
+          "id": "441bb471-403f-4e7f-82c3-70438b66212e",
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?"
+        },
+        {
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "correct": "right",
+          "id": "66e26ed0-cb1f-44fe-b2df-72f3a7ce4dfa",
+          "text": "",
+          "soluceLink": ""
+        },
+        {
+          "id": "4b7f72b3-eb7b-4c8d-8e5e-2271a517fee6",
+          "soluceLink": "",
+          "text": "test",
+          "correct": "left",
+          "img": ""
+        }
+      ]
+    },
+    {
+      "id": "lYgzDVfy7WWFqIOWLevi",
+      "cards": [
+        {
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "cf0fd809-0917-446b-a6c8-077df922007d",
+          "soluceLink": "",
+          "text": "",
+          "correct": "left"
+        },
+        {
+          "text": "",
+          "correct": "right",
+          "id": "e931e7a6-a109-4f82-8c88-b9c452dfa71b",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": ""
+        },
+        {
+          "text": "",
+          "correct": "left",
+          "id": "b5aa0ab3-c549-4f69-b40d-7eaa5e70f2bc",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": ""
+        },
+        {
+          "text": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "correct": "right",
+          "id": "b8b5f71c-8998-485a-a8af-1670080318fb",
+          "soluceLink": ""
+        },
+        {
+          "id": "86ffaaca-646a-40a1-83e8-9810703bb6d3",
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "correct": "left",
+          "text": ""
+        },
+        {
+          "id": "effa2201-d986-4db9-beac-8920f09ef774",
+          "text": "",
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "correct": "right"
+        },
+        {
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "2490edd0-f016-4ddb-8f90-3f304c714581",
+          "correct": "left",
+          "text": ""
+        },
+        {
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "d6867af6-5e41-4700-8b65-3c5b2e092403",
+          "correct": "right",
+          "text": "",
+          "soluceLink": ""
+        },
+        {
+          "id": "7cc91916-77fb-4a2e-bef3-81a1cdf032eb",
+          "text": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": "",
+          "correct": "left"
+        },
+        {
+          "text": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "f37d80fb-7225-46d5-9866-3d148fa1cd30",
+          "soluceLink": "",
+          "correct": "right"
+        }
+      ]
+    },
+    {
+      "id": "uRtWnvaYz2B2nLDEhqwh",
+      "cards": [
+        {
+          "correct": "left",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "95acc7ed-1c9f-4809-9eb1-2e3175d64719",
+          "soluceLink": "",
+          "text": ""
+        },
+        {
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": "",
+          "id": "4717d55e-db51-42c8-930a-06198206984e",
+          "text": "",
+          "correct": "right"
+        },
+        {
+          "text": "",
+          "id": "a7a3cd3b-93fe-4a54-8611-36476368eea2",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "correct": "left",
+          "soluceLink": ""
+        },
+        {
+          "text": "",
+          "id": "8289cb83-ed2d-4dab-b436-54d4aad2394d",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "soluceLink": "",
+          "correct": "right"
+        },
+        {
+          "soluceLink": "",
+          "id": "cef9be2b-594e-4572-8a71-b2ae1bae7a35",
+          "correct": "left",
+          "text": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?"
+        },
+        {
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "fd47724c-63df-40c9-a760-4e88eb6e71f3",
+          "text": "",
+          "correct": "right",
+          "soluceLink": ""
+        },
+        {
+          "text": "",
+          "correct": "left",
+          "id": "78eaa18b-0bf0-49f6-a1cc-788d7d5a9131",
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?"
+        },
+        {
+          "correct": "right",
+          "text": "",
+          "id": "b12bfb1d-55f2-42ae-8da4-9482984185d7",
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?"
+        },
+        {
+          "text": "",
+          "soluceLink": "",
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "correct": "left",
+          "id": "e9a0cdfe-a230-48a8-9fe9-ad24c72ada59"
+        },
+        {
+          "img": "https://placehold.co/400x550/FBFCF8/000000?text=?",
+          "id": "4960cf84-a1f1-4ade-97dc-985fd35c7f98",
+          "correct": "right",
+          "text": "",
+          "soluceLink": ""
+        }
+      ]
+    }
+  ],
+  "info": [
+    {
+      "orderIndex": 0,
+      "name": "TEST",
+      "id": "aQQAczbcSqW1aDMhllWh",
+      "cardBorder": "border-red-400/30",
+      "isPrivate": true,
+      "titleColor": "text-red-400",
+      "emoji": "CACA",
+      "subtitle": "eSK TU sais C quoi un CACA",
+      "password": "4444",
+      "indicatorRight": "Pipi",
+      "color": "red",
+      "createdAt": 1763061192263,
+      "indicatorLeft": "Prout"
+    },
+    {
+      "titleColor": "text-pink-400",
+      "createdAt": 1762746014083,
+      "indicatorRight": "GIRL",
+      "name": "Trans or Girl",
+      "cardBorder": "border-pink-400/30",
+      "indicatorLeft": "TRANS",
+      "orderIndex": 1,
+      "id": "Art9xovyAcWu7008v9LM",
+      "emoji": "🧜🏻",
+      "isPrivate": true,
+      "color": "pink",
+      "password": "1111"
+    },
+    {
+      "name": "Khawa Khawa🇲🇦🇩🇿",
+      "color": "green",
+      "isPrivate": false,
+      "createdAt": 1762746014084,
+      "orderIndex": 2,
+      "id": "lYgzDVfy7WWFqIOWLevi",
+      "password": "",
+      "cardBorder": "border-green-400/30",
+      "indicatorRight": "Algérien",
+      "emoji": "🇩",
+      "titleColor": "text-green-400",
+      "indicatorLeft": "Marocain"
+    },
+    {
+      "isPrivate": false,
+      "cardBorder": "border-blue-400/30",
+      "emoji": "🤖",
+      "indicatorLeft": "IA",
+      "indicatorRight": "REEL",
+      "id": "uRtWnvaYz2B2nLDEhqwh",
+      "titleColor": "text-blue-400",
+      "color": "blue",
+      "createdAt": 1762746014084,
+      "name": "IA vs Réel",
+      "orderIndex": 3,
+      "password": ""
+    }
+  ]
+}

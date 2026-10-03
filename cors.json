@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://torg-31596.web.app/"],
+    "method": ["GET", "POST", "PUT"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

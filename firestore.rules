@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admin_users/$(request.auth.uid));
+    }
+
+    // Un utilisateur connecté peut uniquement vérifier SON propre statut admin
+    // (app.js fait un getDoc(admin_users/{uid}) au boot). Pas de list, pas d'écriture :
+    // la gestion des admins se fait via la console / Admin SDK.
+    match /admin_users/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+
+    // Métadonnées des decks : lecture publique, écriture admin
+    // (les callables saveDeck/moveDeck passent par l'Admin SDK et ignorent ces règles ;
+    //  cette permission couvre les écritures directes restantes côté admin).
+    match /artifacts/{appId}/public/data/deck_info/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Decks + sous-collection cards (l'admin supprime des cartes en writeBatch direct)
+    match /artifacts/{appId}/public/data/decks/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Scores : lecture publique, AUCUNE écriture client.
+    // Création via la callable submitScore (validation serveur),
+    // suppression via deleteScoresSecurely — l'Admin SDK ignore ces règles.
+    match /artifacts/{appId}/public/data/scores/{scoreId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Tout le reste : verrouillé
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
